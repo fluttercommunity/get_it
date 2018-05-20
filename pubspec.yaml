@@ -1,13 +1,15 @@
 name: get_it
 description: Simple direct Service Locator
 version: 1.0.0
-author:
-homepage:
+author: Thomas Burkhart <burkhartsengineering@gmail.com>
+homepage: https://github.com/escamoteur/rx_command
+
+environment:
+  sdk: '>=1.21.0 <2.0.0'
 
 dependencies:
 
 
 dev_dependencies:
-  flutter_test:
-    sdk: flutter
+  test: 
 

@@ -1,6 +1,6 @@
 # get_it
 
-A new flutter package project.
+This is a simple **Service Locator** for Dart and Flutter projects. 
 
 ## Getting Started
 
