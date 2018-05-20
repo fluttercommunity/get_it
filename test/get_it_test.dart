@@ -4,10 +4,13 @@ import 'package:get_it/get_it.dart';
 
 int constructorCounter;
 
-class TestClass
+abstract class TestBaseClass
 {
-    int value = 42;
 
+}
+
+class TestClass extends TestBaseClass
+{
     TestClass()
     {
         constructorCounter++;
@@ -18,13 +21,13 @@ void main() {
 
   test('register new', () {
     constructorCounter = 0;
-    GetIt.register<TestClass>(()=> new TestClass());
+    GetIt.register<TestBaseClass>(()=> new TestClass());
 
-    var instance1 = GetIt.get<TestClass>();
+    var instance1 = GetIt.get<TestBaseClass>();
 
     expect(instance1 is TestClass, true) ;
 
-    var instance2 = GetIt.get<TestClass>();
+    var instance2 = GetIt.get<TestBaseClass>();
 
     expect(instance1, isNot(instance2));
 
@@ -34,13 +37,13 @@ void main() {
 
   test('register constant', () {
     constructorCounter = 0;
-    GetIt.registerConstant<TestClass>(new TestClass());
+    GetIt.registerSingleton<TestBaseClass>(new TestClass());
 
-    var instance1 = GetIt.get<TestClass>();
+    var instance1 = GetIt.get<TestBaseClass>();
 
     expect(instance1 is TestClass, true) ;
 
-    var instance2 = GetIt.get<TestClass>();
+    var instance2 = GetIt.get<TestBaseClass>();
 
     expect(instance1, instance2);
 
@@ -51,16 +54,16 @@ void main() {
 
   test('register lazySingleton', () {
     constructorCounter = 0;
-    GetIt.registerLazySingleton<TestClass>(()=>new TestClass());
+    GetIt.registerLazySingleton<TestBaseClass>(()=>new TestClass());
 
     expect(constructorCounter, 0);
 
-    var instance1 = GetIt.get<TestClass>();
+    var instance1 = GetIt.get<TestBaseClass>();
 
     expect(instance1 is TestClass, true) ;
     expect(constructorCounter, 1);
 
-    var instance2 = GetIt.get<TestClass>();
+    var instance2 = GetIt.get<TestBaseClass>();
 
     expect(instance1, instance2);
 
