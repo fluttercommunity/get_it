@@ -25,11 +25,11 @@ void main() {
     constructorCounter = 0;
     GetIt.register<TestBaseClass>(()=> new TestClass());
 
-    var instance1 = GetIt.get<TestBaseClass>();
+    var instance1 = GetIt.get<TestBaseClass>(TestBaseClass);
 
     expect(instance1 is TestClass, true) ;
 
-    var instance2 = GetIt.get<TestBaseClass>();
+    var instance2 = GetIt.get<TestBaseClass>(TestBaseClass);
 
     expect(instance1, isNot(instance2));
 
@@ -43,11 +43,11 @@ void main() {
 
     GetIt.registerSingleton<TestBaseClass>(new TestClass());
 
-    var instance1 = GetIt.get<TestBaseClass>();
+    var instance1 = GetIt.get<TestBaseClass>(TestBaseClass);
 
     expect(instance1 is TestClass, true) ;
 
-    var instance2 = GetIt.get<TestBaseClass>();
+    var instance2 = GetIt.get<TestBaseClass>(TestBaseClass);
 
     expect(instance1, instance2);
 
@@ -63,12 +63,12 @@ void main() {
 
     expect(constructorCounter, 0);
 
-    var instance1 = GetIt.get<TestBaseClass>();
+    var instance1 = GetIt.get<TestBaseClass>(TestBaseClass);
 
     expect(instance1 is TestClass, true) ;
     expect(constructorCounter, 1);
 
-    var instance2 = GetIt.get<TestBaseClass>();
+    var instance2 = GetIt.get<TestBaseClass>(TestBaseClass);
 
     expect(instance1, instance2);
 
@@ -78,7 +78,7 @@ void main() {
 
   test('trying to access not registered type', () {
 
-      expect(()=>GetIt.get<int>(), throwsA(new isInstanceOf<Exception>()));
+      expect(()=>GetIt.get<int>(int), throwsA(new isInstanceOf<Exception>()));
   });
 
 
