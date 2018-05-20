@@ -20,6 +20,8 @@ class TestClass extends TestBaseClass
 void main() {
 
   test('register new', () {
+    GetIt.reset();
+    
     constructorCounter = 0;
     GetIt.register<TestBaseClass>(()=> new TestClass());
 
@@ -36,7 +38,9 @@ void main() {
   });
 
   test('register constant', () {
+    GetIt.reset();
     constructorCounter = 0;
+
     GetIt.registerSingleton<TestBaseClass>(new TestClass());
 
     var instance1 = GetIt.get<TestBaseClass>();
@@ -53,6 +57,7 @@ void main() {
 
 
   test('register lazySingleton', () {
+    GetIt.reset();
     constructorCounter = 0;
     GetIt.registerLazySingleton<TestBaseClass>(()=>new TestClass());
 

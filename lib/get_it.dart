@@ -7,6 +7,10 @@ typedef FactoryFunc<T> = T Function();
 /// And retrieve the desired object using [get]
 class GetIt {
   static Map<Type, _ServiceFactory> _factories = new Map<Type, _ServiceFactory>();
+  
+  /// By default it's not allowed to register a type a second time. 
+  /// If you really need to you can disable the asserts by setting[allowReassignment]= true
+  static bool allowReassignment = false;
 
   /// retrives or creates an instance of a registered type [T] depending on the registration function used for this type.
   static T get<T>() {
@@ -21,6 +25,7 @@ class GetIt {
   /// [T] type to register
   /// [fun] factory funtion for this type
   static void register<T>(FactoryFunc<T> func) {
+    assert(!_factories.containsKey(T),"Type ${T.toString()} is already registered");
     _factories[T] = new _ServiceFactory(_ServiceFactoryType.alwaysNew, creationFunction: func);
   }
 
@@ -28,6 +33,7 @@ class GetIt {
   /// [T] type to register
   /// [fun] factory funtion for this type
   static void registerLazySingleton<T>(FactoryFunc<T> func) {
+    assert(!_factories.containsKey(T),"Type ${T.toString()} is already registered");
     _factories[T] = new _ServiceFactory(_ServiceFactoryType.lazy, creationFunction: func);
   }
 
@@ -35,7 +41,14 @@ class GetIt {
   /// [T] type to register
   /// [fun] factory funtion for this type
   static void registerSingleton<T>(T instance) {
+    assert(!_factories.containsKey(T),"Type ${T.toString()} is already registered");
    _factories[T] = new _ServiceFactory(_ServiceFactoryType.constant, instance: instance);
+  }
+
+  /// Clears all registered types. Typically only used for Unit Tests
+  static void reset()
+  {
+    _factories.clear();
   }
 }
 
