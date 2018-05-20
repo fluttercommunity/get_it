@@ -65,7 +65,7 @@ packages:
     source: hosted
     version: "0.14.4"
   flutter:
-    dependency: "direct main"
+    dependency: transitive
     description: flutter
     source: sdk
     version: "0.0.0"

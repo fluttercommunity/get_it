@@ -21,53 +21,46 @@ class GetIt {
   /// [T] type to register
   /// [fun] factory funtion for this type
   static void register<T>(FactoryFunc<T> func) {
-    var factory = new _ServiceFactory();
-    factory.create = func;
-    factory.type = ServiceFactoryType.alwaysNew;
-    _factories[T] = factory;
+    _factories[T] = new _ServiceFactory(_ServiceFactoryType.alwaysNew, creationFunction: func);
   }
 
   /// registers a type as Singleton by passing a factory function that will be called on the first call of [get] on that type
   /// [T] type to register
   /// [fun] factory funtion for this type
   static void registerLazySingleton<T>(FactoryFunc<T> func) {
-    var factory = new _ServiceFactory();
-    factory.create = func;
-    factory.type = ServiceFactoryType.lazy;
-    _factories[T] = factory;
+    _factories[T] = new _ServiceFactory(_ServiceFactoryType.lazy, creationFunction: func);
   }
 
   /// registers a type as Singleton by passing an instance that will be returned on each call of [get] on that type
   /// [T] type to register
   /// [fun] factory funtion for this type
   static void registerSingleton<T>(T instance) {
-    var factory = new _ServiceFactory();
-    factory.instance = instance;
-    factory.type = ServiceFactoryType.constant;
-    _factories[T] = factory;
+   _factories[T] = new _ServiceFactory(_ServiceFactoryType.constant, instance: instance);
   }
 }
 
-enum ServiceFactoryType { alwaysNew, constant, lazy }
+enum _ServiceFactoryType { alwaysNew, constant, lazy }
 
 class _ServiceFactory {
-  ServiceFactoryType type;
-
-  FactoryFunc create;
+  _ServiceFactoryType type;
+  FactoryFunc creationFunction;
   Object instance;
+
+  _ServiceFactory(this.type,{this.creationFunction, this.instance});
+
 
   T getObject<T>() {
     try {
       switch (type) {
-        case ServiceFactoryType.alwaysNew:
-          return create() as T;
+        case _ServiceFactoryType.alwaysNew:
+          return creationFunction() as T;
           break;
-        case ServiceFactoryType.constant:
+        case _ServiceFactoryType.constant:
           return instance as T;
           break;
-        case ServiceFactoryType.lazy:
+        case _ServiceFactoryType.lazy:
           if (instance == null) {
-            instance = create();
+            instance = creationFunction();
           }
           return instance as T;
           break;
