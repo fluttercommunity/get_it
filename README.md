@@ -3,12 +3,12 @@
 ### **IMPORTANT: You have to use Dart2 to use this component**
 
 
-This is a simple **Service Locator** for Dart and Flutter projects. 
+This is a simple **Service Locator** for Dart and Flutter projects highly inspired by [Splat](https://github.com/reactiveui/splat). 
 
 >If you are not familiar with the concept of Service Locators, its a way to decouple the interface (abstract base class) from a concrete implementation and at the same time allows to access the concrete implementation from everywhere in your App over the interface.
 > I can only highly recommend to read this classic article by from Martin Fowler [Inversion of Control Containers and the Dependency Injection  pattern](https://martinfowler.com/articles/injection.html)
 
-Accessing an object from anywhere in an App especially can be done by other was too but:
+Accessing an object from anywhere in an App especially can be done by other ways too but:
 
 * If you use a Singleton you cannot easily switch the implementation to another like a mock version for unit tests
 * IoC containers for Dependency Injections offer a similar functionality but with the cost of slow start-up time and less readability because you don't know where the magically injected object come from. As most IoC libs rely on reflection they cannot be used with Flutter. 
@@ -91,4 +91,5 @@ You have to pass a factory function `func` that returns an instance of an implem
 If you try to register a type more than once you will get an assertion in debug mode because normally this is not needed and not advised and probably a bug.
 If you really have to overwrite a registration, then you can by setting the property `allowReassignment==true`` . 
 
-  
+## Acknowledgements
+Many thanks to the insightful discussions on the API with [Brian Egan](https://github.com/brianegan) and [Simon Lightfoot](https://github.com/slightfoot)    

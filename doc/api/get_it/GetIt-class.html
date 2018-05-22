@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="API docs for the GetIt class from the get_it library, for the Dart programming language.">
+  <title>GetIt class - get_it library - Dart API</title>
+  <!-- required because all the links are pseudo-absolute -->
+  <base href="..">
+
+  <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500,400i,400,300|Source+Sans+Pro:400,300,700" rel="stylesheet">
+  <link rel="stylesheet" href="static-assets/github.css">
+  <link rel="stylesheet" href="static-assets/styles.css">
+  <link rel="icon" href="static-assets/favicon.png">
+
+</head>
+
+<body>
+
+<div id="overlay-under-drawer"></div>
+
+<header id="title">
+  <button id="sidenav-left-toggle" type="button">&nbsp;</button>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li><a href="index.html">get_it</a></li>
+    <li><a href="get_it/get_it-library.html">get_it</a></li>
+    <li class="self-crumb">GetIt class</li>
+  </ol>
+  <div class="self-name">GetIt</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+
+<main>
+
+  <div class="col-xs-6 col-sm-3 col-md-2 sidebar sidebar-offcanvas-left">
+    <h5>get_it library</h5>
+    <ol>
+      <li class="section-title"><a href="get_it/get_it-library.html#classes">Classes</a></li>
+      <li><a href="get_it/GetIt-class.html">GetIt</a></li>
+    
+    
+    
+    
+    
+      <li class="section-title"><a href="get_it/get_it-library.html#typedefs">Typedefs</a></li>
+      <li><a href="get_it/FactoryFunc.html">FactoryFunc</a></li>
+    
+    </ol>
+  </div>
+
+  <div class="col-xs-12 col-sm-9 col-md-8 main-content">
+    <h1>GetIt class</h1>
+
+    <section class="desc markdown">
+      <p>Very simple and easy to use service locator
+You register your object creation or an instance of an object with <a href="get_it/GetIt/registerFactory.html">registerFactory</a>, <a href="get_it/GetIt/registerSingleton.html">registerSingleton</a> or <a href="get_it/GetIt/registerLazySingleton.html">registerLazySingleton</a>
+And retrieve the desired object using <a href="get_it/GetIt/get.html">get</a></p>
+    </section>
+    
+
+    <section class="summary offset-anchor" id="constructors">
+      <h2>Constructors</h2>
+
+      <dl class="constructor-summary-list">
+        <dt id="GetIt" class="callable">
+          <span class="name"><a href="get_it/GetIt/GetIt.html">GetIt</a></span><span class="signature">()</span>
+        </dt>
+        <dd>
+          
+        </dd>
+      </dl>
+    </section>
+
+    <section class="summary offset-anchor" id="instance-properties">
+      <h2>Properties</h2>
+
+      <dl class="properties">
+        <dt id="allowReassignment" class="property">
+          <span class="name"><a href="get_it/GetIt/allowReassignment.html">allowReassignment</a></span>
+          <span class="signature">&#8596; bool</span>
+        </dt>
+        <dd>
+          By default it's not allowed to register a type a second time. 
+If you really need to you can disable the asserts by setting<code>allowReassignment</code>= true
+          <div class="features">read / write</div>
+</dd>
+        <dt id="hashCode" class="property inherited">
+          <span class="name"><a href="get_it/GetIt/hashCode.html">hashCode</a></span>
+          <span class="signature">&#8594; int</span>
+        </dt>
+        <dd class="inherited">
+          The hash code for this object. <a href="get_it/GetIt/hashCode.html">[...]</a>
+          <div class="features">read-only, inherited</div>
+</dd>
+        <dt id="runtimeType" class="property inherited">
+          <span class="name"><a href="get_it/GetIt/runtimeType.html">runtimeType</a></span>
+          <span class="signature">&#8594; Type</span>
+        </dt>
+        <dd class="inherited">
+          A representation of the runtime type of the object.
+          <div class="features">read-only, inherited</div>
+</dd>
+      </dl>
+    </section>
+
+    <section class="summary offset-anchor" id="instance-methods">
+      <h2>Methods</h2>
+      <dl class="callables">
+        <dt id="call" class="callable">
+          <span class="name"><a href="get_it/GetIt/call.html">call</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr>)
+            <span class="returntype parameter">&#8594; dynamic</span>
+          </span>
+        </dt>
+        <dd>
+          
+          
+</dd>
+        <dt id="get" class="callable">
+          <span class="name"><a href="get_it/GetIt/get.html">get</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr>)
+            <span class="returntype parameter">&#8594; T</span>
+          </span>
+        </dt>
+        <dd>
+          retrives or creates an instance of a registered type <code>T</code> depending on the registration function used for this type.
+          
+</dd>
+        <dt id="registerFactory" class="callable">
+          <span class="name"><a href="get_it/GetIt/registerFactory.html">registerFactory</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="registerFactory-param-func"><span class="type-annotation"><a href="get_it/FactoryFunc.html">FactoryFunc</a><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span></span> <span class="parameter-name">func</span></span>)
+            <span class="returntype parameter">&#8594; void</span>
+          </span>
+        </dt>
+        <dd>
+          registers a type so that a new instance will be created on each call of <a href="get_it/GetIt/get.html">get</a> on that type
+<code>T</code> type to register
+<code>fun</code> factory funtion for this type
+          
+</dd>
+        <dt id="registerLazySingleton" class="callable">
+          <span class="name"><a href="get_it/GetIt/registerLazySingleton.html">registerLazySingleton</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="registerLazySingleton-param-func"><span class="type-annotation"><a href="get_it/FactoryFunc.html">FactoryFunc</a><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span></span> <span class="parameter-name">func</span></span>)
+            <span class="returntype parameter">&#8594; void</span>
+          </span>
+        </dt>
+        <dd>
+          registers a type as Singleton by passing a factory function that will be called on the first call of <a href="get_it/GetIt/get.html">get</a> on that type
+<code>T</code> type to register
+<code>fun</code> factory funtion for this type
+          
+</dd>
+        <dt id="registerSingleton" class="callable">
+          <span class="name"><a href="get_it/GetIt/registerSingleton.html">registerSingleton</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="registerSingleton-param-instance"><span class="type-annotation">T</span> <span class="parameter-name">instance</span></span>)
+            <span class="returntype parameter">&#8594; void</span>
+          </span>
+        </dt>
+        <dd>
+          registers a type as Singleton by passing an instance that will be returned on each call of <a href="get_it/GetIt/get.html">get</a> on that type
+<code>T</code> type to register
+<code>fun</code> factory funtion for this type
+          
+</dd>
+        <dt id="noSuchMethod" class="callable inherited">
+          <span class="name"><a href="get_it/GetIt/noSuchMethod.html">noSuchMethod</a></span><span class="signature">(<wbr><span class="parameter" id="noSuchMethod-param-invocation"><span class="type-annotation">Invocation</span> <span class="parameter-name">invocation</span></span>)
+            <span class="returntype parameter">&#8594; dynamic</span>
+          </span>
+        </dt>
+        <dd class="inherited">
+          Invoked when a non-existent method or property is accessed. <a href="get_it/GetIt/noSuchMethod.html">[...]</a>
+          <div class="features">inherited</div>
+</dd>
+        <dt id="toString" class="callable inherited">
+          <span class="name"><a href="get_it/GetIt/toString.html">toString</a></span><span class="signature">(<wbr>)
+            <span class="returntype parameter">&#8594; String</span>
+          </span>
+        </dt>
+        <dd class="inherited">
+          Returns a string representation of this object.
+          <div class="features">inherited</div>
+</dd>
+      </dl>
+    </section>
+
+    <section class="summary offset-anchor inherited" id="operators">
+      <h2>Operators</h2>
+      <dl class="callables">
+        <dt id="operator ==" class="callable inherited">
+          <span class="name"><a href="get_it/GetIt/operator_equals.html">operator ==</a></span><span class="signature">(<wbr><span class="parameter" id="==-param-other"><span class="type-annotation">dynamic</span> <span class="parameter-name">other</span></span>)
+            <span class="returntype parameter">&#8594; bool</span>
+          </span>
+        </dt>
+        <dd class="inherited">
+          The equality operator. <a href="get_it/GetIt/operator_equals.html">[...]</a>
+          <div class="features">inherited</div>
+</dd>
+      </dl>
+    </section>
+
+
+
+
+  </div> <!-- /.main-content -->
+
+  <div class="col-xs-6 col-sm-6 col-md-2 sidebar sidebar-offcanvas-right">
+    <ol>
+      <li class="section-title"><a href="get_it/GetIt-class.html#constructors">Constructors</a></li>
+      <li><a href="get_it/GetIt/GetIt.html">GetIt</a></li>
+    
+      <li class="section-title">
+        <a href="get_it/GetIt-class.html#instance-properties">Properties</a>
+      </li>
+      <li><a href="get_it/GetIt/allowReassignment.html">allowReassignment</a></li>
+      <li class="inherited"><a href="get_it/GetIt/hashCode.html">hashCode</a></li>
+      <li class="inherited"><a href="get_it/GetIt/runtimeType.html">runtimeType</a></li>
+    
+      <li class="section-title"><a href="get_it/GetIt-class.html#instance-methods">Methods</a></li>
+      <li><a href="get_it/GetIt/call.html">call</a></li>
+      <li><a href="get_it/GetIt/get.html">get</a></li>
+      <li><a href="get_it/GetIt/registerFactory.html">registerFactory</a></li>
+      <li><a href="get_it/GetIt/registerLazySingleton.html">registerLazySingleton</a></li>
+      <li><a href="get_it/GetIt/registerSingleton.html">registerSingleton</a></li>
+      <li class="inherited"><a href="get_it/GetIt/noSuchMethod.html">noSuchMethod</a></li>
+      <li class="inherited"><a href="get_it/GetIt/toString.html">toString</a></li>
+    
+      <li class="section-title inherited"><a href="get_it/GetIt-class.html#operators">Operators</a></li>
+      <li class="inherited"><a href="get_it/GetIt/operator_equals.html">operator ==</a></li>
+    
+    
+    
+    </ol>
+  </div><!--/.sidebar-offcanvas-->
+
+</main>
+
+<footer>
+  <span class="no-break">
+    get_it 1.0.0
+  </span>
+
+</footer>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="static-assets/typeahead.bundle.min.js"></script>
+<script src="static-assets/highlight.pack.js"></script>
+<script src="static-assets/URI.js"></script>
+<script src="static-assets/script.js"></script>
+
+
+</body>
+
+</html>

@@ -1,0 +1,1 @@
+dartdoc  --exclude dart:io,dart:ui,dart:isolate,dart:convert,dart:async,dart:collection,dart:core,dart:developer,dart:math,dart:typed_data

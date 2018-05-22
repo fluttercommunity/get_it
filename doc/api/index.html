@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="generator" content="made with love by dartdoc 0.19.0">
+  <meta name="description" content="get_it API docs, for the Dart programming language.">
+  <title>get_it - Dart API docs</title>
+
+  <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500,400i,400,300|Source+Sans+Pro:400,300,700" rel="stylesheet">
+  <link rel="stylesheet" href="static-assets/github.css">
+  <link rel="stylesheet" href="static-assets/styles.css">
+  <link rel="icon" href="static-assets/favicon.png">
+
+</head>
+
+<body>
+
+<div id="overlay-under-drawer"></div>
+
+<header id="title">
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li><a href="https://github.com/escamoteur/get_it">get_it package</a></li>
+  </ol>
+  <div class="self-name">get_it</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+
+<main>
+
+  <div class="col-xs-6 col-sm-3 col-md-2 sidebar sidebar-offcanvas-left">
+    <h5><span class="package-name">get_it</span> <span class="package-kind">package</span></h5>
+    <ol>
+          <li class="section-title">Libraries</li>
+          <li><a href="get_it/get_it-library.html">get_it</a></li>
+    </ol>
+  </div>
+
+  <div class="col-xs-12 col-sm-9 col-md-8 main-content">
+      <section class="desc markdown">
+        <h1>get_it</h1>
+<h3><strong>IMPORTANT: You have to use Dart2 to use this component</strong></h3>
+<p>This is a simple <strong>Service Locator</strong> for Dart and Flutter projects highly inspired by <a href="https://github.com/reactiveui/splat">Splat</a>. </p>
+<blockquote>
+<p>If you are not familiar with the concept of Service Locators, its a way to decouple the interface (abstract base class) from a concrete implementation and at the same time allows to access the concrete implementation from everywhere in your App over the interface.
+I can only highly recommend to read this classic article by from Martin Fowler <a href="https://martinfowler.com/articles/injection.html">Inversion of Control Containers and the Dependency Injection  pattern</a></p></blockquote>
+<p>Accessing an object from anywhere in an App especially can be done by other ways too but:</p><ul><li>If you use a Singleton you cannot easily switch the implementation to another like a mock version for unit tests</li><li>IoC containers for Dependency Injections offer a similar functionality but with the cost of slow start-up time and less readability because you don't know where the magically injected object come from. As most IoC libs rely on reflection they cannot be used with Flutter. </li></ul>
+<p>Typical usage:</p><ul><li>Accessing service objects like REST API clients, databases so that they easily can be mocked.</li><li>Accessing View/AppModels from Flutter Views</li><li>Because interface and implementations are decoupled you could also register Flutter Views with different implementations and decide at start-up which one you want to use e.g. depending on screen resolutions</li></ul>
+<h2>Getting Started</h2>
+<p>Most Service Locator libraries are implemented either as Singletons or static classes depending on the features of the programming languages so that they can be easily accessed. As Dart supports global (or euphemistic ambient) variables I decided after some discussions with Simon Lightfoot and Brian Egan to use just a simple class (so that you can if you really need even create more than one Locator although <strong>I would not advise to do that</strong>  in most cases).</p>
+<p>So to use <code>GetIt</code> you only have to declare an instance of it in  your App, typically as global variable.</p>
+<pre class="language-Dart"><code class="language-Dart">GetIt getIt = new GetIt();
+</code></pre>
+<blockquote>
+<p>You can use any name you want which makes Brian happy ;-) </p></blockquote>
+<p>Before you can access your objects you have to register them within <code>GetIt</code> typically direct in your start-up code.</p>
+<pre class="language-Dart"><code class="language-Dart">getIt.registerSingleton&lt;AppModel&gt;(new AppModelImplementation());
+getIt.registerLazySingleton&lt;RESTAPI&gt;(() =&gt;new RestAPIImplementation());
+</code></pre>
+<blockquote>
+<p><code>AppModel</code> and <code>RESTAPI</code> are both abstract base classes in this example</p></blockquote>
+<p>To access the registered objects call <code>get&lt;Type&gt;()</code> on your <code>GetIt</code>instance</p>
+<pre class="language-Dart"><code class="language-Dart">var myAppModel = getIt.get&lt;AppModel&gt;();
+</code></pre>
+<p>Alternatively as <code>GetIt</code> is a callable class depending on the name you choose for your <code>GetIt</code>instance you can use the shorter version:</p>
+<pre class="language-Dart"><code class="language-Dart">var myAppModel = getIt&lt;AppModel&gt;();
+</code></pre>
+<h2>Different ways of registration</h2>
+<blockquote>
+<p>Although I always would recommend using an abstract base class as registration type so that you can vary the implementations you don't have to do this. You can also register concrete types.</p></blockquote>
+<p><code>GetIt</code> offers different ways how objects are registered that effect the lifetime of this objects.</p>
+<h3>Factory</h3>
+<pre class="language-Dart"><code class="language-Dart">void registerFactory&lt;T&gt;(FactoryFunc&lt;T&gt; func)
+</code></pre>
+<p>You have to pass a factory function <code>func</code> that returns an instance of an implementation of <code>T</code>. Each time you call <code>get&lt;T&gt;()</code> you will get a new instance returned.</p>
+<h3>Singleton &amp;&amp; LazySingleton</h3>
+<pre class="language-Dart"><code class="language-Dart">void registerSingleton&lt;T&gt;(T instance) 
+</code></pre>
+<p>You have to pass an instance of <code>T</code> or a derived class of <code>T</code> that you will always get returned on a call to <code>get&lt;T&gt;()</code>.</p>
+<p>As creating this instance can be time consuming at app start-up you can shift the creation to the time the object is the first time requested with:</p>
+<pre class="language-Dart"><code class="language-Dart">void registerLazySingleton&lt;T&gt;(FactoryFunc&lt;T&gt; func)
+</code></pre>
+<p>You have to pass a factory function <code>func</code> that returns an instance of an implementation of <code>T</code>. Only the first time you call <code>get&lt;T&gt;()</code> this factory function will be called to create a new instance. After that you will always get the same instance returned.</p>
+<h3>Overwriting registrations</h3>
+<p>If you try to register a type more than once you will get an assertion in debug mode because normally this is not needed and not advised and probably a bug.
+If you really have to overwrite a registration, then you can by setting the property `allowReassignment==true`` . </p>
+<h2>Acknowledgements</h2>
+<p>Many thanks to the insightful discussions on the API with <a href="https://github.com/brianegan">Brian Egan</a> and <a href="https://github.com/slightfoot">Simon Lightfoot</a>    </p>
+      </section>
+      
+        <section class="summary">
+            <h2>Libraries</h2>
+          <dl>
+            <dt id="get_it">
+              <span class="name"><a href="get_it/get_it-library.html">get_it</a></span>
+            </dt>
+            <dd>
+              
+            </dd>          </dl>
+        </section>
+
+  </div> <!-- /.main-content -->
+
+</main>
+
+<footer>
+  <span class="no-break">
+    get_it 1.0.0
+  </span>
+
+</footer>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="static-assets/typeahead.bundle.min.js"></script>
+<script src="static-assets/highlight.pack.js"></script>
+<script src="static-assets/URI.js"></script>
+<script src="static-assets/script.js"></script>
+
+
+</body>
+
+</html>
