@@ -20,16 +20,19 @@ class TestClass extends TestBaseClass
 void main() {
 
   test('register new', () {
-    GetIt.reset();
+
+    var getIt = new GetIt();
     
     constructorCounter = 0;
-    GetIt.register<TestBaseClass>(()=> new TestClass());
+    getIt.register<TestBaseClass>(()=> new TestClass());
 
-    var instance1 = GetIt.get<TestBaseClass>(TestBaseClass);
+    //var instance1 = getIt.get<TestBaseClass>();
+
+    var instance1 = getIt<TestBaseClass>();
 
     expect(instance1 is TestClass, true) ;
 
-    var instance2 = GetIt.get<TestBaseClass>(TestBaseClass);
+    var instance2 = getIt.get<TestBaseClass>();
 
     expect(instance1, isNot(instance2));
 
@@ -38,16 +41,16 @@ void main() {
   });
 
   test('register constant', () {
-    GetIt.reset();
+    var getIt = new GetIt();
     constructorCounter = 0;
 
-    GetIt.registerSingleton<TestBaseClass>(new TestClass());
+    getIt.registerSingleton<TestBaseClass>(new TestClass());
 
-    var instance1 = GetIt.get<TestBaseClass>(TestBaseClass);
+    var instance1 = getIt.get<TestBaseClass>();
 
     expect(instance1 is TestClass, true) ;
 
-    var instance2 = GetIt.get<TestBaseClass>(TestBaseClass);
+    var instance2 = getIt.get<TestBaseClass>();
 
     expect(instance1, instance2);
 
@@ -57,18 +60,18 @@ void main() {
 
 
   test('register lazySingleton', () {
-    GetIt.reset();
+    var getIt = new GetIt();
     constructorCounter = 0;
-    GetIt.registerLazySingleton<TestBaseClass>(()=>new TestClass());
+    getIt.registerLazySingleton<TestBaseClass>(()=>new TestClass());
 
     expect(constructorCounter, 0);
 
-    var instance1 = GetIt.get<TestBaseClass>(TestBaseClass);
+    var instance1 = getIt.get<TestBaseClass>();
 
     expect(instance1 is TestClass, true) ;
     expect(constructorCounter, 1);
 
-    var instance2 = GetIt.get<TestBaseClass>(TestBaseClass);
+    var instance2 = getIt.get<TestBaseClass>();
 
     expect(instance1, instance2);
 
@@ -77,8 +80,9 @@ void main() {
 
 
   test('trying to access not registered type', () {
+      var getIt = new GetIt();
 
-      expect(()=>GetIt.get<int>(int), throwsA(new isInstanceOf<Exception>()));
+      expect(()=>getIt.get<int>(), throwsA(new isInstanceOf<Exception>()));
   });
 
 
