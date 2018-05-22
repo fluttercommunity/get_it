@@ -1,6 +1,6 @@
 name: get_it
-description: Simple direct Service Locator
-version: 1.0.0
+description: Simple direct Service Locator. Service Locators are a way to decouple the interface (abstract base class) from a concrete implementation and at the same time allows to access the concrete implementation from everywhere in your App over the interface
+version: 1.0.0+1
 author: Thomas Burkhart <burkhartsengineering@gmail.com>
 homepage: https://github.com/escamoteur/get_it
 
