@@ -5,7 +5,7 @@ typedef FactoryFunc<T> = T Function();
 
 
 /// Very simple and easy to use service locator
-/// You register your object creation or an instance of an object with [register], [registerSingleton] or [registerLazySingleton]
+/// You register your object creation or an instance of an object with [registerFactory], [registerSingleton] or [registerLazySingleton]
 /// And retrieve the desired object using [get]
 class GetIt {
    final _factories = new Map<Type, _ServiceFactory<dynamic>>();
@@ -31,7 +31,7 @@ class GetIt {
   /// registers a type so that a new instance will be created on each call of [get] on that type
   /// [T] type to register
   /// [fun] factory funtion for this type
-   void register<T>(FactoryFunc<T> func) {
+   void registerFactory<T>(FactoryFunc<T> func) {
     assert(allowReassignment || !_factories.containsKey(T),"Type ${T.toString()} is already registered");
     _factories[T] = new _ServiceFactory<T>(_ServiceFactoryType.alwaysNew, creationFunction: func);
   }
