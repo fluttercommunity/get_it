@@ -24,7 +24,7 @@ void main() {
     var getIt = new GetIt();
     
     constructorCounter = 0;
-    getIt.register<TestBaseClass>(()=> new TestClass());
+    getIt.registerFactory<TestBaseClass>(()=> new TestClass());
 
     //var instance1 = getIt.get<TestBaseClass>();
 
