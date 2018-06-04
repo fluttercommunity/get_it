@@ -55,6 +55,12 @@ class GetIt {
     _factories[T] = new _ServiceFactory<T>(_ServiceFactoryType.constant,
         instance: instance);
   }
+
+  /// Clears all registered types. Handy when writing unit tests
+  void reset()
+  {
+    _factories.clear();
+  }
 }
 
 enum _ServiceFactoryType { alwaysNew, constant, lazy }

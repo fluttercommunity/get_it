@@ -2,6 +2,8 @@
 
 ### **IMPORTANT: You have to use Dart2 to use this component**
 
+You can find here a [detailed blog post on how to use GetIt](https://www.burkharts.net/apps/blog/one-to-find-them-all-how-to-use-service-locators-with-flutter/)
+
 
 This is a simple **Service Locator** for Dart and Flutter projects highly inspired by [Splat](https://github.com/reactiveui/splat). 
 
@@ -19,7 +21,7 @@ Typical usage:
 * Accessing View/AppModels from Flutter Views
 * Because interface and implementations are decoupled you could also register Flutter Views with different implementations and decide at start-up which one you want to use e.g. depending on screen resolutions
 
-
+**Extremely important if you use GetIt: ALWAYS use the same style to import your project files either as relative paths OR as package which I recommend. DON'T mix them because currently Dart treats types imported in different ways as two different types although both reference the same file.**
 
 
 ## Getting Started
@@ -90,6 +92,13 @@ You have to pass a factory function `func` that returns an instance of an implem
 ### Overwriting registrations
 If you try to register a type more than once you will get an assertion in debug mode because normally this is not needed and not advised and probably a bug.
 If you really have to overwrite a registration, then you can by setting the property `allowReassignment==true`` . 
+
+### Reseting GetIt
+
+```Dart
+  /// Clears all registered types. Handy when writing unit tests
+  void reset()
+```
 
 ## Acknowledgements
 Many thanks to the insightful discussions on the API with [Brian Egan](https://github.com/brianegan) and [Simon Lightfoot](https://github.com/slightfoot)    

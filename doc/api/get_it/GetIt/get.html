@@ -80,10 +80,11 @@
     
     <section class="summary source-code" id="source">
       <h2><span>Implementation</span> </h2>
-      <pre class="language-dart"><code class="language-dart">T  get&lt;T&gt;() {
+      <pre class="language-dart"><code class="language-dart">T get&lt;T&gt;() {
   _ServiceFactory&lt;T&gt; object = _factories[T];
   if (object == null) {
-    throw new Exception(&quot;Object of type ${T.toString()} is not registered inside GetIt&quot;);
+    throw new Exception(
+        &quot;Object of type ${T.toString()} is not registered inside GetIt&quot;);
   }
   return object.getObject();
 }</code></pre>
@@ -98,7 +99,7 @@
 
 <footer>
   <span class="no-break">
-    get_it 1.0.0
+    get_it 1.0.1
   </span>
 
 </footer>

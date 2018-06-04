@@ -43,12 +43,14 @@
       <section class="desc markdown">
         <h1>get_it</h1>
 <h3><strong>IMPORTANT: You have to use Dart2 to use this component</strong></h3>
+<p>You can find here a <a href="https://www.burkharts.net/apps/blog/one-to-find-them-all-how-to-use-service-locators-with-flutter/">detailed blog post on how to use GetIt</a></p>
 <p>This is a simple <strong>Service Locator</strong> for Dart and Flutter projects highly inspired by <a href="https://github.com/reactiveui/splat">Splat</a>. </p>
 <blockquote>
 <p>If you are not familiar with the concept of Service Locators, its a way to decouple the interface (abstract base class) from a concrete implementation and at the same time allows to access the concrete implementation from everywhere in your App over the interface.
 I can only highly recommend to read this classic article by from Martin Fowler <a href="https://martinfowler.com/articles/injection.html">Inversion of Control Containers and the Dependency Injection  pattern</a></p></blockquote>
 <p>Accessing an object from anywhere in an App especially can be done by other ways too but:</p><ul><li>If you use a Singleton you cannot easily switch the implementation to another like a mock version for unit tests</li><li>IoC containers for Dependency Injections offer a similar functionality but with the cost of slow start-up time and less readability because you don't know where the magically injected object come from. As most IoC libs rely on reflection they cannot be used with Flutter. </li></ul>
 <p>Typical usage:</p><ul><li>Accessing service objects like REST API clients, databases so that they easily can be mocked.</li><li>Accessing View/AppModels from Flutter Views</li><li>Because interface and implementations are decoupled you could also register Flutter Views with different implementations and decide at start-up which one you want to use e.g. depending on screen resolutions</li></ul>
+<p><strong>Extremely important if you use GetIt: ALWAYS use the same style to import your project files either as relative paths OR as package which I recommend. DON'T mix them because currently Dart treats types imported in different ways as two different types although both reference the same file.</strong></p>
 <h2>Getting Started</h2>
 <p>Most Service Locator libraries are implemented either as Singletons or static classes depending on the features of the programming languages so that they can be easily accessed. As Dart supports global (or euphemistic ambient) variables I decided after some discussions with Simon Lightfoot and Brian Egan to use just a simple class (so that you can if you really need even create more than one Locator although <strong>I would not advise to do that</strong>  in most cases).</p>
 <p>So to use <code>GetIt</code> you only have to declare an instance of it in  your App, typically as global variable.</p>
@@ -87,6 +89,10 @@ getIt.registerLazySingleton&lt;RESTAPI&gt;(() =&gt;new RestAPIImplementation());
 <h3>Overwriting registrations</h3>
 <p>If you try to register a type more than once you will get an assertion in debug mode because normally this is not needed and not advised and probably a bug.
 If you really have to overwrite a registration, then you can by setting the property `allowReassignment==true`` . </p>
+<h3>Reseting GetIt</h3>
+<pre class="language-Dart"><code class="language-Dart">  /// Clears all registered types. Handy when writing unit tests
+  void reset()
+</code></pre>
 <h2>Acknowledgements</h2>
 <p>Many thanks to the insightful discussions on the API with <a href="https://github.com/brianegan">Brian Egan</a> and <a href="https://github.com/slightfoot">Simon Lightfoot</a>    </p>
       </section>
@@ -108,7 +114,7 @@ If you really have to overwrite a registration, then you can by setting the prop
 
 <footer>
   <span class="no-break">
-    get_it 1.0.0
+    get_it 1.0.1
   </span>
 
 </footer>

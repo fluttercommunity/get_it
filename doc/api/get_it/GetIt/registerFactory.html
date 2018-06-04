@@ -83,8 +83,10 @@
     <section class="summary source-code" id="source">
       <h2><span>Implementation</span> </h2>
       <pre class="language-dart"><code class="language-dart">void registerFactory&lt;T&gt;(FactoryFunc&lt;T&gt; func) {
-  assert(allowReassignment || !_factories.containsKey(T),&quot;Type ${T.toString()} is already registered&quot;);
-  _factories[T] = new _ServiceFactory&lt;T&gt;(_ServiceFactoryType.alwaysNew, creationFunction: func);
+  assert(allowReassignment || !_factories.containsKey(T),
+      &quot;Type ${T.toString()} is already registered&quot;);
+  _factories[T] = new _ServiceFactory&lt;T&gt;(_ServiceFactoryType.alwaysNew,
+      creationFunction: func);
 }</code></pre>
     </section>
 
@@ -97,7 +99,7 @@
 
 <footer>
   <span class="no-break">
-    get_it 1.0.0
+    get_it 1.0.1
   </span>
 
 </footer>
