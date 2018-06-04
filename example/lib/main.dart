@@ -43,12 +43,20 @@ class _MyHomePageState extends State<MyHomePage> {
   initState()
   {
     // Access the instance of the registered AppModel
-    getIt<AppModel>().addListener(()=> setState(()=>{})); 
+    getIt<AppModel>().addListener(update); 
     // Alternative
-    // getIt.get<AppModel>().addListener(()=> setState(()=>{})); 
+    // getIt.get<AppModel>().addListener(update); 
     
     super.initState();
   }
+
+  @override
+  void dispose() {
+      getIt<AppModel>().removeListener(update); 
+      super.dispose();
+    }
+
+  update()=> setState(()=>{});
 
   @override
   Widget build(BuildContext context) {
