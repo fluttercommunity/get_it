@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="API docs for the allowReassignment property from the GetIt class, for the Dart programming language.">
-  <title>allowReassignment property - GetIt class - get_it library - Dart API</title>
+  <meta name="description" content="API docs for the reset method from the GetIt class, for the Dart programming language.">
+  <title>reset method - GetIt class - get_it library - Dart API</title>
   <!-- required because all the links are pseudo-absolute -->
   <base href="../..">
 
@@ -26,9 +26,9 @@
     <li><a href="index.html">get_it</a></li>
     <li><a href="get_it/get_it-library.html">get_it</a></li>
     <li><a href="get_it/GetIt-class.html">GetIt</a></li>
-    <li class="self-crumb">allowReassignment property</li>
+    <li class="self-crumb">reset method</li>
   </ol>
-  <div class="self-name">allowReassignment</div>
+  <div class="self-name">reset</div>
   <form class="search navbar-right" role="search">
     <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
   </form>
@@ -68,23 +68,24 @@
   </div><!--/.sidebar-offcanvas-->
 
   <div class="col-xs-12 col-sm-9 col-md-8 main-content">
-    <h1>allowReassignment property</h1>
+    <h1>reset method</h1>
 
-        <section class="multi-line-signature">
-          <span class="returntype">bool</span>
-          <span class="name ">allowReassignment</span>
-          <div class="features">read / write</div>
-        </section>
-        <section class="desc markdown">
-          <p>By default it's not allowed to register a type a second time.
-If you really need to you can disable the asserts by setting<a href="get_it/GetIt/allowReassignment.html">allowReassignment</a>= true</p>
-        </section>
-                <section class="summary source-code" id="source">
-          <h2><span>Implementation</span> </h2>
-          <pre class="language-dart"><code class="language-dart">bool allowReassignment = false
-
-</code></pre>
-        </section>
+    <section class="multi-line-signature">
+      <span class="returntype">void</span>
+      <span class="name ">reset</span>
+(<wbr>)
+    </section>
+    <section class="desc markdown">
+      <p>Clears all registered types. Handy when writing unit tests</p>
+    </section>
+    
+    <section class="summary source-code" id="source">
+      <h2><span>Implementation</span> </h2>
+      <pre class="language-dart"><code class="language-dart">void reset()
+{
+  _factories.clear();
+}</code></pre>
+    </section>
 
   </div> <!-- /.main-content -->
 
