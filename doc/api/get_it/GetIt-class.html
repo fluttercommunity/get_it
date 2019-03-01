@@ -45,6 +45,7 @@
     
     
     
+    
       <li class="section-title"><a href="get_it/get_it-library.html#typedefs">Typedefs</a></li>
       <li><a href="get_it/FactoryFunc.html">FactoryFunc</a></li>
     
@@ -52,7 +53,7 @@
   </div>
 
   <div class="col-xs-12 col-sm-9 col-md-8 main-content">
-    <h1>GetIt class</h1>
+      <h1>GetIt class </h1>
 
     <section class="desc markdown">
       <p>Very simple and easy to use service locator
@@ -80,16 +81,16 @@ And retrieve the desired object using <a href="get_it/GetIt/get.html">get</a></p
       <dl class="properties">
         <dt id="allowReassignment" class="property">
           <span class="name"><a href="get_it/GetIt/allowReassignment.html">allowReassignment</a></span>
-          <span class="signature">&#8596; bool</span>
+          <span class="signature">&#8596; bool</span> 
         </dt>
         <dd>
           By default it's not allowed to register a type a second time.
-If you really need to you can disable the asserts by setting<code>allowReassignment</code>= true
+If you really need to you can disable the asserts by setting<a href="get_it/GetIt/allowReassignment.html">allowReassignment</a>= true
           <div class="features">read / write</div>
 </dd>
         <dt id="hashCode" class="property inherited">
           <span class="name"><a href="get_it/GetIt/hashCode.html">hashCode</a></span>
-          <span class="signature">&#8594; int</span>
+          <span class="signature">&#8594; int</span> 
         </dt>
         <dd class="inherited">
           The hash code for this object. <a href="get_it/GetIt/hashCode.html">[...]</a>
@@ -97,7 +98,7 @@ If you really need to you can disable the asserts by setting<code>allowReassignm
 </dd>
         <dt id="runtimeType" class="property inherited">
           <span class="name"><a href="get_it/GetIt/runtimeType.html">runtimeType</a></span>
-          <span class="signature">&#8594; Type</span>
+          <span class="signature">&#8594; Type</span> 
         </dt>
         <dd class="inherited">
           A representation of the runtime type of the object.
@@ -111,9 +112,9 @@ If you really need to you can disable the asserts by setting<code>allowReassignm
       <dl class="callables">
         <dt id="call" class="callable">
           <span class="name"><a href="get_it/GetIt/call.html">call</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr>)
-            <span class="returntype parameter">&#8594; dynamic</span>
+            <span class="returntype parameter">&#8594; T</span>
           </span>
-        </dt>
+          </dt>
         <dd>
           
           
@@ -122,7 +123,7 @@ If you really need to you can disable the asserts by setting<code>allowReassignm
           <span class="name"><a href="get_it/GetIt/get.html">get</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr>)
             <span class="returntype parameter">&#8594; T</span>
           </span>
-        </dt>
+          </dt>
         <dd>
           retrives or creates an instance of a registered type <code>T</code> depending on the registration function used for this type.
           
@@ -131,7 +132,7 @@ If you really need to you can disable the asserts by setting<code>allowReassignm
           <span class="name"><a href="get_it/GetIt/registerFactory.html">registerFactory</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="registerFactory-param-func"><span class="type-annotation"><a href="get_it/FactoryFunc.html">FactoryFunc</a><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span></span> <span class="parameter-name">func</span></span>)
             <span class="returntype parameter">&#8594; void</span>
           </span>
-        </dt>
+          </dt>
         <dd>
           registers a type so that a new instance will be created on each call of <a href="get_it/GetIt/get.html">get</a> on that type
 <code>T</code> type to register
@@ -142,7 +143,7 @@ If you really need to you can disable the asserts by setting<code>allowReassignm
           <span class="name"><a href="get_it/GetIt/registerLazySingleton.html">registerLazySingleton</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="registerLazySingleton-param-func"><span class="type-annotation"><a href="get_it/FactoryFunc.html">FactoryFunc</a><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span></span> <span class="parameter-name">func</span></span>)
             <span class="returntype parameter">&#8594; void</span>
           </span>
-        </dt>
+          </dt>
         <dd>
           registers a type as Singleton by passing a factory function that will be called on the first call of <a href="get_it/GetIt/get.html">get</a> on that type
 <code>T</code> type to register
@@ -153,7 +154,7 @@ If you really need to you can disable the asserts by setting<code>allowReassignm
           <span class="name"><a href="get_it/GetIt/registerSingleton.html">registerSingleton</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="registerSingleton-param-instance"><span class="type-annotation">T</span> <span class="parameter-name">instance</span></span>)
             <span class="returntype parameter">&#8594; void</span>
           </span>
-        </dt>
+          </dt>
         <dd>
           registers a type as Singleton by passing an instance that will be returned on each call of <a href="get_it/GetIt/get.html">get</a> on that type
 <code>T</code> type to register
@@ -164,7 +165,7 @@ If you really need to you can disable the asserts by setting<code>allowReassignm
           <span class="name"><a href="get_it/GetIt/reset.html">reset</a></span><span class="signature">(<wbr>)
             <span class="returntype parameter">&#8594; void</span>
           </span>
-        </dt>
+          </dt>
         <dd>
           Clears all registered types. Handy when writing unit tests
           
@@ -173,7 +174,7 @@ If you really need to you can disable the asserts by setting<code>allowReassignm
           <span class="name"><a href="get_it/GetIt/noSuchMethod.html">noSuchMethod</a></span><span class="signature">(<wbr><span class="parameter" id="noSuchMethod-param-invocation"><span class="type-annotation">Invocation</span> <span class="parameter-name">invocation</span></span>)
             <span class="returntype parameter">&#8594; dynamic</span>
           </span>
-        </dt>
+          </dt>
         <dd class="inherited">
           Invoked when a non-existent method or property is accessed. <a href="get_it/GetIt/noSuchMethod.html">[...]</a>
           <div class="features">inherited</div>
@@ -182,7 +183,7 @@ If you really need to you can disable the asserts by setting<code>allowReassignm
           <span class="name"><a href="get_it/GetIt/toString.html">toString</a></span><span class="signature">(<wbr>)
             <span class="returntype parameter">&#8594; String</span>
           </span>
-        </dt>
+          </dt>
         <dd class="inherited">
           Returns a string representation of this object.
           <div class="features">inherited</div>
@@ -197,7 +198,7 @@ If you really need to you can disable the asserts by setting<code>allowReassignm
           <span class="name"><a href="get_it/GetIt/operator_equals.html">operator ==</a></span><span class="signature">(<wbr><span class="parameter" id="==-param-other"><span class="type-annotation">dynamic</span> <span class="parameter-name">other</span></span>)
             <span class="returntype parameter">&#8594; bool</span>
           </span>
-        </dt>
+          </dt>
         <dd class="inherited">
           The equality operator. <a href="get_it/GetIt/operator_equals.html">[...]</a>
           <div class="features">inherited</div>

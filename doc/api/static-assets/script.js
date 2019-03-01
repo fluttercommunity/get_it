@@ -27,7 +27,7 @@ function initSideNav() {
   }
 }
 
-function initSearch() {
+function initSearch(name) {
   var searchIndex;  // the JSON data
 
   var weights = {
@@ -120,16 +120,16 @@ function initSearch() {
       }
     }
 
-    $('#search-box').prop('disabled', false);
-    $('#search-box').prop('placeholder', 'Search');
+    $('#' + name).prop('disabled', false);
+    $('#' + name).prop('placeholder', 'Search');
     $(document).keypress(function(event) {
       if (event.which == 47 /* / */) {
         event.preventDefault();
-        $('#search-box').focus();
+        $('#' + name).focus();
       }
     });
 
-    $('#search-box.typeahead').typeahead({
+    $('#' + name + '.typeahead').typeahead({
       hint: true,
       highlight: true,
       minLength: 1
@@ -156,7 +156,7 @@ function initSearch() {
       }
     });
 
-    var typeaheadElement = $('#search-box.typeahead');
+    var typeaheadElement = $('#' + name + '.typeahead');
     var typeaheadElementParent = typeaheadElement.parent();
     var selectedSuggestion;
 
@@ -187,7 +187,7 @@ function initSearch() {
     initTypeahead();
   });
   jsonReq.addEventListener('error', function() {
-    $('#search-box').prop('placeholder', 'Error loading search index');
+    $('#' + name).prop('placeholder', 'Error loading search index');
   });
   jsonReq.send();
 }
@@ -195,5 +195,6 @@ function initSearch() {
 document.addEventListener("DOMContentLoaded", function() {
   hljs.initHighlightingOnLoad();
   initSideNav();
-  initSearch();
+  initSearch("search-box");
+  initSearch("search-body");
 });

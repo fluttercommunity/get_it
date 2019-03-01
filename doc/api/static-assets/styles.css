@@ -72,6 +72,7 @@ main {
 ::-webkit-scrollbar-thumb{ background-color: #CCC; }
 ::-webkit-scrollbar-thumb:hover{ background-color: #CCC; }
 ::-webkit-scrollbar{ width: 4px; }
+.main-content::-webkit-scrollbar{ width: 8px; }
 
 .main-content {
   flex: 1;
@@ -391,6 +392,54 @@ dl dt.callable .name {
 
 .deprecated {
   text-decoration: line-through;
+}
+
+.category.linked {
+  font-weight: bold;
+  opacity: 1;
+}
+
+/* Colors for category based on categoryOrder in dartdoc_options.config. */
+.category.cp-0 {
+  background-color: #54b7c4
+}
+
+.category.cp-1 {
+  background-color: #54c47f
+}
+
+.category.cp-2 {
+  background-color: #c4c254
+}
+
+.category.cp-3 {
+  background-color: #c49f54
+}
+
+.category.cp-4 {
+  background-color: #c45465
+}
+
+.category.cp-5 {
+  background-color: #c454c4
+}
+
+.category a {
+  color: white;
+}
+
+.category {
+  padding: 2px 4px;
+  font-size: 12px;
+  border-radius: 4px;
+  background-color: #999;
+  text-transform: uppercase;
+  color: white;
+  opacity: .5;
+}
+
+h1 .category {
+  vertical-align: middle;
 }
 
 p.firstline {
@@ -775,12 +824,15 @@ button {
   color: #999
 }
 
-.tt-menu {
+.navbar-right .tt-menu {
   right:0;
   left: inherit !important;
   width: 422px;
   max-height: 250px;
   overflow-y: auto;
+}
+
+.tt-menu {
   font-size: 14px;
   margin: 0;
   padding: 8px 0;
@@ -827,6 +879,12 @@ button {
 
 #search-box {
   background-color: #ffffff;
+}
+
+.search-body {
+  border: 1px solid #7f7f7f;
+  max-width: 400px;
+  box-shadow: 3px 3px 5px rgba(0,0,0,0.1);
 }
 
 section#setter {

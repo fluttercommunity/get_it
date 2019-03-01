@@ -22,7 +22,7 @@ class GetIt {
     return object.getObject();
   }
 
-  call<T>() {
+   T call<T>() {
     return get<T>();
   }
 

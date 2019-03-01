@@ -2,6 +2,9 @@
 
 # get_it
 
+**Latest version has a small but important fix. Now intellisense works if you use `myGetIt<YourType>().`**  
+
+
 ### **IMPORTANT: You have to use Dart2 to use this component**
 
 You can find here a [detailed blog post on how to use GetIt](https://www.burkharts.net/apps/blog/one-to-find-them-all-how-to-use-service-locators-with-flutter/)
