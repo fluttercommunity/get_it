@@ -1,4 +1,4 @@
-## [1.0.3] - 01.03.2018
+## [1.0.3] - 01.03.2019
 
 * Small fix so that intellisense works now if you use the short calling form without using `.get()` 
 
