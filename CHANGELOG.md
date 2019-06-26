@@ -1,3 +1,7 @@
+## [1.0.3+1] - 26.06.2019
+
+* updated logo in readme
+
 ## [1.0.3] - 01.03.2019
 
 * Small fix so that intellisense works now if you use the short calling form without using `.get()` 
