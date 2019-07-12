@@ -28,7 +28,7 @@ class GetIt {
 
   /// registers a type so that a new instance will be created on each call of [get] on that type
   /// [T] type to register
-  /// [fun] factory funtion for this type
+  /// [func] factory funtion for this type
   void registerFactory<T>(FactoryFunc<T> func) {
     assert(allowReassignment || !_factories.containsKey(T),
         "Type ${T.toString()} is already registered");
@@ -38,7 +38,7 @@ class GetIt {
 
   /// registers a type as Singleton by passing a factory function that will be called on the first call of [get] on that type
   /// [T] type to register
-  /// [fun] factory funtion for this type
+  /// [func] factory funtion for this type
   void registerLazySingleton<T>(FactoryFunc<T> func) {
     assert(allowReassignment || !_factories.containsKey(T),
         "Type ${T.toString()} is already registered");
@@ -48,7 +48,6 @@ class GetIt {
 
   /// registers a type as Singleton by passing an instance that will be returned on each call of [get] on that type
   /// [T] type to register
-  /// [fun] factory funtion for this type
   void registerSingleton<T>(T instance) {
     assert(allowReassignment || !_factories.containsKey(T),
         "Type ${T.toString()} is already registered");
