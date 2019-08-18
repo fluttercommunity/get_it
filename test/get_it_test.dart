@@ -19,12 +19,12 @@ class TestClass extends TestBaseClass
 
 void main() {
 
-  test('register new', () {
+  test('register factory', () {
 
-    var getIt = new GetIt();
+    var getIt = GetIt();
     
     constructorCounter = 0;
-    getIt.registerFactory<TestBaseClass>(()=> new TestClass());
+    getIt.registerFactory<TestBaseClass>(()=> TestClass());
 
     //var instance1 = getIt.get<TestBaseClass>();
 
@@ -41,10 +41,10 @@ void main() {
   });
 
   test('register constant', () {
-    var getIt = new GetIt();
+    var getIt = GetIt();
     constructorCounter = 0;
 
-    getIt.registerSingleton<TestBaseClass>(new TestClass());
+    getIt.registerSingleton<TestBaseClass>(TestClass());
 
     var instance1 = getIt.get<TestBaseClass>();
 
@@ -60,9 +60,9 @@ void main() {
 
 
   test('register lazySingleton', () {
-    var getIt = new GetIt();
+    var getIt = GetIt();
     constructorCounter = 0;
-    getIt.registerLazySingleton<TestBaseClass>(()=>new TestClass());
+    getIt.registerLazySingleton<TestBaseClass>(()=>TestClass());
 
     expect(constructorCounter, 0);
 
@@ -80,9 +80,73 @@ void main() {
 
 
   test('trying to access not registered type', () {
-      var getIt = new GetIt();
+      var getIt = GetIt();
 
-      expect(()=>getIt.get<int>(), throwsA(new isInstanceOf<Exception>()));
+      expect(()=>getIt.get<int>(), throwsA(TypeMatcher<Exception>()));
+  });
+
+  test('register factory by Name', () {
+
+    var getIt = GetIt();
+    
+    constructorCounter = 0;
+    getIt.registerFactory(()=> TestClass(),'FactoryByName');
+
+    var instance1 = getIt('FactoryByName');
+
+    expect(instance1 is TestClass, true) ;
+
+    var instance2 = getIt('FactoryByName');;
+
+    expect(instance1, isNot(instance2));
+
+    expect(constructorCounter, 2);
+
+  });
+
+  test('register constant by name', () {
+    var getIt = GetIt();
+    constructorCounter = 0;
+
+    getIt.registerSingleton(TestClass(),'ConstantByName');
+
+    var instance1 = getIt('ConstantByName');
+
+    expect(instance1 is TestClass, true) ;
+
+    var instance2 = getIt('ConstantByName');
+
+    expect(instance1, instance2);
+
+    expect(constructorCounter, 1);
+  });
+
+
+
+  test('register lazySingleton by name', () {
+    var getIt = GetIt();
+    constructorCounter = 0;
+    getIt.registerLazySingleton(()=>TestClass(),'LazyByName');
+
+    expect(constructorCounter, 0);
+
+    var instance1 = getIt('LazyByName');
+
+    expect(instance1 is TestClass, true) ;
+    expect(constructorCounter, 1);
+
+    var instance2 = getIt('LazyByName');
+
+    expect(instance1, instance2);
+
+    expect(constructorCounter, 1);
+  });
+
+
+  test('trying to access not registered type by name', () {
+      var getIt = GetIt();
+
+      expect(()=>getIt('not there'), throwsA(TypeMatcher<Exception>()));
   });
 
 
