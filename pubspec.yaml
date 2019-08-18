@@ -11,8 +11,8 @@ homepage: https://github.com/fluttercommunity/get_it
 environment:
   sdk: '>=2.0.0-dev<3.0.0'
 
-
+dependencies:
+  meta: 1.1.7
 
 dev_dependencies:
   test: 
-
