@@ -3,17 +3,18 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
   <meta name="description" content="API docs for the registerSingleton method from the GetIt class, for the Dart programming language.">
   <title>registerSingleton method - GetIt class - get_it library - Dart API</title>
   <!-- required because all the links are pseudo-absolute -->
   <base href="../..">
 
   <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500,400i,400,300|Source+Sans+Pro:400,300,700" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" href="static-assets/github.css">
   <link rel="stylesheet" href="static-assets/styles.css">
   <link rel="icon" href="static-assets/favicon.png">
-
+  
 </head>
 
 <body>
@@ -36,7 +37,20 @@
 
 <main>
 
-  <div class="col-xs-6 col-sm-3 col-md-2 sidebar sidebar-offcanvas-left">
+  <div id="dartdoc-sidebar-left" class="col-xs-6 col-sm-3 col-md-2 sidebar sidebar-offcanvas-left">
+    <header id="header-search-sidebar" class="hidden-l">
+      <form class="search-sidebar" role="search">
+        <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+      </form>
+    </header>
+    
+    <ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+      <li><a href="index.html">get_it</a></li>
+      <li><a href="get_it/get_it-library.html">get_it</a></li>
+      <li><a href="get_it/GetIt-class.html">GetIt</a></li>
+      <li class="self-crumb">registerSingleton&lt;<wbr><span class="type-parameter">T</span>&gt; method</li>
+    </ol>
+    
     <h5>GetIt class</h5>
     <ol>
       <li class="section-title"><a href="get_it/GetIt-class.html#constructors">Constructors</a></li>
@@ -67,43 +81,47 @@
     </ol>
   </div><!--/.sidebar-offcanvas-->
 
-  <div class="col-xs-12 col-sm-9 col-md-8 main-content">
-    <h1>registerSingleton&lt;<wbr><span class="type-parameter">T</span>&gt; method</h1>
+  <div id="dartdoc-main-content" class="col-xs-12 col-sm-9 col-md-8 main-content">
+      <div><h1><span class="kind-method">registerSingleton&lt;<wbr><span class="type-parameter">T</span>&gt;</span> method</h1></div>
 
     <section class="multi-line-signature">
       <span class="returntype">void</span>
-      <span class="name ">registerSingleton</span>
-&lt;<wbr><span class="type-parameter">T</span>&gt;(<wbr><span class="parameter" id="registerSingleton-param-instance"><span class="type-annotation">T</span> <span class="parameter-name">instance</span></span>)
+            <span class="name ">registerSingleton</span>
+&lt;<wbr><span class="type-parameter">T</span>&gt;(<wbr><span class="parameter" id="registerSingleton-param-instance"><span class="type-annotation">T</span> <span class="parameter-name">instance</span>, [</span> <span class="parameter" id="registerSingleton-param-instanceName"><span class="type-annotation">String</span> <span class="parameter-name">instanceName</span></span> ])
       
     </section>
     <section class="desc markdown">
-      <p>registers a type as Singleton by passing an instance that will be returned on each call of <a href="get_it/GetIt/get.html">get</a> on that type
+      <p>registers a type as Singleton by passing an <code>instance</code> of that type
+ that will be returned on each call of <a href="get_it/GetIt/get.html">get</a> on that type
 <code>T</code> type to register
-<code>fun</code> factory funtion for this type</p>
+<code>instanceName</code> if you provide a value here your instance gets registered with that
+name instead of a type. This should only be nesseary if you need to register more
+than one instance of one type. Its highly not recommended</p>
     </section>
     
     <section class="summary source-code" id="source">
-      <h2><span>Implementation</span> </h2>
-      <pre class="language-dart"><code class="language-dart">void registerSingleton&lt;T&gt;(T instance) {
-  assert(allowReassignment || !_factories.containsKey(T),
-      &quot;Type ${T.toString()} is already registered&quot;);
-  _factories[T] = new _ServiceFactory&lt;T&gt;(_ServiceFactoryType.constant,
+      <h2><span>Implementation</span></h2>
+      <pre class="language-dart"><code class="language-dart">void registerSingleton&lt;T&gt;(T instance, [String instanceName]) {
+  _register&lt;T&gt;(
+      type: _ServiceFactoryType.constant,
+      instanceName: instanceName,
       instance: instance);
 }</code></pre>
     </section>
 
   </div> <!-- /.main-content -->
 
-  <div class="col-xs-6 col-sm-6 col-md-2 sidebar sidebar-offcanvas-right">
+  <div id="dartdoc-sidebar-right" class="col-xs-6 col-sm-6 col-md-2 sidebar sidebar-offcanvas-right">
   </div><!--/.sidebar-offcanvas-->
 
 </main>
 
 <footer>
   <span class="no-break">
-    get_it 1.0.3+2
+    get_it 1.1.0
   </span>
 
+  
 </footer>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>

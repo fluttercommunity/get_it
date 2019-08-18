@@ -5,8 +5,10 @@ import 'package:meta/meta.dart';
 typedef FactoryFunc<T> = T Function();
 
 /// Very simple and easy to use service locator
-/// You register your object creation or an instance of an object with [registerFactory], [registerSingleton] or [registerLazySingleton]
-/// And retrieve the desired object using [get]
+/// You register your object creation or an instance of an object with [registerFactory], 
+/// [registerSingleton] or [registerLazySingleton]
+/// And retrieve the desired object using [get] or call your loactor das as function as its a 
+/// callable class
 class GetIt {
   final _factories = Map<Type, _ServiceFactory<dynamic>>();
   final _factoriesByName = Map<String, _ServiceFactory<dynamic>>();
@@ -68,7 +70,7 @@ class GetIt {
   /// registers a type as Singleton by passing an [instance] of that type
   ///  that will be returned on each call of [get] on that type
   /// [T] type to register
-  /// [instanceName] if you provide a value here your factory gets registered with that
+  /// [instanceName] if you provide a value here your instance gets registered with that
   /// name instead of a type. This should only be nesseary if you need to register more
   /// than one instance of one type. Its highly not recommended
   void registerSingleton<T>(T instance, [String instanceName]) {

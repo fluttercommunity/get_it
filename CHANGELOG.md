@@ -1,3 +1,7 @@
+## [1.1.0] - 26.06.2019
+
+* added named registration
+
 ## [1.0.3+2] - 26.06.2019
 
 * updated logo in readme

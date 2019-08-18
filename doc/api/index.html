@@ -3,16 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="generator" content="made with love by dartdoc 0.24.1">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="generator" content="made with love by dartdoc 0.28.2">
   <meta name="description" content="get_it API docs, for the Dart programming language.">
   <title>get_it - Dart API docs</title>
 
   <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500,400i,400,300|Source+Sans+Pro:400,300,700" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" href="static-assets/github.css">
   <link rel="stylesheet" href="static-assets/styles.css">
   <link rel="icon" href="static-assets/favicon.png">
-
+  
 </head>
 
 <body>
@@ -20,6 +21,7 @@
 <div id="overlay-under-drawer"></div>
 
 <header id="title">
+  <button id="sidenav-left-toggle" type="button">&nbsp;</button>
   <ol class="breadcrumbs gt-separated dark hidden-xs">
     <li><a href="https://github.com/fluttercommunity/get_it">get_it package</a></li>
   </ol>
@@ -31,17 +33,27 @@
 
 <main>
 
-  <div class="col-xs-6 col-sm-3 col-md-2 sidebar sidebar-offcanvas-left">
-    <h5><span class="package-name">get_it</span> <span class="package-kind">package</span></h5>
+  <div id="dartdoc-sidebar-left" class="col-xs-6 col-sm-3 col-md-2 sidebar sidebar-offcanvas-left">
+    <header id="header-search-sidebar" class="hidden-l">
+      <form class="search-sidebar" role="search">
+        <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+      </form>
+    </header>
+    
+    <ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+      <li><a href="https://github.com/fluttercommunity/get_it">get_it package</a></li>
+    </ol>
+    
+    <h5 class="hidden-xs"><span class="package-name">get_it</span> <span class="package-kind">package</span></h5>
     <ol>
           <li class="section-title">Libraries</li>
           <li><a href="get_it/get_it-library.html">get_it</a></li>
     </ol>
   </div>
 
-  <div class="col-xs-12 col-sm-9 col-md-8 main-content">
+  <div id="dartdoc-main-content" class="col-xs-12 col-sm-9 col-md-8 main-content">
       <section class="desc markdown">
-        <p><a href="https://github.com/fluttercommunity/community"><img alt="Flutter Community: get_it" src="https://fluttercommunity.dev/_github/header/get_it"></a></p>
+        <p><a href="https://github.com/fluttercommunity/community"><img src="https://fluttercommunity.dev/_github/header/get_it" alt="Flutter Community: get_it"></a></p>
 <h1 id="get_it">get_it</h1>
 <p><strong>Latest version has a small but important fix. Now intellisense works if you use <code>myGetIt&lt;YourType&gt;().</code></strong>  </p>
 <h3 id="important-you-have-to-use-dart2-to-use-this-component"><strong>IMPORTANT: You have to use Dart2 to use this component</strong></h3>
@@ -51,18 +63,18 @@
 <p>If you are not familiar with the concept of Service Locators, its a way to decouple the interface (abstract base class) from a concrete implementation and at the same time allows to access the concrete implementation from everywhere in your App over the interface.
 I can only highly recommend to read this classic article by from Martin Fowler <a href="https://martinfowler.com/articles/injection.html">Inversion of Control Containers and the Dependency Injection  pattern</a></p></blockquote>
 <p>Accessing an object from anywhere in an App especially can be done by other ways too but:</p><ul><li>If you use a Singleton you cannot easily switch the implementation to another like a mock version for unit tests</li><li>IoC containers for Dependency Injections offer a similar functionality but with the cost of slow start-up time and less readability because you don't know where the magically injected object come from. As most IoC libs rely on reflection they cannot be used with Flutter. </li></ul>
-<p>Typical usage:</p><ul><li>Accessing service objects like REST API clients, databases so that they easily can be mocked.</li><li>Accessing View/AppModels from Flutter Views</li><li>Because interface and implementations are decoupled you could also register Flutter Views with different implementations and decide at start-up which one you want to use e.g. depending on screen resolutions</li></ul>
+<p>Typical usage:</p><ul><li>Accessing service objects like REST API clients, databases so that they easily can be mocked.</li><li>Accessing View/AppModels/Managers from Flutter Views</li><li>Because interface and implementations are decoupled you could also register Flutter Views with different implementations and decide at start-up which one you want to use e.g. depending on screen resolutions</li></ul>
 <p><strong>Extremely important if you use GetIt: ALWAYS use the same style to import your project files either as relative paths OR as package which I recommend. DON'T mix them because currently Dart treats types imported in different ways as two different types although both reference the same file.</strong></p>
 <h2 id="getting-started">Getting Started</h2>
 <p>Most Service Locator libraries are implemented either as Singletons or static classes depending on the features of the programming languages so that they can be easily accessed. As Dart supports global (or euphemistic ambient) variables I decided after some discussions with Simon Lightfoot and Brian Egan to use just a simple class (so that you can if you really need even create more than one Locator although <strong>I would not advise to do that</strong>  in most cases).</p>
 <p>So to use <code>GetIt</code> you only have to declare an instance of it in  your App, typically as global variable.</p>
-<pre class="language-Dart"><code class="language-Dart">GetIt getIt = new GetIt();
+<pre class="language-Dart"><code class="language-Dart">GetIt getIt = GetIt();
 </code></pre>
 <blockquote>
 <p>You can use any name you want which makes Brian happy ;-) </p></blockquote>
 <p>Before you can access your objects you have to register them within <code>GetIt</code> typically direct in your start-up code.</p>
-<pre class="language-Dart"><code class="language-Dart">getIt.registerSingleton&lt;AppModel&gt;(new AppModelImplementation());
-getIt.registerLazySingleton&lt;RESTAPI&gt;(() =&gt;new RestAPIImplementation());
+<pre class="language-Dart"><code class="language-Dart">getIt.registerSingleton&lt;AppModel&gt;(AppModelImplementation());
+getIt.registerLazySingleton&lt;RESTAPI&gt;(() =&gt;RestAPIImplementation());
 </code></pre>
 <blockquote>
 <p><code>AppModel</code> and <code>RESTAPI</code> are both abstract base classes in this example</p></blockquote>
@@ -95,6 +107,15 @@ If you really have to overwrite a registration, then you can by setting the prop
 <pre class="language-Dart"><code class="language-Dart">  /// Clears all registered types. Handy when writing unit tests
   void reset()
 </code></pre>
+<h3 id="named-registration">Named registration</h3>
+<p><strong>DON'T USE THIS IF YOU ARE REALLY KNOW WHAT YOU ARE DOING!!!</strong></p>
+<p>This should only be your last resort as you can loose your type safety and lead the concept of a singleton add absurdum.
+This was added following a request at <a href="https://github.com/fluttercommunity/get_it/issues/10">https://github.com/fluttercommunity/get_it/issues/10</a></p>
+<p>Ok you have been warned. All register functions have an optional parameter <code>instanceName</code>. If you provide a value here 
+your factory/singleton gets registered with that name instead of a type. Consequently <code>get()</code> has also an optional parameter <code>instanceName</code> to access
+factories/singletons that were registered by name.</p>
+<p><strong>IMPORTANT:</strong> Each name for registration can only used once.<br>
+Both way of registration are complete separate from each other. </p>
 <h2 id="acknowledgements">Acknowledgements</h2>
 <p>Many thanks to the insightful discussions on the API with <a href="https://github.com/brianegan">Brian Egan</a> and <a href="https://github.com/slightfoot">Simon Lightfoot</a>    </p>
       </section>
@@ -103,7 +124,7 @@ If you really have to overwrite a registration, then you can by setting the prop
             <h2>Libraries</h2>
           <dl>
             <dt id="get_it">
-              <span class="name"><a href="get_it/get_it-library.html">get_it</a></span> 
+              <span class="name"><a href="get_it/get_it-library.html">get_it</a></span>             
             </dt>
             <dd>
               
@@ -112,13 +133,17 @@ If you really have to overwrite a registration, then you can by setting the prop
 
   </div> <!-- /.main-content -->
 
+  <div id="dartdoc-sidebar-right" class="col-xs-6 col-sm-6 col-md-2 sidebar sidebar-offcanvas-right">
+  </div>
+
 </main>
 
 <footer>
   <span class="no-break">
-    get_it 1.0.3+2
+    get_it 1.1.0
   </span>
 
+  
 </footer>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>

@@ -23,7 +23,7 @@ Accessing an object from anywhere in an App especially can be done by other ways
 
 Typical usage:
 * Accessing service objects like REST API clients, databases so that they easily can be mocked.
-* Accessing View/AppModels from Flutter Views
+* Accessing View/AppModels/Managers from Flutter Views
 * Because interface and implementations are decoupled you could also register Flutter Views with different implementations and decide at start-up which one you want to use e.g. depending on screen resolutions
 
 **Extremely important if you use GetIt: ALWAYS use the same style to import your project files either as relative paths OR as package which I recommend. DON'T mix them because currently Dart treats types imported in different ways as two different types although both reference the same file.**
@@ -104,6 +104,21 @@ If you really have to overwrite a registration, then you can by setting the prop
   /// Clears all registered types. Handy when writing unit tests
   void reset()
 ```
+
+### Named registration
+
+**DON'T USE THIS IF YOU ARE REALLY KNOW WHAT YOU ARE DOING!!!**
+
+This should only be your last resort as you can loose your type safety and lead the concept of a singleton add absurdum.
+This was added following a request at https://github.com/fluttercommunity/get_it/issues/10
+
+Ok you have been warned. All register functions have an optional parameter `instanceName`. If you provide a value here 
+your factory/singleton gets registered with that name instead of a type. Consequently `get()` has also an optional parameter `instanceName` to access
+factories/singletons that were registered by name.
+
+**IMPORTANT:** Each name for registration can only used once.  
+Both way of registration are complete separate from each other. 
+
 
 ## Acknowledgements
 Many thanks to the insightful discussions on the API with [Brian Egan](https://github.com/brianegan) and [Simon Lightfoot](https://github.com/slightfoot)    
