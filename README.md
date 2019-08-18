@@ -37,7 +37,7 @@ So to use `GetIt` you only have to declare an instance of it in  your App, typic
 
 
 ```Dart
-GetIt getIt = new GetIt();
+GetIt getIt = GetIt();
 ```
 
 > You can use any name you want which makes Brian happy ;-) 
@@ -45,8 +45,8 @@ GetIt getIt = new GetIt();
 Before you can access your objects you have to register them within `GetIt` typically direct in your start-up code.
 
 ```Dart
-getIt.registerSingleton<AppModel>(new AppModelImplementation());
-getIt.registerLazySingleton<RESTAPI>(() =>new RestAPIImplementation());
+getIt.registerSingleton<AppModel>(AppModelImplementation());
+getIt.registerLazySingleton<RESTAPI>(() =>RestAPIImplementation());
 ```
 
 >`AppModel` and `RESTAPI` are both abstract base classes in this example
