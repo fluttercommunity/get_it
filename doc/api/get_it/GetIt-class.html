@@ -70,9 +70,9 @@
 
     <section class="desc markdown">
       <p>Very simple and easy to use service locator
-You register your object creation or an instance of an object with <a href="get_it/GetIt/registerFactory.html">registerFactory</a>, 
+You register your object creation or an instance of an object with <a href="get_it/GetIt/registerFactory.html">registerFactory</a>,
 <a href="get_it/GetIt/registerSingleton.html">registerSingleton</a> or <a href="get_it/GetIt/registerLazySingleton.html">registerLazySingleton</a>
-And retrieve the desired object using <a href="get_it/GetIt/get.html">get</a> or call your loactor das as function as its a 
+And retrieve the desired object using <a href="get_it/GetIt/get.html">get</a> or call your locator das as function as its a
 callable class</p>
     </section>
     
@@ -81,11 +81,14 @@ callable class</p>
       <h2>Constructors</h2>
 
       <dl class="constructor-summary-list">
-        <dt id="GetIt" class="callable">
-          <span class="name"><a href="get_it/GetIt/GetIt.html">GetIt</a></span><span class="signature">()</span>
+        <dt id="GetIt.asNewInstance" class="callable">
+          <span class="name"><a href="get_it/GetIt/GetIt.asNewInstance.html">GetIt.asNewInstance</a></span><span class="signature">()</span>
         </dt>
         <dd>
-          
+          You should prefer to use the <code>instance()</code> method to access an instance of <a href="get_it/GetIt-class.html">GetIt</a>.
+If you really, REALLY need more than one <a href="get_it/GetIt-class.html">GetIt</a> instance please set allowMultipleInstances
+to true to signal you know what you are doing :-).
+          <div class="constructor-modifier features">factory</div>
         </dd>
       </dl>
     </section>
@@ -140,7 +143,7 @@ If you really need to you can disable the asserts by setting<a href="get_it/GetI
           </span>
                   </dt>
         <dd>
-          retrives or creates an instance of a registered type <code>T</code> depending on the registration function used for this type.
+          retrieves or creates an instance of a registered type <code>T</code> depending on the registration function used for this type or based on a name.
                   
 </dd>
         <dt id="registerFactory" class="callable">
@@ -151,9 +154,9 @@ If you really need to you can disable the asserts by setting<a href="get_it/GetI
         <dd>
           registers a type so that a new instance will be created on each call of <a href="get_it/GetIt/get.html">get</a> on that type
 <code>T</code> type to register
-<code>func</code> factory funtion for this type
+<code>func</code> factory function for this type
 <code>instanceName</code> if you provide a value here your factory gets registered with that
-name instead of a type. This should only be nesseary if you need to register more
+name instead of a type. This should only be necessary if you need to register more
 than one instance of one type. Its highly not recommended
                   
 </dd>
@@ -165,9 +168,9 @@ than one instance of one type. Its highly not recommended
         <dd>
           registers a type as Singleton by passing a factory function that will be called on the first call of <a href="get_it/GetIt/get.html">get</a> on that type
 <code>T</code> type to register
-<code>func</code> factory funtion for this type
+<code>func</code> factory function for this type
 <code>instanceName</code> if you provide a value here your factory gets registered with that
-name instead of a type. This should only be nesseary if you need to register more
+name instead of a type. This should only be necessary if you need to register more
 than one instance of one type. Its highly not recommended
                   
 </dd>
@@ -181,7 +184,7 @@ than one instance of one type. Its highly not recommended
  that will be returned on each call of <a href="get_it/GetIt/get.html">get</a> on that type
 <code>T</code> type to register
 <code>instanceName</code> if you provide a value here your instance gets registered with that
-name instead of a type. This should only be nesseary if you need to register more
+name instead of a type. This should only be necessary if you need to register more
 than one instance of one type. Its highly not recommended
                   
 </dd>
@@ -230,6 +233,37 @@ than one instance of one type. Its highly not recommended
       </dl>
     </section>
 
+    <section class="summary offset-anchor" id="static-properties">
+      <h2>Static Properties</h2>
+
+      <dl class="properties">
+        <dt id="allowMultipleInstances" class="property">
+          <span class="name"><a href="get_it/GetIt/allowMultipleInstances.html">allowMultipleInstances</a></span>
+          <span class="signature">&#8596; bool</span>         
+        </dt>
+        <dd>
+          By default it's not allowed to create more than one <a href="get_it/GetIt-class.html">GetIt</a> instance.
+If you really need to you can disable the asserts by setting<a href="get_it/GetIt/allowReassignment.html">allowReassignment</a>= true
+                  <div class="features">read / write</div>
+</dd>
+        <dt id="I" class="property">
+          <span class="name"><a href="get_it/GetIt/I.html">I</a></span>
+          <span class="signature">&#8594; <a href="get_it/GetIt-class.html">GetIt</a></span>         
+        </dt>
+        <dd>
+          
+                  <div class="features">read-only</div>
+</dd>
+        <dt id="instance" class="property">
+          <span class="name"><a href="get_it/GetIt/instance.html">instance</a></span>
+          <span class="signature">&#8594; <a href="get_it/GetIt-class.html">GetIt</a></span>         
+        </dt>
+        <dd>
+          
+                  <div class="features">read-only</div>
+</dd>
+      </dl>
+    </section>
 
 
 
@@ -238,7 +272,7 @@ than one instance of one type. Its highly not recommended
   <div id="dartdoc-sidebar-right" class="col-xs-6 col-sm-6 col-md-2 sidebar sidebar-offcanvas-right">
     <ol>
       <li class="section-title"><a href="get_it/GetIt-class.html#constructors">Constructors</a></li>
-      <li><a href="get_it/GetIt/GetIt.html">GetIt</a></li>
+      <li><a href="get_it/GetIt/GetIt.asNewInstance.html">asNewInstance</a></li>
     
       <li class="section-title">
         <a href="get_it/GetIt-class.html#instance-properties">Properties</a>
@@ -260,6 +294,10 @@ than one instance of one type. Its highly not recommended
       <li class="section-title inherited"><a href="get_it/GetIt-class.html#operators">Operators</a></li>
       <li class="inherited"><a href="get_it/GetIt/operator_equals.html">operator ==</a></li>
     
+      <li class="section-title"><a href="get_it/GetIt-class.html#static-properties">Static properties</a></li>
+      <li><a href="get_it/GetIt/allowMultipleInstances.html">allowMultipleInstances</a></li>
+      <li><a href="get_it/GetIt/I.html">I</a></li>
+      <li><a href="get_it/GetIt/instance.html">instance</a></li>
     
     
     </ol>
@@ -269,7 +307,7 @@ than one instance of one type. Its highly not recommended
 
 <footer>
   <span class="no-break">
-    get_it 1.1.0
+    get_it 2.0.0
   </span>
 
   

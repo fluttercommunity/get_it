@@ -1,4 +1,8 @@
-## [1.1.0] - 26.06.2019
+## [2.0.0] - 18.08.2019
+
+* **Breaking Change with V2.0.0** 
+you no longer can directly create instances of the type `GetIt` because `GetIt` is now a singleton please see [README](README.md)
+## [1.1.0] - 18.08.2019
 
 * added named registration
 

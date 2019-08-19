@@ -2,7 +2,8 @@
 
 # get_it
 
-**Latest version has a small but important fix. Now intellisense works if you use `myGetIt<YourType>().`**  
+>**Breaking Change with V2.0.0** 
+you no longer can directly create instances of the type `GetIt` because `GetIt` is now a singleton please see [Getting Started](#getting-started).
 
 
 ### **IMPORTANT: You have to use Dart2 to use this component**
@@ -31,22 +32,37 @@ Typical usage:
 
 ## Getting Started
 
-Most Service Locator libraries are implemented either as Singletons or static classes depending on the features of the programming languages so that they can be easily accessed. As Dart supports global (or euphemistic ambient) variables I decided after some discussions with Simon Lightfoot and Brian Egan to use just a simple class (so that you can if you really need even create more than one Locator although **I would not advise to do that**  in most cases).
+**Before V2.0.0**
+As Dart supports global (or euphemistic ambient) variables I decided after some discussions with Simon Lightfoot and Brian Egan to use just a simple class (so that you can if you really need even create more than one Locator although **I would not advise to do that**  in most cases).
 
-So to use `GetIt` you only have to declare an instance of it in  your App, typically as global variable.
+**Since 2.0.0**
+Although the approach with a global variable worked well, it has its limitations if you want to use `GetIt` across multiple packages. Therefore now GetIt itself is a singleton and the default way to access an instance of `GetIt` is to call:
+
+```Dart
+GetIt getIt = GetIt.instance;
+
+//There is also a shortcut (if you don't like it just ignore it):
+GetIt getIt = GetIt.I;
+```
+
+Through this any call to `instance`in any package of a project will get the same instance of `GetIt`. I still recommend just to assign the instance to a global variable in your project as it is more convenient and doesn't harm (Also it allows you to give your service locator your own name).
 
 
 ```Dart
-GetIt getIt = GetIt();
+GetIt sl = GetIt.instance;
 ```
 
-> You can use any name you want which makes Brian happy ;-) 
+> You can use any name you want which makes Brian happy like (`sl, backend, services...`) ;-) 
 
 Before you can access your objects you have to register them within `GetIt` typically direct in your start-up code.
 
 ```Dart
-getIt.registerSingleton<AppModel>(AppModelImplementation());
-getIt.registerLazySingleton<RESTAPI>(() =>RestAPIImplementation());
+sl.registerSingleton<AppModel>(AppModelImplementation());
+sl.registerLazySingleton<RESTAPI>(() =>RestAPIImplementation());
+
+// if you want to work just with the singleton:
+GetIt.instance.registerSingleton<AppModel>(AppModelImplementation());
+GetIt.I.registerLazySingleton<RESTAPI>(() =>RestAPIImplementation());
 ```
 
 >`AppModel` and `RESTAPI` are both abstract base classes in this example
@@ -54,13 +70,17 @@ getIt.registerLazySingleton<RESTAPI>(() =>RestAPIImplementation());
 To access the registered objects call `get<Type>()` on your `GetIt`instance
 
 ```Dart
-var myAppModel = getIt.get<AppModel>();
+var myAppModel = sl.get<AppModel>();
 ```
 
 Alternatively as `GetIt` is a callable class depending on the name you choose for your `GetIt`instance you can use the shorter version:
 
 ```Dart
-var myAppModel = getIt<AppModel>();
+var myAppModel = sl<AppModel>();
+
+// as Singleton:
+var myAppModel = GetIt.instance<AppModel>();
+var myAppModel = GetIt.I<AppModel>();
 ```
 
 
@@ -105,6 +125,8 @@ If you really have to overwrite a registration, then you can by setting the prop
   void reset()
 ```
 
+## Experts region
+
 ### Named registration
 
 **DON'T USE THIS IF YOU ARE REALLY KNOW WHAT YOU ARE DOING!!!**
@@ -119,6 +141,19 @@ factories/singletons that were registered by name.
 **IMPORTANT:** Each name for registration can only used once.  
 Both way of registration are complete separate from each other. 
 
+
+### More than one instance of GetIt
+Although I don't recommend it, you can create your own independent instance of `GetIt` for instance if you don't want to share your locator with some
+other package or because the physics of your planet demands it :-)
+
+```Dart
+/// To make sure you really know what you are doing
+/// you have to first enable this feature:
+GetIt.allowMultipleInstances=true;
+GetIt myOwnInstance = GetIt.asNewInstance();
+```
+
+This new instance does not share any registrations with the singleton instance
 
 ## Acknowledgements
 Many thanks to the insightful discussions on the API with [Brian Egan](https://github.com/brianegan) and [Simon Lightfoot](https://github.com/slightfoot)    

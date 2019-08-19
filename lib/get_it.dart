@@ -5,20 +5,48 @@ import 'package:meta/meta.dart';
 typedef FactoryFunc<T> = T Function();
 
 /// Very simple and easy to use service locator
-/// You register your object creation or an instance of an object with [registerFactory], 
+/// You register your object creation or an instance of an object with [registerFactory],
 /// [registerSingleton] or [registerLazySingleton]
-/// And retrieve the desired object using [get] or call your loactor das as function as its a 
+/// And retrieve the desired object using [get] or call your locator das as function as its a
 /// callable class
 class GetIt {
   final _factories = Map<Type, _ServiceFactory<dynamic>>();
   final _factoriesByName = Map<String, _ServiceFactory<dynamic>>();
 
+  GetIt._();
+
+  static GetIt _instance;
+
+  static GetIt get instance {
+    if (_instance == null) {
+      _instance = GetIt._();
+    }
+    return _instance;
+  }
+
+  static GetIt get I => instance;
+
+  /// You should prefer to use the `instance()` method to access an instance of [GetIt].
+  /// If you really, REALLY need more than one [GetIt] instance please set allowMultipleInstances
+  /// to true to signal you know what you are doing :-).
+  factory GetIt.asNewInstance() {
+    assert(allowMultipleInstances,
+        'You should prefer to use the `instance()` method to access an instance of GetIt. If you really need more than one GetIt instance please set allowMultipleInstances to true.');
+    return GetIt._();
+  }
+
   /// By default it's not allowed to register a type a second time.
   /// If you really need to you can disable the asserts by setting[allowReassignment]= true
   bool allowReassignment = false;
 
-  /// retrives or creates an instance of a registered type [T] depending on the registration function used for this type.
+  /// By default it's not allowed to create more than one [GetIt] instance.
+  /// If you really need to you can disable the asserts by setting[allowReassignment]= true
+  static bool allowMultipleInstances = false;
+
+  /// retrieves or creates an instance of a registered type [T] depending on the registration function used for this type or based on a name.
   T get<T>([String instanceName]) {
+      assert(!(T == dynamic && instanceName==null), 'You have to provide either a type or a name. Did you accidentally do  `var sl=GetIt.instance();` instead of var sl=GetIt.instance;');
+
     _ServiceFactory<T> object;
     if (instanceName == null) {
       object = _factories[T];
@@ -43,9 +71,9 @@ class GetIt {
 
   /// registers a type so that a new instance will be created on each call of [get] on that type
   /// [T] type to register
-  /// [func] factory funtion for this type
+  /// [func] factory function for this type
   /// [instanceName] if you provide a value here your factory gets registered with that
-  /// name instead of a type. This should only be nesseary if you need to register more
+  /// name instead of a type. This should only be necessary if you need to register more
   /// than one instance of one type. Its highly not recommended
   void registerFactory<T>(FactoryFunc<T> func, [String instanceName]) {
     _register<T>(
@@ -56,9 +84,9 @@ class GetIt {
 
   /// registers a type as Singleton by passing a factory function that will be called on the first call of [get] on that type
   /// [T] type to register
-  /// [func] factory funtion for this type
+  /// [func] factory function for this type
   /// [instanceName] if you provide a value here your factory gets registered with that
-  /// name instead of a type. This should only be nesseary if you need to register more
+  /// name instead of a type. This should only be necessary if you need to register more
   /// than one instance of one type. Its highly not recommended
   void registerLazySingleton<T>(FactoryFunc<T> func, [String instanceName]) {
     _register<T>(
@@ -71,7 +99,7 @@ class GetIt {
   ///  that will be returned on each call of [get] on that type
   /// [T] type to register
   /// [instanceName] if you provide a value here your instance gets registered with that
-  /// name instead of a type. This should only be nesseary if you need to register more
+  /// name instead of a type. This should only be necessary if you need to register more
   /// than one instance of one type. Its highly not recommended
   void registerSingleton<T>(T instance, [String instanceName]) {
     _register<T>(
@@ -138,6 +166,6 @@ class _ServiceFactory<T> {
       print('Stack trace:\n $s');
       rethrow;
     }
-    return null; // should never get here but to make the analyzer happy
+    return null; // should never get here but to make the analyser happy
   }
 }

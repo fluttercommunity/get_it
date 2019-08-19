@@ -4,7 +4,7 @@ import 'package:get_it_example/app_model.dart';
 
 
 // This is our global ServiceLocator
-GetIt getIt = new GetIt();
+GetIt getIt = new GetIt.asNewInstance();
 
 void main() {
 
