@@ -54,7 +54,7 @@
     <h5>GetIt class</h5>
     <ol>
       <li class="section-title"><a href="get_it/GetIt-class.html#constructors">Constructors</a></li>
-      <li><a href="get_it/GetIt/GetIt.html">GetIt</a></li>
+      <li><a href="get_it/GetIt/GetIt.asNewInstance.html">asNewInstance</a></li>
     
       <li class="section-title">
         <a href="get_it/GetIt-class.html#instance-properties">Properties</a>
@@ -76,6 +76,10 @@
       <li class="section-title inherited"><a href="get_it/GetIt-class.html#operators">Operators</a></li>
       <li class="inherited"><a href="get_it/GetIt/operator_equals.html">operator ==</a></li>
     
+      <li class="section-title"><a href="get_it/GetIt-class.html#static-properties">Static properties</a></li>
+      <li><a href="get_it/GetIt/allowMultipleInstances.html">allowMultipleInstances</a></li>
+      <li><a href="get_it/GetIt/I.html">I</a></li>
+      <li><a href="get_it/GetIt/instance.html">instance</a></li>
     
     
     </ol>
@@ -91,12 +95,14 @@
       
     </section>
     <section class="desc markdown">
-      <p>retrives or creates an instance of a registered type <code>T</code> depending on the registration function used for this type.</p>
+      <p>retrieves or creates an instance of a registered type <code>T</code> depending on the registration function used for this type or based on a name.</p>
     </section>
     
     <section class="summary source-code" id="source">
       <h2><span>Implementation</span></h2>
       <pre class="language-dart"><code class="language-dart">T get&lt;T&gt;([String instanceName]) {
+    assert(!(T == dynamic &amp;&amp; instanceName==null), &#39;You have to provide either a type or a name. Did you accidentally do  `var sl=GetIt.instance();` instead of var sl=GetIt.instance;&#39;);
+
   _ServiceFactory&lt;T&gt; object;
   if (instanceName == null) {
     object = _factories[T];
@@ -125,7 +131,7 @@
 
 <footer>
   <span class="no-break">
-    get_it 1.1.0
+    get_it 2.0.0
   </span>
 
   

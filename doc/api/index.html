@@ -55,7 +55,9 @@
       <section class="desc markdown">
         <p><a href="https://github.com/fluttercommunity/community"><img src="https://fluttercommunity.dev/_github/header/get_it" alt="Flutter Community: get_it"></a></p>
 <h1 id="get_it">get_it</h1>
-<p><strong>Latest version has a small but important fix. Now intellisense works if you use <code>myGetIt&lt;YourType&gt;().</code></strong>  </p>
+<blockquote>
+<p><strong>Breaking Change with V2.0.0</strong> 
+you no longer can directly create instances of the type <code>GetIt</code> because <code>GetIt</code> is now a singleton please see <a href="#getting-started">Getting Started</a>.</p></blockquote>
 <h3 id="important-you-have-to-use-dart2-to-use-this-component"><strong>IMPORTANT: You have to use Dart2 to use this component</strong></h3>
 <p>You can find here a <a href="https://www.burkharts.net/apps/blog/one-to-find-them-all-how-to-use-service-locators-with-flutter/">detailed blog post on how to use GetIt</a></p>
 <p>This is a simple <strong>Service Locator</strong> for Dart and Flutter projects highly inspired by <a href="https://github.com/reactiveui/splat">Splat</a>. </p>
@@ -66,23 +68,39 @@ I can only highly recommend to read this classic article by from Martin Fowler <
 <p>Typical usage:</p><ul><li>Accessing service objects like REST API clients, databases so that they easily can be mocked.</li><li>Accessing View/AppModels/Managers from Flutter Views</li><li>Because interface and implementations are decoupled you could also register Flutter Views with different implementations and decide at start-up which one you want to use e.g. depending on screen resolutions</li></ul>
 <p><strong>Extremely important if you use GetIt: ALWAYS use the same style to import your project files either as relative paths OR as package which I recommend. DON'T mix them because currently Dart treats types imported in different ways as two different types although both reference the same file.</strong></p>
 <h2 id="getting-started">Getting Started</h2>
-<p>Most Service Locator libraries are implemented either as Singletons or static classes depending on the features of the programming languages so that they can be easily accessed. As Dart supports global (or euphemistic ambient) variables I decided after some discussions with Simon Lightfoot and Brian Egan to use just a simple class (so that you can if you really need even create more than one Locator although <strong>I would not advise to do that</strong>  in most cases).</p>
-<p>So to use <code>GetIt</code> you only have to declare an instance of it in  your App, typically as global variable.</p>
-<pre class="language-Dart"><code class="language-Dart">GetIt getIt = GetIt();
+<p><strong>Before V2.0.0</strong>
+As Dart supports global (or euphemistic ambient) variables I decided after some discussions with Simon Lightfoot and Brian Egan to use just a simple class (so that you can if you really need even create more than one Locator although <strong>I would not advise to do that</strong>  in most cases).</p>
+<p><strong>Since 2.0.0</strong>
+Although the approach with a global variable worked well, it has its limitations if you want to use <code>GetIt</code> across multiple packages. Therefore now GetIt itself is a singleton and the default way to access an instance of <code>GetIt</code> is to call:</p>
+<pre class="language-Dart"><code class="language-Dart">GetIt getIt = GetIt.instance;
+
+//There is also a shortcut (if you don't like it just ignore it):
+GetIt getIt = GetIt.I;
+</code></pre>
+<p>Through this any call to <code>instance</code>in any package of a project will get the same instance of <code>GetIt</code>. I still recommend just to assign the instance to a global variable in your project as it is more convenient and doesn't harm (Also it allows you to give your service locator your own name).</p>
+<pre class="language-Dart"><code class="language-Dart">GetIt sl = GetIt.instance;
 </code></pre>
 <blockquote>
-<p>You can use any name you want which makes Brian happy ;-) </p></blockquote>
+<p>You can use any name you want which makes Brian happy like (<code>sl, backend, services...</code>) ;-) </p></blockquote>
 <p>Before you can access your objects you have to register them within <code>GetIt</code> typically direct in your start-up code.</p>
-<pre class="language-Dart"><code class="language-Dart">getIt.registerSingleton&lt;AppModel&gt;(AppModelImplementation());
-getIt.registerLazySingleton&lt;RESTAPI&gt;(() =&gt;RestAPIImplementation());
+<pre class="language-Dart"><code class="language-Dart">sl.registerSingleton&lt;AppModel&gt;(AppModelImplementation());
+sl.registerLazySingleton&lt;RESTAPI&gt;(() =&gt;RestAPIImplementation());
+
+// if you want to work just with the singleton:
+GetIt.instance.registerSingleton&lt;AppModel&gt;(AppModelImplementation());
+GetIt.I.registerLazySingleton&lt;RESTAPI&gt;(() =&gt;RestAPIImplementation());
 </code></pre>
 <blockquote>
 <p><code>AppModel</code> and <code>RESTAPI</code> are both abstract base classes in this example</p></blockquote>
 <p>To access the registered objects call <code>get&lt;Type&gt;()</code> on your <code>GetIt</code>instance</p>
-<pre class="language-Dart"><code class="language-Dart">var myAppModel = getIt.get&lt;AppModel&gt;();
+<pre class="language-Dart"><code class="language-Dart">var myAppModel = sl.get&lt;AppModel&gt;();
 </code></pre>
 <p>Alternatively as <code>GetIt</code> is a callable class depending on the name you choose for your <code>GetIt</code>instance you can use the shorter version:</p>
-<pre class="language-Dart"><code class="language-Dart">var myAppModel = getIt&lt;AppModel&gt;();
+<pre class="language-Dart"><code class="language-Dart">var myAppModel = sl&lt;AppModel&gt;();
+
+// as Singleton:
+var myAppModel = GetIt.instance&lt;AppModel&gt;();
+var myAppModel = GetIt.I&lt;AppModel&gt;();
 </code></pre>
 <h2 id="different-ways-of-registration">Different ways of registration</h2>
 <blockquote>
@@ -107,6 +125,7 @@ If you really have to overwrite a registration, then you can by setting the prop
 <pre class="language-Dart"><code class="language-Dart">  /// Clears all registered types. Handy when writing unit tests
   void reset()
 </code></pre>
+<h2 id="experts-region">Experts region</h2>
 <h3 id="named-registration">Named registration</h3>
 <p><strong>DON'T USE THIS IF YOU ARE REALLY KNOW WHAT YOU ARE DOING!!!</strong></p>
 <p>This should only be your last resort as you can loose your type safety and lead the concept of a singleton add absurdum.
@@ -116,6 +135,15 @@ your factory/singleton gets registered with that name instead of a type. Consequ
 factories/singletons that were registered by name.</p>
 <p><strong>IMPORTANT:</strong> Each name for registration can only used once.<br>
 Both way of registration are complete separate from each other. </p>
+<h3 id="more-than-one-instance-of-getit">More than one instance of GetIt</h3>
+<p>Although I don't recommend it, you can create your own independent instance of <code>GetIt</code> for instance if you don't want to share your locator with some
+other package or because the physics of your planet demands it :-)</p>
+<pre class="language-Dart"><code class="language-Dart">/// To make sure you really know what you are doing
+/// you have to first enable this feature:
+GetIt.allowMultipleInstances=true;
+GetIt myOwnInstance = GetIt.asNewInstance();
+</code></pre>
+<p>This new instance does not share any registrations with the singleton instance</p>
 <h2 id="acknowledgements">Acknowledgements</h2>
 <p>Many thanks to the insightful discussions on the API with <a href="https://github.com/brianegan">Brian Egan</a> and <a href="https://github.com/slightfoot">Simon Lightfoot</a>    </p>
       </section>
@@ -140,7 +168,7 @@ Both way of registration are complete separate from each other. </p>
 
 <footer>
   <span class="no-break">
-    get_it 1.1.0
+    get_it 2.0.0
   </span>
 
   
