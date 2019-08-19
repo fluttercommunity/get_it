@@ -45,7 +45,8 @@ class GetIt {
 
   /// retrieves or creates an instance of a registered type [T] depending on the registration function used for this type or based on a name.
   T get<T>([String instanceName]) {
-      assert(!(T == dynamic && instanceName==null), 'You have to provide either a type or a name. Did you accidentally do  `var sl=GetIt.instance();` instead of var sl=GetIt.instance;');
+    assert(!(T == dynamic && instanceName == null),
+        'You have to provide either a type or a name. Did you accidentally do  `var sl=GetIt.instance();` instead of var sl=GetIt.instance;');
 
     _ServiceFactory<T> object;
     if (instanceName == null) {
