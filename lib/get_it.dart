@@ -111,6 +111,7 @@ class GetIt {
   /// Clears all registered types. Handy when writing unit tests
   void reset() {
     _factories.clear();
+    _factoriesByName.clear();
   }
 
   void _register<T>(
