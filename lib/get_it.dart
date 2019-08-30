@@ -136,6 +136,20 @@ class GetIt {
       _factoriesByName[instanceName] = serviceFactory;
     }
   }
+/// Unregister by Type [T] or by name [instanceName]
+/// if you need to dispose any resources you can do it using [disposal] function
+/// that provides a instance of your class to be disposed
+  void unregister<T>({String instanceName, Function(T) disposal}) {
+    assert(_factoriesByName.containsKey(instanceName) || _factories.containsKey(T), 'Nor Type ${T.toString()} or instance Name must not be null');
+    if (instanceName == null) {
+      disposal(get<T>());
+      _factories.remove(T);
+    } else {
+      disposal(get(instanceName));
+      _factoriesByName.remove(instanceName);
+    }
+    _factories.remove(T);
+  }
 }
 
 enum _ServiceFactoryType { alwaysNew, constant, lazy }
