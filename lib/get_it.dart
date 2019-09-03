@@ -1,5 +1,7 @@
 library get_it;
 
+import 'dart:async';
+
 import 'package:meta/meta.dart';
 
 typedef FactoryFunc<T> = T Function();
@@ -12,6 +14,12 @@ typedef FactoryFunc<T> = T Function();
 class GetIt {
   final _factories = Map<Type, _ServiceFactory<dynamic>>();
   final _factoriesByName = Map<String, _ServiceFactory<dynamic>>();
+
+  final _readySignalStream = StreamController<void>.broadcast();
+
+  Stream<void> get ready => _readySignalStream.stream;
+
+  Future<void> get readyFuture => ready.first;
 
   GetIt._();
 
@@ -140,10 +148,11 @@ class GetIt {
   /// Unregister by Type [T] or by name [instanceName]
   /// if you need to dispose any resources you can do it using [disposingFunction] function
   /// that provides a instance of your class to be disposed
-  void unregister<T>([String instanceName, Function(T) disposingFunction]) {
+  void unregister<T>({String instanceName, Function(T) disposingFunction}) {
     assert(
-        _factoriesByName.containsKey(instanceName) || _factories.containsKey(T),
-        'Nor Type ${T.toString()} or instance Name must not be null');
+        (instanceName != null && _factoriesByName.containsKey(instanceName)) ||
+            _factories.containsKey(T),
+        'No Type registered ${T.toString()} or instance Name must not be null');
     if (instanceName == null) {
       disposingFunction(get<T>());
       _factories.remove(T);
@@ -152,6 +161,8 @@ class GetIt {
       _factoriesByName.remove(instanceName);
     }
   }
+
+  void signalReady() => _readySignalStream.add(true);
 }
 
 enum _ServiceFactoryType { alwaysNew, constant, lazy }

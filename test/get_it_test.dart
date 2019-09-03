@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:test/test.dart';
 
 import 'package:get_it/get_it.dart';
@@ -211,7 +213,7 @@ void main() {
 
     expect(constructorCounter, 1);
 
-    getIt.unregister<TestClass>(disposal: (testClass) {
+    getIt.unregister<TestClass>(disposingFunction: (testClass) {
       testClass.dispose();
     });
 
@@ -233,12 +235,35 @@ void main() {
 
     getIt.unregister<TestClass>(
         instanceName: 'instanceName',
-        disposal: (testClass) {
+        disposingFunction: (testClass) {
           testClass.dispose();
         });
 
     expect(disposeCounter, 1);
 
     expect(() => getIt('instanceName'), throwsA(TypeMatcher<Exception>()));
+  });
+
+  test('ready stream test', () async {
+    var getIt = GetIt.instance;
+
+    expect(getIt.ready, emitsAnyOf([(_) => true]));
+
+    getIt.signalReady();
+
+    // make sure to allow the stream to emit an item
+    await Future.delayed(Duration(seconds: 1));
+  });
+
+  test('ready future test', () async {
+    GetIt.allowMultipleInstances = true;
+    var getIt = GetIt.asNewInstance();
+
+    expect(getIt.readyFuture, completes);
+
+    getIt.signalReady();
+
+    // make sure to allow the stream to emit an item
+    await Future.delayed(Duration(seconds: 1));
   });
 }
