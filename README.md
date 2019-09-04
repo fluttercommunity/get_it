@@ -118,6 +118,14 @@ You have to pass a factory function `func` that returns an instance of an implem
 If you try to register a type more than once you will get an assertion in debug mode because normally this is not needed and not advised and probably a bug.
 If you really have to overwrite a registration, then you can by setting the property `allowReassignment==true`` . 
 
+### Remove a registered item
+You can remove registered itens using `unregister` function passing type `T` to remove a type register, or passing `instanceName: "instanceName"` to remove a named register.
+Additionally you can execute a funtion of your instance to dispose recurses, passing a function to `disposingFunction` parameter.
+
+```Dart
+void unregister<T>({String instanceName, Function(T) disposingFunction})
+```
+
 ### Resetting GetIt
 
 ```Dart
