@@ -11,7 +11,7 @@ you no longer can directly create instances of the type `GetIt` because `GetIt` 
 You can find here a [detailed blog post on how to use GetIt](https://www.burkharts.net/apps/blog/one-to-find-them-all-how-to-use-service-locators-with-flutter/)
 
 
-This is a simple **Service Locator** for Dart and Flutter projects highly inspired by [Splat](https://github.com/reactiveui/splat). 
+This is a simple **Service Locator** for Dart and Flutter projects with some additional goodies highly inspired by [Splat](https://github.com/reactiveui/splat). 
 
 >If you are not familiar with the concept of Service Locators, its a way to decouple the interface (abstract base class) from a concrete implementation and at the same time allows to access the concrete implementation from everywhere in your App over the interface.
 > I can only highly recommend to read this classic article by from Martin Fowler [Inversion of Control Containers and the Dependency Injection  pattern](https://martinfowler.com/articles/injection.html)
@@ -118,12 +118,43 @@ You have to pass a factory function `func` that returns an instance of an implem
 If you try to register a type more than once you will get an assertion in debug mode because normally this is not needed and not advised and probably a bug.
 If you really have to overwrite a registration, then you can by setting the property `allowReassignment==true`` . 
 
-### Resetting GetIt
+
+### Unregistering Singletons or Factories
+If you need to you can also unregister your registered singletons and factories and pass a optional `disposingFunction` for clean-up.
 
 ```Dart
-  /// Clears all registered types. Handy when writing unit tests
-  void reset()
+/// Unregister by Type [T] or by name [instanceName]
+/// if you need to dispose any resources you can do it using [disposingFunction] function
+/// that provides a instance of your class to be disposed
+void unregister<T>({String instanceName, void Function(T) disposingFunction})
+```  
+
+### Resetting GetIt completely
+
+```Dart
+/// Clears all registered types. Handy when writing unit tests
+void reset()
 ```
+
+## Ready Signaller
+Often your registered services need to do initialization work before they can be used from the rest of the app. As this is such a common task and its closely related to registration/initialization I added a handy little feature for it.
+
+`GetIt` has two properties `ready`, which is a `Stream<void>` and `readyFuture` which is what a surprise a `Future<void>`.  By calling `signalReady()` on your `GetIt` instance `ready` emits an items and `readyFuture`is signalled. By this you can wait for the end of all initialization with a `Stream/FutureBuilder` or just listen to the Stream in an `initState` method.  
+
+### Automatic ready signal
+in the previous method where you have to call `signalReady` manually  to trigger the *ready* event. Additionally all your registrations have an internal *ready* state if you pass `signalsReady` as optional parameter on registration.
+
+The full function definition of `signalReady` looks like this:
+
+```Dart
+void signalReady<T>([String instanceName]) {
+```
+
+By calling it with either a Type `T` OR by passing an `instanceName` (if you registered by name) you mark this registration as **ready**.
+When all registrations are signalled, `ready` automatically emits an items and `readyFuture`is signalled.
+
+**If you have marked any registrations with `signalsReady` and you call `signalReady()` while not all of them are ready, an Exception is thrown.** 
+So either you use manual **OR** automatic signalling. You can not mix them because in most cases this would lead to state errors
 
 ## Experts region
 
@@ -134,7 +165,7 @@ If you really have to overwrite a registration, then you can by setting the prop
 This should only be your last resort as you can loose your type safety and lead the concept of a singleton add absurdum.
 This was added following a request at https://github.com/fluttercommunity/get_it/issues/10
 
-Ok you have been warned. All register functions have an optional parameter `instanceName`. If you provide a value here 
+Ok you have been warned. All register functions have an optional named parameter `instanceName`. If you provide a value here 
 your factory/singleton gets registered with that name instead of a type. Consequently `get()` has also an optional parameter `instanceName` to access
 factories/singletons that were registered by name.
 

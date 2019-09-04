@@ -1,3 +1,8 @@
+## [2.0.4] - 26.08.2019
+
+* Added handy ready signal to make start-up logic a bit easier
+* Unregister of Objects now possible with optional disposing function
+
 ## [2.0.3] - 26.08.2019
 
 * Small fix

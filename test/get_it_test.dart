@@ -19,6 +19,12 @@ class TestClass extends TestBaseClass {
   }
 }
 
+class TestClass2 {}
+
+class TestClass3 {}
+
+class TestClass4 {}
+
 void main() {
   test('register factory', () {
     var getIt = GetIt.instance;
@@ -135,7 +141,7 @@ void main() {
     var getIt = GetIt.instance;
 
     constructorCounter = 0;
-    getIt.registerFactory(() => TestClass(), 'FactoryByName');
+    getIt.registerFactory(() => TestClass(), instanceName: 'FactoryByName');
 
     var instance1 = getIt('FactoryByName');
 
@@ -155,7 +161,7 @@ void main() {
     var getIt = GetIt.instance;
     constructorCounter = 0;
 
-    getIt.registerSingleton(TestClass(), 'ConstantByName');
+    getIt.registerSingleton(TestClass(), instanceName: 'ConstantByName');
 
     var instance1 = getIt('ConstantByName');
 
@@ -172,7 +178,7 @@ void main() {
   test('register lazySingleton by name', () {
     var getIt = GetIt.instance;
     constructorCounter = 0;
-    getIt.registerLazySingleton(() => TestClass(), 'LazyByName');
+    getIt.registerLazySingleton(() => TestClass(), instanceName: 'LazyByName');
 
     expect(constructorCounter, 0);
 
@@ -227,13 +233,14 @@ void main() {
     disposeCounter = 0;
     constructorCounter = 0;
 
-    getIt.registerSingleton<TestClass>(TestClass(), 'instanceName');
+    getIt.registerSingleton<TestClass>(TestClass(),
+        instanceName: 'instanceName');
 
     var instance1 = getIt.get('instanceName');
 
     expect(instance1 is TestClass, true);
 
-    getIt.unregister<TestClass>(
+    getIt.unregister(
         instanceName: 'instanceName',
         disposingFunction: (testClass) {
           testClass.dispose();
@@ -247,6 +254,13 @@ void main() {
   test('ready stream test', () async {
     var getIt = GetIt.instance;
 
+    getIt.registerFactory<TestClass>(() => TestClass());
+    getIt.registerFactory<TestClass2>(() => TestClass2());
+    getIt.registerFactory<TestClass3>(
+      () => TestClass3(),
+    );
+    getIt.registerFactory(() => TestClass(), instanceName: 'TestNamesInstance');
+
     expect(getIt.ready, emitsAnyOf([(_) => true]));
 
     getIt.signalReady();
@@ -257,13 +271,95 @@ void main() {
 
   test('ready future test', () async {
     GetIt.allowMultipleInstances = true;
-    var getIt = GetIt.asNewInstance();
+    var getIt = GetIt
+        .asNewInstance(); // We use new instance here to make sure other tests haven't signalled ready already
+
+    getIt.registerFactory<TestClass>(() => TestClass());
+    getIt.registerFactory<TestClass2>(() => TestClass2());
+    getIt.registerFactory<TestClass3>(
+      () => TestClass3(),
+    );
+    getIt.registerFactory(() => TestClass(), instanceName: 'TestNamesInstance');
 
     expect(getIt.readyFuture, completes);
 
     getIt.signalReady();
+  });
 
-    // make sure to allow the stream to emit an item
-    await Future.delayed(Duration(seconds: 1));
+  test('signalReady with not ready registered objects', () async {
+    GetIt.allowMultipleInstances = true;
+    var getIt = GetIt
+        .asNewInstance(); // We use new instance here to make sure other tests haven't signalled ready already
+
+    getIt.registerFactory<TestClass>(() => TestClass(), signalsReady: true);
+    getIt.registerFactory<TestClass2>(() => TestClass2(), signalsReady: true);
+    getIt.registerFactory<TestClass3>(
+      () => TestClass3(),
+    );
+    getIt.registerFactory(() => TestClass(),
+        instanceName: 'TestNamesInstance', signalsReady: true);
+
+    getIt.signalReady<TestClass>();
+    getIt.signalReady<TestClass2>();
+    //getIt.signalReady('TestNamesInstance'); //this is not signalled.
+
+    expect(() => getIt.signalReady(), throwsA(TypeMatcher<Exception>()));
+  });
+
+  test('ready though multiple ready signals', () async {
+    GetIt.allowMultipleInstances = true;
+    var getIt = GetIt
+        .asNewInstance(); // We use new instance here to make sure other tests haven't signalled ready already
+
+    getIt.registerFactory<TestClass>(() => TestClass(), signalsReady: true);
+    getIt.registerFactory<TestClass2>(() => TestClass2(), signalsReady: true);
+    getIt.registerFactory<TestClass3>(
+      () => TestClass3(),
+    );
+    getIt.registerFactory(() => TestClass(),
+        instanceName: 'TestNamesInstance', signalsReady: true);
+
+    expect(getIt.ready, emitsAnyOf([(_) => true]));
+
+    getIt.signalReady<TestClass>();
+    getIt.signalReady<TestClass2>();
+    getIt.signalReady('TestNamesInstance');
+
+  });
+  test('trying to signalReady on a entry that does not await a signal should throw', () async {
+    GetIt.allowMultipleInstances = true;
+    var getIt = GetIt
+        .asNewInstance(); // We use new instance here to make sure other tests haven't signalled ready already
+
+    getIt.registerFactory<TestClass>(() => TestClass(), signalsReady: true);
+    getIt.registerFactory<TestClass2>(() => TestClass2(), signalsReady: true);
+    getIt.registerFactory<TestClass3>(
+      () => TestClass3(),
+    );
+    getIt.registerFactory(() => TestClass(),
+        instanceName: 'TestNamesInstance', signalsReady: true);
+
+    expect(() => getIt.signalReady<TestClass3>(), throwsA(TypeMatcher<Exception>()));
+  });
+  test('as long as not all are signalled no ready should never signalled',
+      () async {
+    GetIt.allowMultipleInstances = true;
+    var getIt = GetIt
+        .asNewInstance(); // We use new instance here to make sure other tests haven't signalled ready already
+
+    getIt.registerFactory<TestClass>(() => TestClass(), signalsReady: true);
+    getIt.registerFactory<TestClass2>(() => TestClass2(), signalsReady: true);
+    getIt.registerFactory<TestClass3>(
+      () => TestClass3(),
+    );
+    getIt.registerFactory(() => TestClass(),
+        instanceName: 'TestNamesInstance', signalsReady: true);
+
+    expect(getIt.readyFuture.timeout(Duration(seconds: 1)),
+        throwsA(TypeMatcher<TimeoutException>()));
+
+    getIt.signalReady<TestClass>();
+    getIt.signalReady<TestClass2>();
+    //getIt.signalReady('TestNamesInstance'); //this is not signalled.
   });
 }
