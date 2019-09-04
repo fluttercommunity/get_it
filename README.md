@@ -119,7 +119,7 @@ If you try to register a type more than once you will get an assertion in debug 
 If you really have to overwrite a registration, then you can by setting the property `allowReassignment==true`` . 
 
 ### Remove a registered item
-You can remove registered itens using `unregister` function passing type `T` to remove a type register, or passing `instanceName: "instanceName"` to remove a named register.
+You can remove registered itens using `unregister` function passing type `T` to remove a type register, or passing `instanceName` to remove a named register.
 Additionally you can execute a funtion of your instance to dispose recurses, passing a function to `disposingFunction` parameter.
 
 ```Dart
