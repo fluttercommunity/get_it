@@ -324,9 +324,10 @@ void main() {
     getIt.signalReady<TestClass>();
     getIt.signalReady<TestClass2>();
     getIt.signalReady('TestNamesInstance');
-
   });
-  test('trying to signalReady on a entry that does not await a signal should throw', () async {
+  test(
+      'trying to signalReady on a entry that does not await a signal should throw',
+      () async {
     GetIt.allowMultipleInstances = true;
     var getIt = GetIt
         .asNewInstance(); // We use new instance here to make sure other tests haven't signalled ready already
@@ -339,7 +340,8 @@ void main() {
     getIt.registerFactory(() => TestClass(),
         instanceName: 'TestNamesInstance', signalsReady: true);
 
-    expect(() => getIt.signalReady<TestClass3>(), throwsA(TypeMatcher<Exception>()));
+    expect(() => getIt.signalReady<TestClass3>(),
+        throwsA(TypeMatcher<Exception>()));
   });
   test('as long as not all are signalled no ready should never signalled',
       () async {
