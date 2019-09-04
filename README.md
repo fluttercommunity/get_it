@@ -120,7 +120,7 @@ If you really have to overwrite a registration, then you can by setting the prop
 
 ### Remove a registered item
 You can remove registered itens using `unregister` function passing type `T` to remove a type register, or passing `instanceName` to remove a named register.
-Additionally you can execute a funtion of your instance to dispose recurses, passing a function to `disposingFunction` parameter.
+Additionally you can execute a function of your instance to dispose resources, passing a function to `disposingFunction` parameter.
 
 ```Dart
 void unregister<T>({String instanceName, Function(T) disposingFunction})
