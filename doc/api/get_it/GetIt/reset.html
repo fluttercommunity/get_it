@@ -60,6 +60,8 @@
         <a href="get_it/GetIt-class.html#instance-properties">Properties</a>
       </li>
       <li><a href="get_it/GetIt/allowReassignment.html">allowReassignment</a></li>
+      <li><a href="get_it/GetIt/ready.html">ready</a></li>
+      <li><a href="get_it/GetIt/readyFuture.html">readyFuture</a></li>
       <li class="inherited"><a href="get_it/GetIt/hashCode.html">hashCode</a></li>
       <li class="inherited"><a href="get_it/GetIt/runtimeType.html">runtimeType</a></li>
     
@@ -70,6 +72,8 @@
       <li><a href="get_it/GetIt/registerLazySingleton.html">registerLazySingleton</a></li>
       <li><a href="get_it/GetIt/registerSingleton.html">registerSingleton</a></li>
       <li><a href="get_it/GetIt/reset.html">reset</a></li>
+      <li><a href="get_it/GetIt/signalReady.html">signalReady</a></li>
+      <li><a href="get_it/GetIt/unregister.html">unregister</a></li>
       <li class="inherited"><a href="get_it/GetIt/noSuchMethod.html">noSuchMethod</a></li>
       <li class="inherited"><a href="get_it/GetIt/toString.html">toString</a></li>
     
@@ -102,6 +106,7 @@
       <h2><span>Implementation</span></h2>
       <pre class="language-dart"><code class="language-dart">void reset() {
   _factories.clear();
+  _factoriesByName.clear();
 }</code></pre>
     </section>
 
@@ -114,7 +119,7 @@
 
 <footer>
   <span class="no-break">
-    get_it 2.0.0
+    get_it 2.1.0
   </span>
 
   

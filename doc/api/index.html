@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
-  <meta name="generator" content="made with love by dartdoc 0.28.2">
+  <meta name="generator" content="made with love by dartdoc 0.28.4">
   <meta name="description" content="get_it API docs, for the Dart programming language.">
   <title>get_it - Dart API docs</title>
 
@@ -60,7 +60,7 @@
 you no longer can directly create instances of the type <code>GetIt</code> because <code>GetIt</code> is now a singleton please see <a href="#getting-started">Getting Started</a>.</p></blockquote>
 <h3 id="important-you-have-to-use-dart2-to-use-this-component"><strong>IMPORTANT: You have to use Dart2 to use this component</strong></h3>
 <p>You can find here a <a href="https://www.burkharts.net/apps/blog/one-to-find-them-all-how-to-use-service-locators-with-flutter/">detailed blog post on how to use GetIt</a></p>
-<p>This is a simple <strong>Service Locator</strong> for Dart and Flutter projects highly inspired by <a href="https://github.com/reactiveui/splat">Splat</a>. </p>
+<p>This is a simple <strong>Service Locator</strong> for Dart and Flutter projects with some additional goodies highly inspired by <a href="https://github.com/reactiveui/splat">Splat</a>. </p>
 <blockquote>
 <p>If you are not familiar with the concept of Service Locators, its a way to decouple the interface (abstract base class) from a concrete implementation and at the same time allows to access the concrete implementation from everywhere in your App over the interface.
 I can only highly recommend to read this classic article by from Martin Fowler <a href="https://martinfowler.com/articles/injection.html">Inversion of Control Containers and the Dependency Injection  pattern</a></p></blockquote>
@@ -121,16 +121,35 @@ var myAppModel = GetIt.I&lt;AppModel&gt;();
 <h3 id="overwriting-registrations">Overwriting registrations</h3>
 <p>If you try to register a type more than once you will get an assertion in debug mode because normally this is not needed and not advised and probably a bug.
 If you really have to overwrite a registration, then you can by setting the property `allowReassignment==true`` . </p>
-<h3 id="resetting-getit">Resetting GetIt</h3>
-<pre class="language-Dart"><code class="language-Dart">  /// Clears all registered types. Handy when writing unit tests
-  void reset()
+<h3 id="unregistering-singletons-or-factories">Unregistering Singletons or Factories</h3>
+<p>If you need to you can also unregister your registered singletons and factories and pass a optional <code>disposingFunction</code> for clean-up.</p>
+<pre class="language-Dart"><code class="language-Dart">/// Unregister by Type [T] or by name [instanceName]
+/// if you need to dispose any resources you can do it using [disposingFunction] function
+/// that provides a instance of your class to be disposed
+void unregister&lt;T&gt;({String instanceName, void Function(T) disposingFunction})
 </code></pre>
+<h3 id="resetting-getit-completely">Resetting GetIt completely</h3>
+<pre class="language-Dart"><code class="language-Dart">/// Clears all registered types. Handy when writing unit tests
+void reset()
+</code></pre>
+<h2 id="ready-signaller">Ready Signaller</h2>
+<p>Often your registered services need to do initialization work before they can be used from the rest of the app. As this is such a common task and its closely related to registration/initialization I added a handy little feature for it.</p>
+<p><code>GetIt</code> has two properties <code>ready</code>, which is a <code>Stream&lt;void&gt;</code> and <code>readyFuture</code> which is what a surprise a <code>Future&lt;void&gt;</code>.  By calling <code>signalReady()</code> on your <code>GetIt</code> instance <code>ready</code> emits an items and <code>readyFuture</code>is signalled. By this you can wait for the end of all initialization with a <code>Stream/FutureBuilder</code> or just listen to the Stream in an <code>initState</code> method.  </p>
+<h3 id="automatic-ready-signal">Automatic ready signal</h3>
+<p>in the previous method where you have to call <code>signalReady</code> manually  to trigger the <em>ready</em> event. Additionally all your registrations have an internal <em>ready</em> state if you pass <code>signalsReady</code> as optional parameter on registration.</p>
+<p>The full function definition of <code>signalReady</code> looks like this:</p>
+<pre class="language-Dart"><code class="language-Dart">void signalReady&lt;T&gt;([String instanceName]) {
+</code></pre>
+<p>By calling it with either a Type <code>T</code> OR by passing an <code>instanceName</code> (if you registered by name) you mark this registration as <strong>ready</strong>.
+When all registrations are signalled, <code>ready</code> automatically emits an items and <code>readyFuture</code>is signalled.</p>
+<p><strong>If you have marked any registrations with <code>signalsReady</code> and you call <code>signalReady()</code> while not all of them are ready, an Exception is thrown.</strong> 
+So either you use manual <strong>OR</strong> automatic signalling. You can not mix them because in most cases this would lead to state errors</p>
 <h2 id="experts-region">Experts region</h2>
 <h3 id="named-registration">Named registration</h3>
 <p><strong>DON'T USE THIS IF YOU ARE REALLY KNOW WHAT YOU ARE DOING!!!</strong></p>
 <p>This should only be your last resort as you can loose your type safety and lead the concept of a singleton add absurdum.
 This was added following a request at <a href="https://github.com/fluttercommunity/get_it/issues/10">https://github.com/fluttercommunity/get_it/issues/10</a></p>
-<p>Ok you have been warned. All register functions have an optional parameter <code>instanceName</code>. If you provide a value here 
+<p>Ok you have been warned. All register functions have an optional named parameter <code>instanceName</code>. If you provide a value here 
 your factory/singleton gets registered with that name instead of a type. Consequently <code>get()</code> has also an optional parameter <code>instanceName</code> to access
 factories/singletons that were registered by name.</p>
 <p><strong>IMPORTANT:</strong> Each name for registration can only used once.<br>
@@ -168,7 +187,7 @@ GetIt myOwnInstance = GetIt.asNewInstance();
 
 <footer>
   <span class="no-break">
-    get_it 2.0.0
+    get_it 2.1.0
   </span>
 
   

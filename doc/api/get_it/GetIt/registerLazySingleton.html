@@ -60,6 +60,8 @@
         <a href="get_it/GetIt-class.html#instance-properties">Properties</a>
       </li>
       <li><a href="get_it/GetIt/allowReassignment.html">allowReassignment</a></li>
+      <li><a href="get_it/GetIt/ready.html">ready</a></li>
+      <li><a href="get_it/GetIt/readyFuture.html">readyFuture</a></li>
       <li class="inherited"><a href="get_it/GetIt/hashCode.html">hashCode</a></li>
       <li class="inherited"><a href="get_it/GetIt/runtimeType.html">runtimeType</a></li>
     
@@ -70,6 +72,8 @@
       <li><a href="get_it/GetIt/registerLazySingleton.html">registerLazySingleton</a></li>
       <li><a href="get_it/GetIt/registerSingleton.html">registerSingleton</a></li>
       <li><a href="get_it/GetIt/reset.html">reset</a></li>
+      <li><a href="get_it/GetIt/signalReady.html">signalReady</a></li>
+      <li><a href="get_it/GetIt/unregister.html">unregister</a></li>
       <li class="inherited"><a href="get_it/GetIt/noSuchMethod.html">noSuchMethod</a></li>
       <li class="inherited"><a href="get_it/GetIt/toString.html">toString</a></li>
     
@@ -91,13 +95,15 @@
     <section class="multi-line-signature">
       <span class="returntype">void</span>
             <span class="name ">registerLazySingleton</span>
-&lt;<wbr><span class="type-parameter">T</span>&gt;(<wbr><span class="parameter" id="registerLazySingleton-param-func"><span class="type-annotation"><a href="get_it/FactoryFunc.html">FactoryFunc</a><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span></span> <span class="parameter-name">func</span>, [</span> <span class="parameter" id="registerLazySingleton-param-instanceName"><span class="type-annotation">String</span> <span class="parameter-name">instanceName</span></span> ])
+&lt;<wbr><span class="type-parameter">T</span>&gt;(<wbr><span class="parameter" id="registerLazySingleton-param-func"><span class="type-annotation"><a href="get_it/FactoryFunc.html">FactoryFunc</a><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span></span> <span class="parameter-name">func</span>, {</span> <span class="parameter" id="registerLazySingleton-param-instanceName"><span class="type-annotation">String</span> <span class="parameter-name">instanceName</span>, </span> <span class="parameter" id="registerLazySingleton-param-signalsReady"><span class="type-annotation">bool</span> <span class="parameter-name">signalsReady</span>: <span class="default-value">false</span></span> })
       
     </section>
     <section class="desc markdown">
       <p>registers a type as Singleton by passing a factory function that will be called on the first call of <a href="get_it/GetIt/get.html">get</a> on that type
 <code>T</code> type to register
 <code>func</code> factory function for this type
+If <code>signalsReady</code> is set to <code>true</code> it means that the <code>ready</code> property cannot emit a ready event until this
+registration was signalled ready
 <code>instanceName</code> if you provide a value here your factory gets registered with that
 name instead of a type. This should only be necessary if you need to register more
 than one instance of one type. Its highly not recommended</p>
@@ -105,11 +111,13 @@ than one instance of one type. Its highly not recommended</p>
     
     <section class="summary source-code" id="source">
       <h2><span>Implementation</span></h2>
-      <pre class="language-dart"><code class="language-dart">void registerLazySingleton&lt;T&gt;(FactoryFunc&lt;T&gt; func, [String instanceName]) {
+      <pre class="language-dart"><code class="language-dart">void registerLazySingleton&lt;T&gt;(FactoryFunc&lt;T&gt; func,
+    {String instanceName, bool signalsReady = false}) {
   _register&lt;T&gt;(
       type: _ServiceFactoryType.lazy,
       instanceName: instanceName,
-      factoryFunc: func);
+      factoryFunc: func,
+      signalsReady: signalsReady);
 }</code></pre>
     </section>
 
@@ -122,7 +130,7 @@ than one instance of one type. Its highly not recommended</p>
 
 <footer>
   <span class="no-break">
-    get_it 2.0.0
+    get_it 2.1.0
   </span>
 
   

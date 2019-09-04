@@ -106,6 +106,22 @@ to true to signal you know what you are doing :-).
 If you really need to you can disable the asserts by setting<a href="get_it/GetIt/allowReassignment.html">allowReassignment</a>= true
                   <div class="features">read / write</div>
 </dd>
+        <dt id="ready" class="property">
+          <span class="name"><a href="get_it/GetIt/ready.html">ready</a></span>
+          <span class="signature">&#8594; Stream<span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>         
+        </dt>
+        <dd>
+          
+                  <div class="features">read-only</div>
+</dd>
+        <dt id="readyFuture" class="property">
+          <span class="name"><a href="get_it/GetIt/readyFuture.html">readyFuture</a></span>
+          <span class="signature">&#8594; Future<span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>         
+        </dt>
+        <dd>
+          
+                  <div class="features">read-only</div>
+</dd>
         <dt id="hashCode" class="property inherited">
           <span class="name"><a href="get_it/GetIt/hashCode.html">hashCode</a></span>
           <span class="signature">&#8594; int</span>         
@@ -147,7 +163,7 @@ If you really need to you can disable the asserts by setting<a href="get_it/GetI
                   
 </dd>
         <dt id="registerFactory" class="callable">
-          <span class="name"><a href="get_it/GetIt/registerFactory.html">registerFactory</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="registerFactory-param-func"><span class="type-annotation"><a href="get_it/FactoryFunc.html">FactoryFunc</a><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span></span> <span class="parameter-name">func</span>, [</span> <span class="parameter" id="registerFactory-param-instanceName"><span class="type-annotation">String</span> <span class="parameter-name">instanceName</span></span> ])
+          <span class="name"><a href="get_it/GetIt/registerFactory.html">registerFactory</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="registerFactory-param-func"><span class="type-annotation"><a href="get_it/FactoryFunc.html">FactoryFunc</a><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span></span> <span class="parameter-name">func</span>, {</span> <span class="parameter" id="registerFactory-param-instanceName"><span class="type-annotation">String</span> <span class="parameter-name">instanceName</span>, </span> <span class="parameter" id="registerFactory-param-signalsReady"><span class="type-annotation">bool</span> <span class="parameter-name">signalsReady</span>: <span class="default-value">false</span></span> })
             <span class="returntype parameter">&#8594; void</span>
           </span>
                   </dt>
@@ -155,13 +171,15 @@ If you really need to you can disable the asserts by setting<a href="get_it/GetI
           registers a type so that a new instance will be created on each call of <a href="get_it/GetIt/get.html">get</a> on that type
 <code>T</code> type to register
 <code>func</code> factory function for this type
+If <code>signalsReady</code> is set to <code>true</code> it means that the <code>ready</code> property cannot emit a ready event until this
+registration was signalled ready
 <code>instanceName</code> if you provide a value here your factory gets registered with that
 name instead of a type. This should only be necessary if you need to register more
 than one instance of one type. Its highly not recommended
                   
 </dd>
         <dt id="registerLazySingleton" class="callable">
-          <span class="name"><a href="get_it/GetIt/registerLazySingleton.html">registerLazySingleton</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="registerLazySingleton-param-func"><span class="type-annotation"><a href="get_it/FactoryFunc.html">FactoryFunc</a><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span></span> <span class="parameter-name">func</span>, [</span> <span class="parameter" id="registerLazySingleton-param-instanceName"><span class="type-annotation">String</span> <span class="parameter-name">instanceName</span></span> ])
+          <span class="name"><a href="get_it/GetIt/registerLazySingleton.html">registerLazySingleton</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="registerLazySingleton-param-func"><span class="type-annotation"><a href="get_it/FactoryFunc.html">FactoryFunc</a><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span></span> <span class="parameter-name">func</span>, {</span> <span class="parameter" id="registerLazySingleton-param-instanceName"><span class="type-annotation">String</span> <span class="parameter-name">instanceName</span>, </span> <span class="parameter" id="registerLazySingleton-param-signalsReady"><span class="type-annotation">bool</span> <span class="parameter-name">signalsReady</span>: <span class="default-value">false</span></span> })
             <span class="returntype parameter">&#8594; void</span>
           </span>
                   </dt>
@@ -169,13 +187,15 @@ than one instance of one type. Its highly not recommended
           registers a type as Singleton by passing a factory function that will be called on the first call of <a href="get_it/GetIt/get.html">get</a> on that type
 <code>T</code> type to register
 <code>func</code> factory function for this type
+If <code>signalsReady</code> is set to <code>true</code> it means that the <code>ready</code> property cannot emit a ready event until this
+registration was signalled ready
 <code>instanceName</code> if you provide a value here your factory gets registered with that
 name instead of a type. This should only be necessary if you need to register more
 than one instance of one type. Its highly not recommended
                   
 </dd>
         <dt id="registerSingleton" class="callable">
-          <span class="name"><a href="get_it/GetIt/registerSingleton.html">registerSingleton</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="registerSingleton-param-instance"><span class="type-annotation">T</span> <span class="parameter-name">instance</span>, [</span> <span class="parameter" id="registerSingleton-param-instanceName"><span class="type-annotation">String</span> <span class="parameter-name">instanceName</span></span> ])
+          <span class="name"><a href="get_it/GetIt/registerSingleton.html">registerSingleton</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="registerSingleton-param-instance"><span class="type-annotation">T</span> <span class="parameter-name">instance</span>, {</span> <span class="parameter" id="registerSingleton-param-instanceName"><span class="type-annotation">String</span> <span class="parameter-name">instanceName</span>, </span> <span class="parameter" id="registerSingleton-param-signalsReady"><span class="type-annotation">bool</span> <span class="parameter-name">signalsReady</span>: <span class="default-value">false</span></span> })
             <span class="returntype parameter">&#8594; void</span>
           </span>
                   </dt>
@@ -183,6 +203,8 @@ than one instance of one type. Its highly not recommended
           registers a type as Singleton by passing an <code>instance</code> of that type
  that will be returned on each call of <a href="get_it/GetIt/get.html">get</a> on that type
 <code>T</code> type to register
+If <code>signalsReady</code> is set to <code>true</code> it means that the <code>ready</code> property cannot emit a ready event until this
+registration was signalled ready
 <code>instanceName</code> if you provide a value here your instance gets registered with that
 name instead of a type. This should only be necessary if you need to register more
 than one instance of one type. Its highly not recommended
@@ -195,6 +217,26 @@ than one instance of one type. Its highly not recommended
                   </dt>
         <dd>
           Clears all registered types. Handy when writing unit tests
+                  
+</dd>
+        <dt id="signalReady" class="callable">
+          <span class="name"><a href="get_it/GetIt/signalReady.html">signalReady</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr>[<span class="parameter" id="signalReady-param-instanceName"><span class="type-annotation">String</span> <span class="parameter-name">instanceName</span></span> ])
+            <span class="returntype parameter">&#8594; void</span>
+          </span>
+                  </dt>
+        <dd>
+          
+                  
+</dd>
+        <dt id="unregister" class="callable">
+          <span class="name"><a href="get_it/GetIt/unregister.html">unregister</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr>{<span class="parameter" id="unregister-param-instanceName"><span class="type-annotation">String</span> <span class="parameter-name">instanceName</span>, </span> <span class="parameter" id="unregister-param-disposingFunction"><span class="type-annotation">void</span> <span class="parameter-name">disposingFunction</span>(<span class="parameter" id="disposingFunction-param-"><span class="type-annotation">T</span></span>)</span> })
+            <span class="returntype parameter">&#8594; void</span>
+          </span>
+                  </dt>
+        <dd>
+          Unregister by Type <code>T</code> or by name <code>instanceName</code>
+if you need to dispose any resources you can do it using <code>disposingFunction</code> function
+that provides a instance of your class to be disposed
                   
 </dd>
         <dt id="noSuchMethod" class="callable inherited">
@@ -278,6 +320,8 @@ If you really need to you can disable the asserts by setting<a href="get_it/GetI
         <a href="get_it/GetIt-class.html#instance-properties">Properties</a>
       </li>
       <li><a href="get_it/GetIt/allowReassignment.html">allowReassignment</a></li>
+      <li><a href="get_it/GetIt/ready.html">ready</a></li>
+      <li><a href="get_it/GetIt/readyFuture.html">readyFuture</a></li>
       <li class="inherited"><a href="get_it/GetIt/hashCode.html">hashCode</a></li>
       <li class="inherited"><a href="get_it/GetIt/runtimeType.html">runtimeType</a></li>
     
@@ -288,6 +332,8 @@ If you really need to you can disable the asserts by setting<a href="get_it/GetI
       <li><a href="get_it/GetIt/registerLazySingleton.html">registerLazySingleton</a></li>
       <li><a href="get_it/GetIt/registerSingleton.html">registerSingleton</a></li>
       <li><a href="get_it/GetIt/reset.html">reset</a></li>
+      <li><a href="get_it/GetIt/signalReady.html">signalReady</a></li>
+      <li><a href="get_it/GetIt/unregister.html">unregister</a></li>
       <li class="inherited"><a href="get_it/GetIt/noSuchMethod.html">noSuchMethod</a></li>
       <li class="inherited"><a href="get_it/GetIt/toString.html">toString</a></li>
     
@@ -307,7 +353,7 @@ If you really need to you can disable the asserts by setting<a href="get_it/GetI
 
 <footer>
   <span class="no-break">
-    get_it 2.0.0
+    get_it 2.1.0
   </span>
 
   
