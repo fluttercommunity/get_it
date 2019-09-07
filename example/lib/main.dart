@@ -2,28 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:get_it_example/app_model.dart';
 
-
 // This is our global ServiceLocator
 GetIt getIt = GetIt.instance;
 
 void main() {
+  getIt.registerSingleton<AppModel>(AppModelImplementation(),
+      signalsReady: true);
 
-  getIt.registerSingleton<AppModel>(new AppModelImplementation());
-
-  runApp(new MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return new MaterialApp(
+    return MaterialApp(
       title: 'Flutter Demo',
-      theme: new ThemeData(
-
+      theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: new MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
@@ -34,55 +32,70 @@ class MyHomePage extends StatefulWidget {
   final String title;
 
   @override
-  _MyHomePageState createState() => new _MyHomePageState();
+  _MyHomePageState createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
   @override
-  initState()
-  {
+  initState() {
     // Access the instance of the registered AppModel
-    getIt<AppModel>().addListener(update); 
+    getIt<AppModel>().addListener(update);
     // Alternative
-    // getIt.get<AppModel>().addListener(update); 
-    
+    // getIt.get<AppModel>().addListener(update);
+
     super.initState();
   }
 
   @override
   void dispose() {
-      getIt<AppModel>().removeListener(update); 
-      super.dispose();
-    }
+    getIt<AppModel>().removeListener(update);
+    super.dispose();
+  }
 
-  update()=> setState(()=>{});
+  update() => setState(() => {});
 
   @override
   Widget build(BuildContext context) {
-
-    return new Scaffold(
-      appBar: new AppBar(
-        title: new Text(widget.title),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title),
       ),
-      body: new Center(
-        child: new Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            new Text(
-              'You have pushed the button this many times:',
-            ),
-            new Text(
-              '${getIt<AppModel>().counter}',
-              style: Theme.of(context).textTheme.display1,
-            ),
-          ],
-        ),
+      body: Center(
+        child: StreamBuilder(
+            stream: getIt.ready,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Text(
+                      'You have pushed the button this many times:',
+                    ),
+                    Text(
+                      '${getIt<AppModel>().counter}',
+                      style: Theme.of(context).textTheme.display1,
+                    ),
+                  ],
+                );
+              } else {
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('Waiting for initialisation'),
+                    SizedBox(
+                      height: 16,
+                    ),
+                    CircularProgressIndicator(),
+                  ],
+                );
+              }
+            }),
       ),
-      floatingActionButton: new FloatingActionButton(
+      floatingActionButton: FloatingActionButton(
         onPressed: getIt<AppModel>().incrementCounter,
         tooltip: 'Increment',
-        child: new Icon(Icons.add),
+        child: Icon(Icons.add),
       ),
     );
   }

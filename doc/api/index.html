@@ -123,25 +123,32 @@ var myAppModel = GetIt.I&lt;AppModel&gt;();
 If you really have to overwrite a registration, then you can by setting the property `allowReassignment==true`` . </p>
 <h3 id="unregistering-singletons-or-factories">Unregistering Singletons or Factories</h3>
 <p>If you need to you can also unregister your registered singletons and factories and pass a optional <code>disposingFunction</code> for clean-up.</p>
-<pre class="language-Dart"><code class="language-Dart">/// Unregister by Type [T] or by name [instanceName]
+<pre class="language-Dart"><code class="language-Dart">/// Unregister a factory/ singletons by Type [T] or by name [instanceName]
+/// If its a singleton/lazySingleton you can unregister an existing registered object instance 
+/// by passing it as [instance]. If a lazysingleton wasn't used before expect 
+/// this to throw an `ArgumentError`
 /// if you need to dispose any resources you can do it using [disposingFunction] function
 /// that provides a instance of your class to be disposed
-void unregister&lt;T&gt;({String instanceName, void Function(T) disposingFunction})
+void unregister&lt;T&gt;({Object instance,String instanceName, void Function(T) disposingFunction})
 </code></pre>
 <h3 id="resetting-getit-completely">Resetting GetIt completely</h3>
 <pre class="language-Dart"><code class="language-Dart">/// Clears all registered types. Handy when writing unit tests
 void reset()
 </code></pre>
-<h2 id="ready-signaller">Ready Signaller</h2>
+<h2 id="ready-signal">Ready Signal</h2>
 <p>Often your registered services need to do initialization work before they can be used from the rest of the app. As this is such a common task and its closely related to registration/initialization I added a handy little feature for it.</p>
 <p><code>GetIt</code> has two properties <code>ready</code>, which is a <code>Stream&lt;void&gt;</code> and <code>readyFuture</code> which is what a surprise a <code>Future&lt;void&gt;</code>.  By calling <code>signalReady()</code> on your <code>GetIt</code> instance <code>ready</code> emits an items and <code>readyFuture</code>is signalled. By this you can wait for the end of all initialization with a <code>Stream/FutureBuilder</code> or just listen to the Stream in an <code>initState</code> method.  </p>
 <h3 id="automatic-ready-signal">Automatic ready signal</h3>
-<p>in the previous method where you have to call <code>signalReady</code> manually  to trigger the <em>ready</em> event. Additionally all your registrations have an internal <em>ready</em> state if you pass <code>signalsReady</code> as optional parameter on registration.</p>
+<p>In the previous method where you have to call <code>signalReady</code> manually  to trigger the <em>ready</em> event. Additionally all your registrations have an internal <em>ready</em> state if you pass <code>signalsReady=true</code> as optional parameter on registration.</p>
 <p>The full function definition of <code>signalReady</code> looks like this:</p>
-<pre class="language-Dart"><code class="language-Dart">void signalReady&lt;T&gt;([String instanceName]) {
+<pre class="language-Dart"><code class="language-Dart">void signalReady([Object instance]) {
 </code></pre>
-<p>By calling it with either a Type <code>T</code> OR by passing an <code>instanceName</code> (if you registered by name) you mark this registration as <strong>ready</strong>.
+<p>By calling it with an registered instance you mark its registration as <strong>ready</strong>.
 When all registrations are signalled, <code>ready</code> automatically emits an items and <code>readyFuture</code>is signalled.</p>
+<p>Typically the registered service will do that on its own like:</p>
+<pre class="language-Dart"><code class="language-Dart">`GetIt.instance.signalReady(this)`
+</code></pre>
+<p>As GetIt is a singleton this can also be done from external packages if they use GetIt.</p>
 <p><strong>If you have marked any registrations with <code>signalsReady</code> and you call <code>signalReady()</code> while not all of them are ready, an Exception is thrown.</strong> 
 So either you use manual <strong>OR</strong> automatic signalling. You can not mix them because in most cases this would lead to state errors</p>
 <h2 id="experts-region">Experts region</h2>
@@ -187,7 +194,7 @@ GetIt myOwnInstance = GetIt.asNewInstance();
 
 <footer>
   <span class="no-break">
-    get_it 2.1.0
+    get_it 3.0.0
   </span>
 
   

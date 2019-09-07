@@ -57,6 +57,9 @@
     
     
     
+      <li class="section-title"><a href="get_it/get_it-library.html#functions">Functions</a></li>
+      <li><a href="get_it/throwIf.html">throwIf</a></li>
+      <li><a href="get_it/throwIfNot.html">throwIfNot</a></li>
     
     
       <li class="section-title"><a href="get_it/get_it-library.html#typedefs">Typedefs</a></li>
@@ -163,7 +166,7 @@ If you really need to you can disable the asserts by setting<a href="get_it/GetI
                   
 </dd>
         <dt id="registerFactory" class="callable">
-          <span class="name"><a href="get_it/GetIt/registerFactory.html">registerFactory</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="registerFactory-param-func"><span class="type-annotation"><a href="get_it/FactoryFunc.html">FactoryFunc</a><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span></span> <span class="parameter-name">func</span>, {</span> <span class="parameter" id="registerFactory-param-instanceName"><span class="type-annotation">String</span> <span class="parameter-name">instanceName</span>, </span> <span class="parameter" id="registerFactory-param-signalsReady"><span class="type-annotation">bool</span> <span class="parameter-name">signalsReady</span>: <span class="default-value">false</span></span> })
+          <span class="name"><a href="get_it/GetIt/registerFactory.html">registerFactory</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="registerFactory-param-func"><span class="type-annotation"><a href="get_it/FactoryFunc.html">FactoryFunc</a><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span></span> <span class="parameter-name">func</span>, {</span> <span class="parameter" id="registerFactory-param-instanceName"><span class="type-annotation">String</span> <span class="parameter-name">instanceName</span></span> })
             <span class="returntype parameter">&#8594; void</span>
           </span>
                   </dt>
@@ -171,8 +174,6 @@ If you really need to you can disable the asserts by setting<a href="get_it/GetI
           registers a type so that a new instance will be created on each call of <a href="get_it/GetIt/get.html">get</a> on that type
 <code>T</code> type to register
 <code>func</code> factory function for this type
-If <code>signalsReady</code> is set to <code>true</code> it means that the <code>ready</code> property cannot emit a ready event until this
-registration was signalled ready
 <code>instanceName</code> if you provide a value here your factory gets registered with that
 name instead of a type. This should only be necessary if you need to register more
 than one instance of one type. Its highly not recommended
@@ -220,7 +221,7 @@ than one instance of one type. Its highly not recommended
                   
 </dd>
         <dt id="signalReady" class="callable">
-          <span class="name"><a href="get_it/GetIt/signalReady.html">signalReady</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr>[<span class="parameter" id="signalReady-param-instanceName"><span class="type-annotation">String</span> <span class="parameter-name">instanceName</span></span> ])
+          <span class="name"><a href="get_it/GetIt/signalReady.html">signalReady</a></span><span class="signature">(<wbr>[<span class="parameter" id="signalReady-param-instance"><span class="type-annotation">Object</span> <span class="parameter-name">instance</span></span> ])
             <span class="returntype parameter">&#8594; void</span>
           </span>
                   </dt>
@@ -229,12 +230,12 @@ than one instance of one type. Its highly not recommended
                   
 </dd>
         <dt id="unregister" class="callable">
-          <span class="name"><a href="get_it/GetIt/unregister.html">unregister</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr>{<span class="parameter" id="unregister-param-instanceName"><span class="type-annotation">String</span> <span class="parameter-name">instanceName</span>, </span> <span class="parameter" id="unregister-param-disposingFunction"><span class="type-annotation">void</span> <span class="parameter-name">disposingFunction</span>(<span class="parameter" id="disposingFunction-param-"><span class="type-annotation">T</span></span>)</span> })
+          <span class="name"><a href="get_it/GetIt/unregister.html">unregister</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr>{<span class="parameter" id="unregister-param-instance"><span class="type-annotation">Object</span> <span class="parameter-name">instance</span>, </span> <span class="parameter" id="unregister-param-instanceName"><span class="type-annotation">String</span> <span class="parameter-name">instanceName</span>, </span> <span class="parameter" id="unregister-param-disposingFunction"><span class="type-annotation">void</span> <span class="parameter-name">disposingFunction</span>(<span class="parameter" id="disposingFunction-param-"><span class="type-annotation">T</span></span>)</span> })
             <span class="returntype parameter">&#8594; void</span>
           </span>
                   </dt>
         <dd>
-          Unregister by Type <code>T</code> or by name <code>instanceName</code>
+          Unregister an instance of an object or a factory/singleton by Type <code>T</code> or by name <code>instanceName</code>
 if you need to dispose any resources you can do it using <code>disposingFunction</code> function
 that provides a instance of your class to be disposed
                   
@@ -353,7 +354,7 @@ If you really need to you can disable the asserts by setting<a href="get_it/GetI
 
 <footer>
   <span class="no-break">
-    get_it 2.1.0
+    get_it 3.0.0
   </span>
 
   

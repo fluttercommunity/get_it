@@ -123,10 +123,13 @@ If you really have to overwrite a registration, then you can by setting the prop
 If you need to you can also unregister your registered singletons and factories and pass a optional `disposingFunction` for clean-up.
 
 ```Dart
-/// Unregister by Type [T] or by name [instanceName]
+/// Unregister a factory/ singletons by Type [T] or by name [instanceName]
+/// If its a singleton/lazySingleton you can unregister an existing registered object instance 
+/// by passing it as [instance]. If a lazysingleton wasn't used before expect 
+/// this to throw an `ArgumentError`
 /// if you need to dispose any resources you can do it using [disposingFunction] function
 /// that provides a instance of your class to be disposed
-void unregister<T>({String instanceName, void Function(T) disposingFunction})
+void unregister<T>({Object instance,String instanceName, void Function(T) disposingFunction})
 ```  
 
 ### Resetting GetIt completely
@@ -136,22 +139,29 @@ void unregister<T>({String instanceName, void Function(T) disposingFunction})
 void reset()
 ```
 
-## Ready Signaller
+## Ready Signal
 Often your registered services need to do initialization work before they can be used from the rest of the app. As this is such a common task and its closely related to registration/initialization I added a handy little feature for it.
 
 `GetIt` has two properties `ready`, which is a `Stream<void>` and `readyFuture` which is what a surprise a `Future<void>`.  By calling `signalReady()` on your `GetIt` instance `ready` emits an items and `readyFuture`is signalled. By this you can wait for the end of all initialization with a `Stream/FutureBuilder` or just listen to the Stream in an `initState` method.  
 
 ### Automatic ready signal
-in the previous method where you have to call `signalReady` manually  to trigger the *ready* event. Additionally all your registrations have an internal *ready* state if you pass `signalsReady` as optional parameter on registration.
+In the previous method where you have to call `signalReady` manually  to trigger the *ready* event. Additionally all your registrations have an internal *ready* state if you pass `signalsReady=true` as optional parameter on registration.
 
 The full function definition of `signalReady` looks like this:
 
 ```Dart
-void signalReady<T>([String instanceName]) {
+void signalReady([Object instance]) {
 ```
 
-By calling it with either a Type `T` OR by passing an `instanceName` (if you registered by name) you mark this registration as **ready**.
+By calling it with an registered instance you mark its registration as **ready**.
 When all registrations are signalled, `ready` automatically emits an items and `readyFuture`is signalled.
+
+Typically the registered service will do that on its own like:
+
+```Dart
+`GetIt.instance.signalReady(this)`
+```
+As GetIt is a singleton this can also be done from external packages if they use GetIt.
 
 **If you have marked any registrations with `signalsReady` and you call `signalReady()` while not all of them are ready, an Exception is thrown.** 
 So either you use manual **OR** automatic signalling. You can not mix them because in most cases this would lead to state errors

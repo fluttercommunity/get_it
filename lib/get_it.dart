@@ -6,7 +6,13 @@ import 'package:meta/meta.dart';
 
 typedef FactoryFunc<T> = T Function();
 
-enum _readyStates { noneWaitingToBeReady, allReady, notAllReady }
+void throwIf(bool condition, Object error) {
+  if (condition) throw (error);
+}
+
+void throwIfNot(bool condition, Object error) {
+  if (!condition) throw (error);
+}
 
 /// Very simple and easy to use service locator
 /// You register your object creation or an instance of an object with [registerFactory],
@@ -40,8 +46,12 @@ class GetIt {
   /// If you really, REALLY need more than one [GetIt] instance please set allowMultipleInstances
   /// to true to signal you know what you are doing :-).
   factory GetIt.asNewInstance() {
-    assert(allowMultipleInstances,
-        'You should prefer to use the `instance()` method to access an instance of GetIt. If you really need more than one GetIt instance please set allowMultipleInstances to true.');
+    throwIfNot(
+      allowMultipleInstances,
+      StateError(
+          'You should prefer to use the `instance()` method to access an instance of GetIt. '
+          'If you really need more than one GetIt instance please set allowMultipleInstances to true.'),
+    );
     return GetIt._();
   }
 
@@ -55,10 +65,16 @@ class GetIt {
 
   /// retrieves or creates an instance of a registered type [T] depending on the registration function used for this type or based on a name.
   T get<T>([String instanceName]) {
-    assert(!(!(const Object() is! T) && instanceName == null),
-        'GetIt: You have to provide either a type or a name. Did you accidentally do  `var sl=GetIt.instance();` instead of var sl=GetIt.instance;');
-    assert(!(((const Object() is! T) && instanceName != null)),
-        'GetIt: You have to provide either a type OR a name not both.');
+    throwIfNot(
+      !(!(const Object() is! T) && instanceName == null),
+      ArgumentError(
+          'GetIt: You have to provide either a type or a name. Did you accidentally do  `var sl=GetIt.instance();` instead of var sl=GetIt.instance;'),
+    );
+    throwIfNot(
+      !(((const Object() is! T) && instanceName != null)),
+      ArgumentError(
+          'GetIt: You have to provide either a type OR a name not both.'),
+    );
 
     _ServiceFactory<T> object;
     if (instanceName == null) {
@@ -67,13 +83,16 @@ class GetIt {
       object = _factoriesByName[instanceName];
     }
     if (object == null) {
-      if (instanceName == null) {
-        throw Exception(
-            "Object of type ${T.toString()} is not registered inside GetIt");
-      } else {
-        throw Exception(
-            "Object with name $instanceName is not registered inside GetIt");
-      }
+      throwIf(
+        instanceName == null,
+        ArgumentError.value(
+            T, "Object of type ${T.toString()} is not registered inside GetIt"),
+      );
+      throwIf(
+        instanceName != null,
+        ArgumentError.value(instanceName,
+            "Object with name $instanceName is not registered inside GetIt"),
+      );
     }
     return object.getObject();
   }
@@ -85,18 +104,15 @@ class GetIt {
   /// registers a type so that a new instance will be created on each call of [get] on that type
   /// [T] type to register
   /// [func] factory function for this type
-  /// If [signalsReady] is set to `true` it means that the `ready` property cannot emit a ready event until this
-  /// registration was signalled ready
   /// [instanceName] if you provide a value here your factory gets registered with that
   /// name instead of a type. This should only be necessary if you need to register more
   /// than one instance of one type. Its highly not recommended
-  void registerFactory<T>(FactoryFunc<T> func,
-      {String instanceName, bool signalsReady = false}) {
+  void registerFactory<T>(FactoryFunc<T> func, {String instanceName}) {
     _register<T>(
         type: _ServiceFactoryType.alwaysNew,
         instanceName: instanceName,
         factoryFunc: func,
-        signalsReady: signalsReady);
+        signalsReady: false);
   }
 
   /// registers a type as Singleton by passing a factory function that will be called on the first call of [get] on that type
@@ -145,19 +161,24 @@ class GetIt {
       T instance,
       @required String instanceName,
       @required bool signalsReady}) {
-    assert(
-        instanceName != null || allowReassignment || !_factories.containsKey(T),
-        "Type ${T.toString()} is already registered");
-    assert(
+    throwIfNot(
+      instanceName != null || allowReassignment || !_factories.containsKey(T),
+      ArgumentError.value(T, "Type ${T.toString()} is already registered"),
+    );
+    throwIfNot(
       instanceName != null ||
           (allowReassignment || !_factoriesByName.containsKey(instanceName)),
-      "An object of name $instanceName is already registered",
+      ArgumentError.value(
+        instanceName,
+        "An object of name $instanceName is already registered",
+      ),
     );
 
     var serviceFactory = _ServiceFactory<T>(type,
         creationFunction: factoryFunc,
         instance: instance,
-        shouldSignalReady: signalsReady);
+        shouldSignalReady: signalsReady,
+        instanceName: instanceName);
     if (instanceName == null) {
       _factories[T] = serviceFactory;
     } else {
@@ -165,73 +186,92 @@ class GetIt {
     }
   }
 
-  /// Unregister by Type [T] or by name [instanceName]
+  /// Unregister an instance of an object or a factory/singleton by Type [T] or by name [instanceName]
   /// if you need to dispose any resources you can do it using [disposingFunction] function
   /// that provides a instance of your class to be disposed
   void unregister<T>(
-      {String instanceName, void Function(T) disposingFunction}) {
-    assert(!(((const Object() is! T) && instanceName != null)),
-        'GetIt: You have to provide either a type OR a name not both.');
-    assert(
+      {Object instance,
+      String instanceName,
+      void Function(T) disposingFunction}) {
+    if (instance != null) {
+      var registeredInstance = _factories.values
+          .followedBy(_factoriesByName.values)
+          .where((x) => identical(x.instance, instance));
+
+      throwIf(
+        registeredInstance.isEmpty,
+        ArgumentError.value(instance,
+            'There is no object type ${instance.runtimeType} registered in GetIt'),
+      );
+
+      var _factory = registeredInstance.first;
+      if (_factory.isNamedRegistration) {
+        _factoriesByName.remove(_factory.instanceName);
+      } else {
+        _factories.remove(_factory.registrationType);
+      }
+      disposingFunction(_factory.instance);
+    } else {
+      throwIfNot(
+        !(((const Object() is! T) && instanceName != null)),
+        ArgumentError(
+            'GetIt: You have to provide either a type OR a name not both.'),
+      );
+      throwIfNot(
         (instanceName != null && _factoriesByName.containsKey(instanceName)) ||
             _factories.containsKey(T),
-        'No Type registered ${T.toString()} or instance Name must not be null');
-    if (instanceName == null) {
-      disposingFunction(get<T>());
-      _factories.remove(T);
-    } else {
-      disposingFunction(get(instanceName));
-      _factoriesByName.remove(instanceName);
+        ArgumentError(
+            'No Type registered ${T.toString()} or instance Name must not be null'),
+      );
+      if (instanceName == null) {
+        disposingFunction(get<T>());
+        _factories.remove(T);
+      } else {
+        disposingFunction(get(instanceName));
+        _factoriesByName.remove(instanceName);
+      }
     }
   }
 
-  void signalReady<T>([String instanceName]) {
-    assert(!(((const Object() is! T) && instanceName != null)),
-        'GetIt.signalReady: You have to provide either a type OR a name not both.');
-    if ((const Object() is! T) ||
-        (instanceName != null && instanceName.isNotEmpty)) {
-      /// if (T is not a top level type especially not `dynamic`) or instanceName has a value
-      /// which means a specific registered object should be signalled
-      _ServiceFactory<T> object;
-      if (instanceName != null) {
-        object = _factoriesByName[instanceName];
-      } else if (const Object() is! T) {
-        object = _factories[T];
-      }
-      if (object == null) {
-        if (instanceName == null) {
-          throw Exception(
-              "GetIt.signalReady: Object of type ${T.toString()} is not registered inside GetIt");
-        } else {
-          throw Exception(
-              "GetIt.signalReady: Object with name $instanceName is not registered inside GetIt");
-        }
-      }
-      if (!object.shouldSignalReady) {
-        if (instanceName == null) {
-          throw Exception(
-              "GetIt.signalReady: Object of type ${T.toString()} does not wait to be signalled");
-        } else {
-          throw Exception(
-              "GetIt.signalReady: Object with name $instanceName does not wait to be signalled");
-        }
-      }
-      object.isReady = true;
+  void signalReady([Object instance]) {
+    if (instance != null) {
+      var registeredInstance = _factories.values
+          .followedBy(_factoriesByName.values)
+          .where((x) => identical(x.instance, instance));
+      throwIf(
+          registeredInstance.length > 1,
+          StateError(
+              'This objects instance of type ${instance.runtimeType} are registered multiple times in GetIt'));
 
-      if (_getReadyState() == _readyStates.allReady) {
+      throwIf(
+          registeredInstance.isEmpty,
+          ArgumentError.value(instance,
+              'There is no object type ${instance.runtimeType} registered in GetIt'));
+
+      throwIf(
+          !registeredInstance.first.shouldSignalReady,
+          ArgumentError.value(instance,
+              'This instance of type ${instance.runtimeType} is not supposed to be signalled'));
+
+      throwIf(
+          registeredInstance.first.isReady,
+          StateError(
+              'This instance of type ${instance.runtimeType} was already signalled'));
+
+      registeredInstance.first.isReady = true;
+
+      /// if all registered instances that should signal ready are ready signal the [ready] and [readyFuture]
+      var shouldSignalButNotReady = _factories.values
+          .followedBy(_factoriesByName.values)
+          .where((x) => x.shouldSignalReady && !x.isReady);
+      if (shouldSignalButNotReady.isEmpty) {
         _readySignalStream.add(true);
       }
     } else {
-      /// signalReady was called without a type or a name means a manual signalReady
-      var allReady = _getReadyState();
-      if (allReady == _readyStates.allReady ||
-          allReady == _readyStates.noneWaitingToBeReady) {
-        _readySignalStream.add(true);
-        return;
-      }
+      /// Manual signalReady without an instance
 
       /// In case that there are still factories that are marked to wait for a signal
-      /// but aren't signalled we throw an exception with details which objects are concerned
+      /// but aren't signalled we throw an error with details which objects are concerned
       final notReadyTypes = _factories.entries
           .where((x) => (x.value.shouldSignalReady && !x.value.isReady))
           .map<String>((x) => x.key.toString())
@@ -240,24 +280,14 @@ class GetIt {
           .where((x) => (x.value.shouldSignalReady && !x.value.isReady))
           .map<String>((x) => x.key)
           .toList();
+      throwIf(
+          notReadyNames.isNotEmpty || notReadyTypes.isNotEmpty,
+          StateError(
+              'Registered types/names: $notReadyTypes  / $notReadyNames should signal ready but are not ready'));
 
-      throw (Exception(
-          'Registered types/names: $notReadyTypes  / $notReadyNames should signal ready but are not ready'));
+      ///    signal the [ready] and [readyFuture]
+      _readySignalStream.add(true);
     }
-  }
-
-  _readyStates _getReadyState() {
-    var shouldbeSignalled = _factories.values
-        .where((x) => x.shouldSignalReady)
-        .toList()
-          ..addAll(_factoriesByName.values.where((x) => x.shouldSignalReady));
-    if (shouldbeSignalled.isEmpty) {
-      return _readyStates.noneWaitingToBeReady;
-    }
-    if (shouldbeSignalled.every((x) => x.isReady)) {
-      return _readyStates.allReady;
-    }
-    return _readyStates.notAllReady;
   }
 }
 
@@ -266,15 +296,22 @@ enum _ServiceFactoryType { alwaysNew, constant, lazy }
 class _ServiceFactory<T> {
   final _ServiceFactoryType factoryType;
   final FactoryFunc creationFunction;
-  Object instance;
+  final String instanceName;
   final bool shouldSignalReady;
   bool isReady;
+  Object instance;
+  Type registrationType;
+
+  bool get isNamedRegistration => instanceName != null;
 
   _ServiceFactory(this.factoryType,
       {this.creationFunction,
       this.instance,
       this.isReady = false,
-      this.shouldSignalReady = false});
+      this.shouldSignalReady = false,
+      this.instanceName}) {
+    registrationType = T;
+  }
 
   T getObject() {
     try {

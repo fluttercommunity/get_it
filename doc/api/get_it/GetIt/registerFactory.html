@@ -95,15 +95,13 @@
     <section class="multi-line-signature">
       <span class="returntype">void</span>
             <span class="name ">registerFactory</span>
-&lt;<wbr><span class="type-parameter">T</span>&gt;(<wbr><span class="parameter" id="registerFactory-param-func"><span class="type-annotation"><a href="get_it/FactoryFunc.html">FactoryFunc</a><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span></span> <span class="parameter-name">func</span>, {</span> <span class="parameter" id="registerFactory-param-instanceName"><span class="type-annotation">String</span> <span class="parameter-name">instanceName</span>, </span> <span class="parameter" id="registerFactory-param-signalsReady"><span class="type-annotation">bool</span> <span class="parameter-name">signalsReady</span>: <span class="default-value">false</span></span> })
+&lt;<wbr><span class="type-parameter">T</span>&gt;(<wbr><span class="parameter" id="registerFactory-param-func"><span class="type-annotation"><a href="get_it/FactoryFunc.html">FactoryFunc</a><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span></span> <span class="parameter-name">func</span>, {</span> <span class="parameter" id="registerFactory-param-instanceName"><span class="type-annotation">String</span> <span class="parameter-name">instanceName</span></span> })
       
     </section>
     <section class="desc markdown">
       <p>registers a type so that a new instance will be created on each call of <a href="get_it/GetIt/get.html">get</a> on that type
 <code>T</code> type to register
 <code>func</code> factory function for this type
-If <code>signalsReady</code> is set to <code>true</code> it means that the <code>ready</code> property cannot emit a ready event until this
-registration was signalled ready
 <code>instanceName</code> if you provide a value here your factory gets registered with that
 name instead of a type. This should only be necessary if you need to register more
 than one instance of one type. Its highly not recommended</p>
@@ -111,13 +109,12 @@ than one instance of one type. Its highly not recommended</p>
     
     <section class="summary source-code" id="source">
       <h2><span>Implementation</span></h2>
-      <pre class="language-dart"><code class="language-dart">void registerFactory&lt;T&gt;(FactoryFunc&lt;T&gt; func,
-    {String instanceName, bool signalsReady = false}) {
+      <pre class="language-dart"><code class="language-dart">void registerFactory&lt;T&gt;(FactoryFunc&lt;T&gt; func, {String instanceName}) {
   _register&lt;T&gt;(
       type: _ServiceFactoryType.alwaysNew,
       instanceName: instanceName,
       factoryFunc: func,
-      signalsReady: signalsReady);
+      signalsReady: false);
 }</code></pre>
     </section>
 
@@ -130,7 +127,7 @@ than one instance of one type. Its highly not recommended</p>
 
 <footer>
   <span class="no-break">
-    get_it 2.1.0
+    get_it 3.0.0
   </span>
 
   

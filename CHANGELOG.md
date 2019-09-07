@@ -1,3 +1,11 @@
+## [3.0.0] - 07.09.2019
+
+* Overhauled the signalling API because the way it was was not optimal. Now you can either signal globally or by passing the instance of the registered object that shall signal. This way it's ensured that you have to have access to the instance to signal, typically from within the instance with a `GetIt.instance.signalReady(this)` 
+individual signalling from other places but the instance itself is probably an error.
+* Unregister of singletons /lazysingletons now possible also over a registered instance.
+* Most asserts have bin replaced with throwing `Error`objects.
+* The example now shows the ready signalling.
+
 ## [2.1.0] - 26.08.2019
 
 * Added handy ready signal to make start-up logic a bit easier
