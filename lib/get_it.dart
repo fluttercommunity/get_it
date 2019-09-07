@@ -328,6 +328,8 @@ class _ServiceFactory<T> {
           }
           return instance as T;
           break;
+        default:
+          throw (StateError('Impossible factoryType'));
       }
     } catch (e, s) {
       print("Error while creating ${T.toString()}");
