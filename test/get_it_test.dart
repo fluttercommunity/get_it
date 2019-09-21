@@ -278,4 +278,70 @@ void main() {
 
     expect(() => getIt('instanceName'), throwsA(TypeMatcher<ArgumentError>()));
   });
+  
+  test('unregister by instance without disposing function', () {
+    var getIt = GetIt.instance;
+    disposeCounter = 0;
+    constructorCounter = 0;
+
+    getIt.registerSingleton<TestClass>(TestClass());
+
+    var instance1 = getIt.get<TestClass>();
+
+    expect(instance1 is TestClass, true);
+
+    var instance2 = getIt.get<TestClass>();
+
+    expect(instance1, instance2);
+
+    expect(constructorCounter, 1);
+
+    getIt.unregister(instance: instance2);
+
+    expect(disposeCounter, 0);
+
+    expect(() => getIt.get<TestClass>(), throwsA(TypeMatcher<ArgumentError>()));
+  });
+  
+  test('unregister by type without disposing function', () {
+    var getIt = GetIt.instance;
+    disposeCounter = 0;
+    constructorCounter = 0;
+
+    getIt.registerSingleton<TestClass>(TestClass());
+
+    var instance1 = getIt.get<TestClass>();
+
+    expect(instance1 is TestClass, true);
+
+    var instance2 = getIt.get<TestClass>();
+
+    expect(instance1, instance2);
+
+    expect(constructorCounter, 1);
+
+    getIt.unregister<TestClass>();
+
+    expect(disposeCounter, 0);
+
+    expect(() => getIt.get<TestClass>(), throwsA(TypeMatcher<ArgumentError>()));
+  });
+
+  test('unregister by name without disposing function', () {
+    var getIt = GetIt.instance;
+    disposeCounter = 0;
+    constructorCounter = 0;
+
+    getIt.registerSingleton(TestClass(), instanceName: 'instanceName');
+
+    var instance1 = getIt.get('instanceName');
+
+    expect(instance1 is TestClass, true);
+
+    getIt.unregister(instanceName: 'instanceName');
+
+    expect(disposeCounter, 0);
+
+    expect(() => getIt('instanceName'), throwsA(TypeMatcher<ArgumentError>()));
+  });
 }
