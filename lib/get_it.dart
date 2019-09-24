@@ -210,7 +210,7 @@ class GetIt {
       } else {
         _factories.remove(_factory.registrationType);
       }
-      disposingFunction(_factory.instance);
+      disposingFunction?.call(_factory.instance);
     } else {
       throwIfNot(
         !(((const Object() is! T) && instanceName != null)),
@@ -224,10 +224,10 @@ class GetIt {
             'No Type registered ${T.toString()} or instance Name must not be null'),
       );
       if (instanceName == null) {
-        disposingFunction(get<T>());
+        disposingFunction?.call(get<T>());
         _factories.remove(T);
       } else {
-        disposingFunction(get(instanceName));
+        disposingFunction?.call(get(instanceName));
         _factoriesByName.remove(instanceName);
       }
     }
