@@ -1,3 +1,7 @@
+## [3.0.1] - 24.09.2019
+
+* Bugfix with https://github.com/fluttercommunity/get_it/pull/21
+
 ## [3.0.0+1] - 07.09.2019
 
 * Small fix to make the analyser happy
