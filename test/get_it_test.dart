@@ -203,6 +203,37 @@ void main() {
     GetIt.I.reset();
   });
 
+  test('reset lazySingleton', () {
+    var getIt = GetIt.instance;
+    constructorCounter = 0;
+    getIt.registerLazySingleton<TestBaseClass>(() => TestClass());
+
+    expect(constructorCounter, 0);
+
+    var instance1 = getIt.get<TestBaseClass>();
+
+    expect(instance1 is TestClass, true);
+    expect(constructorCounter, 1);
+
+    var instance2 = getIt.get<TestBaseClass>();
+
+    expect(instance1, instance2);
+
+    expect(constructorCounter, 1);
+
+    GetIt.I.resetLazySingleton<TestBaseClass>();
+
+    var instance3 = getIt.get<TestBaseClass>();
+
+    expect(instance3 is TestClass, true);
+
+    expect(instance1, isNot(instance3));
+
+    expect(constructorCounter, 2);
+
+    GetIt.I.reset();
+  });
+
   test('unregister by instance', () {
     var getIt = GetIt.instance;
     disposeCounter = 0;
