@@ -209,8 +209,8 @@ class GetIt {
       }
       disposingFunction?.call(_factory.instance);
     } else {
-      throwIfNot(
-        !(((const Object() is! T) && instanceName != null)),
+      throwIf(
+        (((const Object() is! T) && instanceName != null)),
         ArgumentError(
             'GetIt: You have to provide either a type OR a name not both.'),
       );
