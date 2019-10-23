@@ -34,9 +34,7 @@ class GetIt {
   static GetIt _instance;
 
   static GetIt get instance {
-    if (_instance == null) {
-      _instance = GetIt._();
-    }
+    _instance ??= GetIt._();
     return _instance;
   }
 
