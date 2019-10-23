@@ -70,29 +70,28 @@ class GetIt {
       ArgumentError(
           'GetIt: You have to provide either a type or a name. Did you accidentally do  `var sl=GetIt.instance();` instead of var sl=GetIt.instance;'),
     );
-    throwIfNot(
-      !(((const Object() is! T) && instanceName != null)),
-      ArgumentError(
-          'GetIt: You have to provide either a type OR a name not both.'),
-    );
 
     _ServiceFactory<T> object;
     if (instanceName == null) {
       object = _factories[T];
     } else {
-      object = _factoriesByName[instanceName];
+      final registeredObject = _factoriesByName[instanceName];
+      if (registeredObject != null) {
+        if (registeredObject.registrationType is! T) {
+          print(T.toString());
+          throw ArgumentError(
+              "Object with name $instanceName has a different type (${registeredObject.registrationType.toString()}) than the one that is inferred (${T.toString()}) where you call it");
+        }
+      }
+      object = registeredObject;
     }
-    if (object == null) {
-      throwIf(
-        instanceName == null,
-        ArgumentError.value(
-            T, "Object of type ${T.toString()} is not registered inside GetIt"),
-      );
-      throwIf(
-        instanceName != null,
-        ArgumentError.value(instanceName,
-            "Object with name $instanceName is not registered inside GetIt"),
-      );
+    if (object == null && instanceName == null) {
+      throw ArgumentError.value(
+          T, "Object of type ${T.toString()} is not registered inside GetIt");
+    }
+    if (object == null && instanceName != null) {
+      throw ArgumentError.value(instanceName,
+          "Object with name $instanceName is not registered inside GetIt");
     }
     return object.getObject();
   }
