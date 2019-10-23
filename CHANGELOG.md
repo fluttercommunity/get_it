@@ -1,3 +1,7 @@
+## [3.0.2] - 23.10.2019
+
+* Bugfix when using named instances
+
 ## [3.0.1] - 24.09.2019
 
 * Bugfix with https://github.com/fluttercommunity/get_it/pull/21
