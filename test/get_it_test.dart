@@ -105,31 +105,6 @@ void main() {
     GetIt.I.reset();
   });
 
-  test('register lazy singleton two instances of GetIt', () {
-    GetIt.allowMultipleInstances = true;
-    var secondGetIt = GetIt.asNewInstance();
-
-    constructorCounter = 0;
-    GetIt.instance.registerLazySingleton<TestBaseClass>(() => TestClass());
-    secondGetIt.registerLazySingleton<TestBaseClass>(() => TestClass());
-
-    var instance1 = GetIt.I<TestBaseClass>();
-
-    expect(instance1 is TestClass, true);
-
-    var instance2 = GetIt.I.get<TestBaseClass>();
-
-    expect(instance1, instance2);
-    expect(constructorCounter, 1);
-
-    var instanceSecondGetIt = secondGetIt.get<TestBaseClass>();
-
-    expect(instance1, isNot(instanceSecondGetIt));
-    expect(constructorCounter, 2);
-
-    GetIt.I.reset();
-  });
-
   test('trying to access not registered type', () {
     var getIt = GetIt.instance;
 
