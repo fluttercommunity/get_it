@@ -41,26 +41,14 @@ class GetIt {
   static GetIt get I => instance;
 
   /// You should prefer to use the `instance()` method to access an instance of [GetIt].
-  /// If you really, REALLY need more than one [GetIt] instance please set allowMultipleInstances
-  /// to true to signal you know what you are doing :-).
   factory GetIt.asNewInstance() {
-    throwIfNot(
-      allowMultipleInstances,
-      StateError(
-          'You should prefer to use the `instance()` method to access an instance of GetIt. '
-          'If you really need more than one GetIt instance please set allowMultipleInstances to true.'),
-    );
     return GetIt._();
   }
 
   /// By default it's not allowed to register a type a second time.
   /// If you really need to you can disable the asserts by setting[allowReassignment]= true
   bool allowReassignment = false;
-
-  /// By default it's not allowed to create more than one [GetIt] instance.
-  /// If you really need to you can disable the asserts by setting[allowReassignment]= true
-  static bool allowMultipleInstances = false;
-
+  
   /// retrieves or creates an instance of a registered type [T] depending on the registration function used for this type or based on a name.
   T get<T>([String instanceName]) {
     throwIfNot(
