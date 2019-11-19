@@ -326,6 +326,15 @@ void main() {
     expect(() => getIt('instanceName'), throwsA(TypeMatcher<ArgumentError>()));
   });
 
-  
+  test(
+      'can register a singleton with instanceName and retrieve it with generic parameters and instanceName', () {
+    final getIt = GetIt.instance;
+
+    getIt.registerSingleton(TestClass(), instanceName: 'instanceName');
+
+    var instance1 = getIt.get<TestClass>('instanceName');
+
+    expect(instance1 is TestClass, true);
+  });
 
 }
