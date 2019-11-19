@@ -63,7 +63,8 @@ class GetIt {
     } else {
       final registeredObject = _factoriesByName[instanceName];
       if (registeredObject != null) {
-        if (registeredObject.registrationType is! T) {
+        if (registeredObject.instance != null &&
+            registeredObject.instance is! T) {
           print(T.toString());
           throw ArgumentError(
               "Object with name $instanceName has a different type (${registeredObject.registrationType.toString()}) than the one that is inferred (${T.toString()}) where you call it");
