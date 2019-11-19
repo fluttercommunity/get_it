@@ -27,6 +27,12 @@ class TestClass3 {}
 class TestClass4 {}
 
 void main() {
+
+  setUp((){
+    //make sure the instance is cleared before each test
+    GetIt.I.reset();
+  });
+
   test('register factory', () {
     var getIt = GetIt.instance;
 
@@ -319,4 +325,7 @@ void main() {
 
     expect(() => getIt('instanceName'), throwsA(TypeMatcher<ArgumentError>()));
   });
+
+  
+
 }
