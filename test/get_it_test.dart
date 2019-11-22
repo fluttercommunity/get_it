@@ -145,11 +145,11 @@ void main() {
 
     getIt.registerSingleton(TestClass(), instanceName: 'ConstantByName');
 
-    var instance1 = getIt('ConstantByName');
+    var instance1 = getIt();
 
     expect(instance1 is TestClass, true);
 
-    var instance2 = getIt('ConstantByName');
+    TestClass instance2 = getIt('ConstantByName');
 
     expect(instance1, instance2);
 

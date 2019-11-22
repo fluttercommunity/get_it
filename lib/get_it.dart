@@ -51,8 +51,8 @@ class GetIt {
   
   /// retrieves or creates an instance of a registered type [T] depending on the registration function used for this type or based on a name.
   T get<T>([String instanceName]) {
-    throwIfNot(
-      !(!(const Object() is! T) && instanceName == null),
+    throwIf(
+      (!(const Object() is! T) && instanceName == null),
       ArgumentError(
           'GetIt: You have to provide either a type or a name. Did you accidentally do  `var sl=GetIt.instance();` instead of var sl=GetIt.instance;'),
     );
@@ -74,7 +74,7 @@ class GetIt {
     }
     if (object == null && instanceName == null) {
       throw ArgumentError.value(
-          T, "Object of type ${T.toString()} is not registered inside GetIt");
+          T, "Object of type ${T.toString()} is not registered inside GetIt.\n Did you forget to pass an instance name? \n(Did you accidentally do  GetIt sl=GetIt.instance(); instead of GetIt sl=GetIt.instance;)");
     }
     if (object == null && instanceName != null) {
       throw ArgumentError.value(instanceName,
@@ -234,8 +234,8 @@ class GetIt {
           ArgumentError.value(instance,
               'There is no object type ${instance.runtimeType} registered in GetIt'));
 
-      throwIf(
-          !registeredInstance.first.shouldSignalReady,
+      throwIfNot(
+          registeredInstance.first.shouldSignalReady,
           ArgumentError.value(instance,
               'This instance of type ${instance.runtimeType} is not supposed to be signalled'));
 

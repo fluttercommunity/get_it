@@ -80,7 +80,6 @@ void main() {
   });
 
   test('ready future test', () async {
-    GetIt.allowMultipleInstances = true;
     var getIt = GetIt
         .asNewInstance(); // We use new instance here to make sure other tests haven't signalled ready already
 
