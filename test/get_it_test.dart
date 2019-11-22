@@ -27,6 +27,12 @@ class TestClass3 {}
 class TestClass4 {}
 
 void main() {
+
+  setUp((){
+    //make sure the instance is cleared before each test
+    GetIt.I.reset();
+  });
+
   test('register factory', () {
     var getIt = GetIt.instance;
 
@@ -319,4 +325,16 @@ void main() {
 
     expect(() => getIt('instanceName'), throwsA(TypeMatcher<ArgumentError>()));
   });
+
+  test(
+      'can register a singleton with instanceName and retrieve it with generic parameters and instanceName', () {
+    final getIt = GetIt.instance;
+
+    getIt.registerSingleton(TestClass(), instanceName: 'instanceName');
+
+    var instance1 = getIt.get<TestClass>('instanceName');
+
+    expect(instance1 is TestClass, true);
+  });
+
 }
