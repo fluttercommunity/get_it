@@ -141,6 +141,58 @@ class GetIt {
     _factoriesByName.clear();
   }
 
+  /// Clears the instance of a lazy singleton registered type, being able to call the factory function on the first call of [get] on that type.
+  void resetLazySingleton<T>({Object instance,
+      String instanceName,
+      void Function(T) disposingFunction}) {
+    if (instance != null) {
+      var registeredInstance = _factories.values
+          .followedBy(_factoriesByName.values)
+          .where((x) => identical(x.instance, instance));
+
+      throwIf(
+        registeredInstance.isEmpty,
+        ArgumentError.value(instance,
+            'There is no object type ${instance.runtimeType} registered in GetIt'),
+      );
+
+      throwIf(
+        registeredInstance.first.factoryType != _ServiceFactoryType.lazy,
+        ArgumentError.value(instance,
+            'There is no type ${instance.runtimeType} registered as LazySingleton in GetIt'),
+      );
+
+      var _factory = registeredInstance.first;
+      disposingFunction?.call(_factory.instance);
+      _factory.instance = null;
+    } else {
+      throwIfNot(
+        !(((const Object() is! T) && instanceName != null)),
+        ArgumentError(
+            'GetIt: You have to provide either a type OR a name not both.'),
+      );
+      throwIfNot(
+        (instanceName != null && _factoriesByName.containsKey(instanceName)) ||
+            _factories.containsKey(T),
+        ArgumentError(
+            'No Type registered ${T.toString()} or instance Name must not be null'),
+      );
+      throwIfNot(
+        (instanceName != null && _factoriesByName.containsKey(instanceName) && _factoriesByName[instanceName].factoryType == _ServiceFactoryType.lazy) ||
+            (_factories.containsKey(T)  && _factories[T].factoryType == _ServiceFactoryType.lazy),
+        ArgumentError.value(instance,
+            'There is no type ${T.toString()} registered as LazySingleton in GetIt'),
+      );
+      if (instanceName == null) {
+        disposingFunction?.call(get<T>());
+        _factories[T]?.instance = null;
+      } else {
+        disposingFunction?.call(get(instanceName));
+        _factoriesByName[T]?.instance = null;
+      }
+    }
+  }
+
   void _register<T>(
       {@required _ServiceFactoryType type,
       FactoryFunc factoryFunc,
