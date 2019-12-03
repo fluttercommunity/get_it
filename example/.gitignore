@@ -3,6 +3,7 @@
 # Edit at https://www.gitignore.io/?templates=flutter,jetbrains,androidstudio
 
 
+
 *.iml
 *.class
 .gradle
@@ -13,6 +14,10 @@
 /build
 /captures
 GeneratedPluginRegistrant.java
+
+status.txt
+
+*.code-workspace
 
 ### AndroidStudio ###
 # Covers files to be ignored for android development using Android Studio.
@@ -88,6 +93,7 @@ obj/
 /out/
 
 # User-specific configurations
+android/.idea/
 .idea/caches/
 .idea/libraries/
 .idea/shelf/

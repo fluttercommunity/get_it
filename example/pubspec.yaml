@@ -1,6 +1,9 @@
 name: get_it_example
 description: A new Flutter project.
 
+environment:
+  sdk: ">=2.6.0 <3.0.0"
+
 dependencies:
   flutter:
     sdk: flutter

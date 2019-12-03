@@ -6,6 +6,7 @@ import 'package:get_it_example/app_model.dart';
 GetIt getIt = GetIt.instance;
 
 void main() {
+  
   getIt.registerSingleton<AppModel>(AppModelImplementation(),
       signalsReady: true);
 
