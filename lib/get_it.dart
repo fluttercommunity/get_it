@@ -48,7 +48,7 @@ class GetIt {
   /// By default it's not allowed to register a type a second time.
   /// If you really need to you can disable the asserts by setting[allowReassignment]= true
   bool allowReassignment = false;
-  
+
   /// retrieves or creates an instance of a registered type [T] depending on the registration function used for this type or based on a name.
   T get<T>([String instanceName]) {
     throwIf(
@@ -73,8 +73,8 @@ class GetIt {
       object = registeredObject;
     }
     if (object == null && instanceName == null) {
-      throw ArgumentError.value(
-          T, "Object of type ${T.toString()} is not registered inside GetIt.\n Did you forget to pass an instance name? \n(Did you accidentally do  GetIt sl=GetIt.instance(); instead of GetIt sl=GetIt.instance;)");
+      throw ArgumentError.value(T,
+          "Object of type ${T.toString()} is not registered inside GetIt.\n Did you forget to pass an instance name? \n(Did you accidentally do  GetIt sl=GetIt.instance(); instead of GetIt sl=GetIt.instance;)");
     }
     if (object == null && instanceName != null) {
       throw ArgumentError.value(instanceName,
@@ -142,7 +142,8 @@ class GetIt {
   }
 
   /// Clears the instance of a lazy singleton registered type, being able to call the factory function on the first call of [get] on that type.
-  void resetLazySingleton<T>({Object instance,
+  void resetLazySingleton<T>(
+      {Object instance,
       String instanceName,
       void Function(T) disposingFunction}) {
     if (instance != null) {
@@ -156,6 +157,9 @@ class GetIt {
             'There is no object type ${instance.runtimeType} registered in GetIt'),
       );
 
+      assert(registeredInstance.length == 1,
+          'One Instance more than once in getIt registered');
+
       throwIf(
         registeredInstance.first.factoryType != _ServiceFactoryType.lazy,
         ArgumentError.value(instance,
@@ -166,20 +170,20 @@ class GetIt {
       disposingFunction?.call(_factory.instance);
       _factory.instance = null;
     } else {
-      throwIfNot(
-        !(((const Object() is! T) && instanceName != null)),
+      throwIf(
+        (((const Object() is! T) && instanceName != null)),
         ArgumentError(
             'GetIt: You have to provide either a type OR a name not both.'),
       );
-      throwIfNot(
-        (instanceName != null && _factoriesByName.containsKey(instanceName)) ||
-            _factories.containsKey(T),
+
+      var registeredFactory = _factoriesByName[instanceName] ?? _factories[T];
+
+      throwIf(
+        (registeredFactory == null),
         ArgumentError(
             'No Type registered ${T.toString()} or instance Name must not be null'),
       );
-      throwIfNot(
-        (instanceName != null && _factoriesByName.containsKey(instanceName) && _factoriesByName[instanceName].factoryType == _ServiceFactoryType.lazy) ||
-            (_factories.containsKey(T)  && _factories[T].factoryType == _ServiceFactoryType.lazy),
+      throwIfNot(registeredFactory.factoryType == _ServiceFactoryType.lazy,
         ArgumentError.value(instance,
             'There is no type ${T.toString()} registered as LazySingleton in GetIt'),
       );

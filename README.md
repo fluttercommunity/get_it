@@ -132,6 +132,18 @@ If you need to you can also unregister your registered singletons and factories 
 void unregister<T>({Object instance,String instanceName, void Function(T) disposingFunction})
 ```  
 
+### Resetting LazySingletons
+
+In some cases you might not want to unregister a LazySingleton but instead to reset its instance so that it gets newly created on the next access to it.
+
+```Dart
+  /// Clears the instance of a lazy singleton registered type, being able to call the factory function on the first call of [get] on that type.
+void resetLazySingleton<T>({Object instance,
+                            String instanceName,
+                            void Function(T) disposingFunction}) 
+```                            
+
+
 ### Resetting GetIt completely
 
 ```Dart
