@@ -62,8 +62,8 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: Center(
-        child: StreamBuilder(
-            stream: getIt.ready,
+        child: FutureBuilder(
+            future: getIt.allReady(),
             builder: (context, snapshot) {
               if (snapshot.hasData) {
                 return Column(

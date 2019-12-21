@@ -2,9 +2,12 @@ library get_it;
 
 import 'dart:async';
 
+import 'package:async/async.dart';
 import 'package:meta/meta.dart';
 
 typedef FactoryFunc<T> = T Function();
+typedef FactoryFuncAsync<T> = Future<T> Function();
+typedef SingletonProviderFunc<T> = FutureOr Function(Completer initCompleter);
 
 /// In case of an timeout while waiting for an instance to signal ready
 /// This exception is thrown whith information about who is still waiting
@@ -69,6 +72,7 @@ abstract class GetIt {
 
   /// retrieves or creates an instance of a registered type [T] depending on the registration function used for this type or based on a name.
   T get<T>([String instanceName]);
+  Future<T> getAsync<T>([String instanceName]);
 
   T call<T>([String instanceName]);
 
@@ -79,6 +83,7 @@ abstract class GetIt {
   /// name instead of a type. This should only be necessary if you need to register more
   /// than one instance of one type. Its highly not recommended
   void registerFactory<T>(FactoryFunc<T> func, {String instanceName});
+  void registerFactoryAsync<T>(FactoryFunc<T> func, {String instanceName});
 
   /// registers a type as Singleton by passing a factory function that will be called on the first call of [get] on that type
   /// [T] type to register
@@ -89,7 +94,9 @@ abstract class GetIt {
   /// name instead of a type. This should only be necessary if you need to register more
   /// than one instance of one type. Its highly not recommended
   void registerLazySingleton<T>(FactoryFunc<T> func,
-      {String instanceName, bool signalsReady = false});
+      {String instanceName});
+  void registerLazySingletonAsync<T>(SingletonProviderFunc<T> func,
+      {String instanceName});
 
   /// registers a type as Singleton by passing an [instance] of that type
   ///  that will be returned on each call of [get] on that type
@@ -100,7 +107,9 @@ abstract class GetIt {
   /// name instead of a type. This should only be necessary if you need to register more
   /// than one instance of one type. Its highly not recommended
   void registerSingleton<T>(T instance,
-      {String instanceName, bool signalsReady = false});
+      {String instanceName});
+  void registerSingletonAsync<T>(SingletonProviderFunc<T> func,
+      {String instanceName});
 
   /// Clears all registered types. Handy when writing unit tests
   void reset();
@@ -144,7 +153,7 @@ abstract class GetIt {
   ///
   /// Both ways are mutual exclusive meaning either only use the global `signalReady()` and don't register a singlton/fatory as signaling ready
   /// Or let indiviual instance signal their ready state on their own.
-  void signalReady([Object instance]);
+  void signalReady();
 }
 
 void throwIf(bool condition, Object error) {
@@ -226,8 +235,14 @@ class _GetItImplementation implements GetIt {
         type: _ServiceFactoryType.alwaysNew,
         instanceName: instanceName,
         factoryFunc: func,
-        signalsReady: false);
+        isAsync: false);
   }
+
+  @override
+  void registerFactoryAsync<T>(FactoryFunc<T> func, {String instanceName}) {
+    // TODO: implement registerFactoryAsync
+  }
+
 
   /// registers a type as Singleton by passing a factory function that will be called on the first call of [get] on that type
   /// [T] type to register
@@ -244,7 +259,7 @@ class _GetItImplementation implements GetIt {
         type: _ServiceFactoryType.lazy,
         instanceName: instanceName,
         factoryFunc: func,
-        signalsReady: signalsReady);
+        isAsync: signalsReady);
   }
 
   /// registers a type as Singleton by passing an [instance] of that type
@@ -257,13 +272,16 @@ class _GetItImplementation implements GetIt {
   /// than one instance of one type. Its highly not recommended
   @override
   void registerSingleton<T>(T instance,
-      {String instanceName, bool signalsReady = false}) {
+      {String instanceName}) {
     _register<T>(
         type: _ServiceFactoryType.constant,
         instanceName: instanceName,
         instance: instance,
-        signalsReady: signalsReady);
+        isAsync: false);
   }
+
+
+
 
   /// Clears all registered types. Handy when writing unit tests
   @override
@@ -335,7 +353,7 @@ class _GetItImplementation implements GetIt {
       FactoryFunc factoryFunc,
       T instance,
       @required String instanceName,
-      @required bool signalsReady}) {
+      @required bool isAsync}) {
     throwIfNot(
       instanceName != null || allowReassignment || !_factories.containsKey(T),
       ArgumentError.value(T, "Type ${T.toString()} is already registered"),
@@ -352,7 +370,7 @@ class _GetItImplementation implements GetIt {
     var serviceFactory = _ServiceFactory<T>(type,
         creationFunction: factoryFunc,
         instance: instance,
-        shouldSignalReady: signalsReady,
+        isAsync: isAsync,
         instanceName: instanceName);
     if (instanceName == null) {
       _factories[T] = serviceFactory;
@@ -410,51 +428,17 @@ class _GetItImplementation implements GetIt {
   }
 
   @override
-  void signalReady([Object instance]) {
-    if (instance != null) {
-      var registeredInstance = _factories.values
-          .followedBy(_factoriesByName.values)
-          .where((x) => identical(x.instance, instance));
-      throwIf(
-          registeredInstance.length > 1,
-          StateError(
-              'This objects instance of type ${instance.runtimeType} are registered multiple times in GetIt'));
-
-      throwIf(
-          registeredInstance.isEmpty,
-          ArgumentError.value(instance,
-              'There is no object type ${instance.runtimeType} registered in GetIt'));
-
-      throwIfNot(
-          registeredInstance.first.shouldSignalReady,
-          ArgumentError.value(instance,
-              'This instance of type ${instance.runtimeType} is not supposed to be signalled'));
-
-      throwIf(
-          registeredInstance.first.isReady,
-          StateError(
-              'This instance of type ${instance.runtimeType} was already signalled'));
-
-      registeredInstance.first.isReady = true;
-
-      /// if all registered instances that should signal ready are ready signal the [ready] and [readyFuture]
-      var shouldSignalButNotReady = _factories.values
-          .followedBy(_factoriesByName.values)
-          .where((x) => x.shouldSignalReady && !x.isReady);
-      if (shouldSignalButNotReady.isEmpty) {
-        _readySignalStream.add(true);
-      }
-    } else {
+  void signalReady() {
       /// Manual signalReady without an instance
 
       /// In case that there are still factories that are marked to wait for a signal
       /// but aren't signalled we throw an error with details which objects are concerned
       final notReadyTypes = _factories.entries
-          .where((x) => (x.value.shouldSignalReady && !x.value.isReady))
+          .where((x) => (x.value.isAsync && !x.value.result.isComplete))
           .map<String>((x) => x.key.toString())
           .toList();
       final notReadyNames = _factoriesByName.entries
-          .where((x) => (x.value.shouldSignalReady && !x.value.isReady))
+          .where((x) => (x.value.isAsync && !x.value.result.isComplete))
           .map<String>((x) => x.key)
           .toList();
       throwIf(
@@ -465,6 +449,35 @@ class _GetItImplementation implements GetIt {
       ///    signal the [ready] and [readyFuture]
       _readySignalStream.add(true);
     }
+  
+
+  @override
+  Future<void> allReady({Duration timeOut}) {
+    // TODO: implement allReady
+    return null;
+  }
+
+  @override
+  Future<T> getAsync<T>([String instanceName]) {
+    // TODO: implement getAsync
+    return null;
+  }
+
+  @override
+  Future<void> isReady<T>({Object instance, String instanceName, Duration timeOut, Object callee}) {
+    // TODO: implement isReady
+    return null;
+  }
+
+
+  @override
+  void registerLazySingletonAsync<T>(SingletonProviderFunc<T> func, {String instanceName}) {
+    // TODO: implement registerLazySingletonAsync
+  }
+
+  @override
+  void registerSingletonAsync<T>(SingletonProviderFunc func, {String instanceName}) {
+    // TODO: implement registerSingletonAsync
   }
 }
 
@@ -474,19 +487,20 @@ class _ServiceFactory<T> {
   final _ServiceFactoryType factoryType;
   final FactoryFunc creationFunction;
   final String instanceName;
-  final bool shouldSignalReady;
-  bool isReady;
+  final bool isAsync;
   Object instance;
   Type registrationType;
   Completer _readyCompleter;
+  ResultFuture result;
 
-  Future<void> get getReadyFuture()
+  Future<void> get getReadyFuture
   {
-    if (shouldSignalReady)
+    if (isAsync)
     {
       return _readyCompleter.future;
     }
-    throw()
+    // TODO check which exeption type is best here or if its an error
+   throw(Exception("You can't await this instance"));
   } 
 
   bool get isNamedRegistration => instanceName != null;
@@ -494,11 +508,10 @@ class _ServiceFactory<T> {
   _ServiceFactory(this.factoryType,
       {this.creationFunction,
       this.instance,
-      this.isReady = false,
-      this.shouldSignalReady = false,
+      this.isAsync = false,
       this.instanceName}) {
     registrationType = T;
-    if (shouldSignalReady)
+    if (isAsync)
     {
       _readyCompleter = Completer();
     }
