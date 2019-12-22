@@ -242,11 +242,11 @@ class _GetItImplementation implements GetIt {
       instanceFactory = _factoriesByName[instanceName]
           as _ServiceFactory<T, dynamic, dynamic>;
       assert(instanceFactory != null,
-          "Object/factory with name $instanceName is not registered inside GetIt");
+          "Object/factory with name $instanceName is not registered inside GetIt. Did you forget to register it?");
     } else {
       instanceFactory = _factories[T] as _ServiceFactory<T, dynamic, dynamic>;
       assert(instanceFactory != null,
-          "No type ${T.toString()} is registered inside GetIt.\n Did you forget to pass an instance name? \n(Did you accidentally do  GetIt sl=GetIt.instance(); instead of GetIt sl=GetIt.instance;)");
+          "No type ${T.toString()} is registered inside GetIt.\n Did you forget to pass an instance name? \n(Did you accidentally do  GetIt sl=GetIt.instance(); instead of GetIt sl=GetIt.instance;\did you forget to register it?)");
     }
     return instanceFactory;
   }

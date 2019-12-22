@@ -455,4 +455,19 @@ void main() {
 
     expect(instance1 is TestClass, true);
   });
+  test('register LazySingleton with lambda and factory function', () {
+    GetIt.I.registerLazySingleton(() => SingletonInjector.configuration());
+
+    final instance = GetIt.I<Injector>();
+
+    expect(instance, TypeMatcher<Injector>());
+  });
 }
+
+class SingletonInjector {
+  static Injector configuration() {
+    return Injector();
+  }
+}
+
+class Injector {}
