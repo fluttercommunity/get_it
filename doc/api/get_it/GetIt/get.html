@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="static-assets/github.css">
   <link rel="stylesheet" href="static-assets/styles.css">
   <link rel="icon" href="static-assets/favicon.png">
-  
+  <!-- header placeholder -->
 </head>
 
 <body>
@@ -53,37 +53,40 @@
     
     <h5>GetIt class</h5>
     <ol>
-      <li class="section-title"><a href="get_it/GetIt-class.html#constructors">Constructors</a></li>
-      <li><a href="get_it/GetIt/GetIt.asNewInstance.html">asNewInstance</a></li>
     
-      <li class="section-title">
-        <a href="get_it/GetIt-class.html#instance-properties">Properties</a>
-      </li>
-      <li><a href="get_it/GetIt/allowReassignment.html">allowReassignment</a></li>
-      <li><a href="get_it/GetIt/ready.html">ready</a></li>
-      <li><a href="get_it/GetIt/readyFuture.html">readyFuture</a></li>
-      <li class="inherited"><a href="get_it/GetIt/hashCode.html">hashCode</a></li>
-      <li class="inherited"><a href="get_it/GetIt/runtimeType.html">runtimeType</a></li>
+        <li class="section-title"><a href="get_it/GetIt-class.html#constructors">Constructors</a></li>
+        <li><a href="get_it/GetIt/GetIt.asNewInstance.html">asNewInstance</a></li>
     
-      <li class="section-title"><a href="get_it/GetIt-class.html#instance-methods">Methods</a></li>
-      <li><a href="get_it/GetIt/call.html">call</a></li>
-      <li><a href="get_it/GetIt/get.html">get</a></li>
-      <li><a href="get_it/GetIt/registerFactory.html">registerFactory</a></li>
-      <li><a href="get_it/GetIt/registerLazySingleton.html">registerLazySingleton</a></li>
-      <li><a href="get_it/GetIt/registerSingleton.html">registerSingleton</a></li>
-      <li><a href="get_it/GetIt/reset.html">reset</a></li>
-      <li><a href="get_it/GetIt/signalReady.html">signalReady</a></li>
-      <li><a href="get_it/GetIt/unregister.html">unregister</a></li>
-      <li class="inherited"><a href="get_it/GetIt/noSuchMethod.html">noSuchMethod</a></li>
-      <li class="inherited"><a href="get_it/GetIt/toString.html">toString</a></li>
+        <li class="section-title">
+            <a href="get_it/GetIt-class.html#instance-properties">Properties</a>
+        </li>
+        <li><a href="get_it/GetIt/allowReassignment.html">allowReassignment</a></li>
+        <li><a href="get_it/GetIt/ready.html">ready</a></li>
+        <li><a href="get_it/GetIt/readyFuture.html">readyFuture</a></li>
+        <li class="inherited"><a href="get_it/GetIt/hashCode.html">hashCode</a></li>
+        <li class="inherited"><a href="get_it/GetIt/runtimeType.html">runtimeType</a></li>
     
-      <li class="section-title inherited"><a href="get_it/GetIt-class.html#operators">Operators</a></li>
-      <li class="inherited"><a href="get_it/GetIt/operator_equals.html">operator ==</a></li>
+        <li class="section-title"><a href="get_it/GetIt-class.html#instance-methods">Methods</a></li>
+        <li><a href="get_it/GetIt/call.html">call</a></li>
+        <li><a href="get_it/GetIt/get.html">get</a></li>
+        <li><a href="get_it/GetIt/registerFactory.html">registerFactory</a></li>
+        <li><a href="get_it/GetIt/registerLazySingleton.html">registerLazySingleton</a></li>
+        <li><a href="get_it/GetIt/registerSingleton.html">registerSingleton</a></li>
+        <li><a href="get_it/GetIt/reset.html">reset</a></li>
+        <li><a href="get_it/GetIt/resetLazySingleton.html">resetLazySingleton</a></li>
+        <li><a href="get_it/GetIt/signalReady.html">signalReady</a></li>
+        <li><a href="get_it/GetIt/unregister.html">unregister</a></li>
+        <li class="inherited"><a href="get_it/GetIt/noSuchMethod.html">noSuchMethod</a></li>
+        <li class="inherited"><a href="get_it/GetIt/toString.html">toString</a></li>
     
-      <li class="section-title"><a href="get_it/GetIt-class.html#static-properties">Static properties</a></li>
-      <li><a href="get_it/GetIt/allowMultipleInstances.html">allowMultipleInstances</a></li>
-      <li><a href="get_it/GetIt/I.html">I</a></li>
-      <li><a href="get_it/GetIt/instance.html">instance</a></li>
+        <li class="section-title inherited"><a href="get_it/GetIt-class.html#operators">Operators</a></li>
+        <li class="inherited"><a href="get_it/GetIt/operator_equals.html">operator ==</a></li>
+    
+        <li class="section-title"><a href="get_it/GetIt-class.html#static-properties">Static properties</a></li>
+        <li><a href="get_it/GetIt/I.html">I</a></li>
+        <li><a href="get_it/GetIt/instance.html">instance</a></li>
+    
+    
     
     
     </ol>
@@ -95,7 +98,8 @@
     <section class="multi-line-signature">
       <span class="returntype">T</span>
             <span class="name ">get</span>
-&lt;<wbr><span class="type-parameter">T</span>&gt;(<wbr>[<span class="parameter" id="get-param-instanceName"><span class="type-annotation">String</span> <span class="parameter-name">instanceName</span></span> ])
+&lt;<wbr><span class="type-parameter">T</span>&gt;(<wbr><ol class="parameter-list"><li><span class="parameter" id="get-param-instanceName">[<span class="type-annotation">String</span> <span class="parameter-name">instanceName</span>]</span></li>
+</ol>)
       
     </section>
     <section class="desc markdown">
@@ -105,34 +109,34 @@
     <section class="summary source-code" id="source">
       <h2><span>Implementation</span></h2>
       <pre class="language-dart"><code class="language-dart">T get&lt;T&gt;([String instanceName]) {
-  throwIfNot(
-    !(!(const Object() is! T) &amp;&amp; instanceName == null),
+  throwIf(
+    (!(const Object() is! T) &amp;&amp; instanceName == null),
     ArgumentError(
         &#39;GetIt: You have to provide either a type or a name. Did you accidentally do  `var sl=GetIt.instance();` instead of var sl=GetIt.instance;&#39;),
-  );
-  throwIfNot(
-    !(((const Object() is! T) &amp;&amp; instanceName != null)),
-    ArgumentError(
-        &#39;GetIt: You have to provide either a type OR a name not both.&#39;),
   );
 
   _ServiceFactory&lt;T&gt; object;
   if (instanceName == null) {
     object = _factories[T];
   } else {
-    object = _factoriesByName[instanceName];
+    final registeredObject = _factoriesByName[instanceName];
+    if (registeredObject != null) {
+      if (registeredObject.instance != null &amp;&amp;
+          registeredObject.instance is! T) {
+        print(T.toString());
+        throw ArgumentError(
+            &quot;Object with name $instanceName has a different type (${registeredObject.registrationType.toString()}) than the one that is inferred (${T.toString()}) where you call it&quot;);
+      }
+    }
+    object = registeredObject;
   }
-  if (object == null) {
-    throwIf(
-      instanceName == null,
-      ArgumentError.value(
-          T, &quot;Object of type ${T.toString()} is not registered inside GetIt&quot;),
-    );
-    throwIf(
-      instanceName != null,
-      ArgumentError.value(instanceName,
-          &quot;Object with name $instanceName is not registered inside GetIt&quot;),
-    );
+  if (object == null &amp;&amp; instanceName == null) {
+    throw ArgumentError.value(T,
+        &quot;Object of type ${T.toString()} is not registered inside GetIt.\n Did you forget to pass an instance name? \n(Did you accidentally do  GetIt sl=GetIt.instance(); instead of GetIt sl=GetIt.instance;)&quot;);
+  }
+  if (object == null &amp;&amp; instanceName != null) {
+    throw ArgumentError.value(instanceName,
+        &quot;Object with name $instanceName is not registered inside GetIt&quot;);
   }
   return object.getObject();
 }</code></pre>
@@ -147,10 +151,11 @@
 
 <footer>
   <span class="no-break">
-    get_it 3.0.0
+    get_it
+      3.1.0
   </span>
 
-  
+  <!-- footer-text placeholder -->
 </footer>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
@@ -158,7 +163,7 @@
 <script src="static-assets/highlight.pack.js"></script>
 <script src="static-assets/URI.js"></script>
 <script src="static-assets/script.js"></script>
-
+<!-- footer placeholder -->
 
 </body>
 

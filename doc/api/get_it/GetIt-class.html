@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="static-assets/github.css">
   <link rel="stylesheet" href="static-assets/styles.css">
   <link rel="icon" href="static-assets/favicon.png">
-  
+  <!-- header placeholder -->
 </head>
 
 <body>
@@ -57,6 +57,7 @@
     
     
     
+    
       <li class="section-title"><a href="get_it/get_it-library.html#functions">Functions</a></li>
       <li><a href="get_it/throwIf.html">throwIf</a></li>
       <li><a href="get_it/throwIfNot.html">throwIfNot</a></li>
@@ -89,8 +90,6 @@ callable class</p>
         </dt>
         <dd>
           You should prefer to use the <code>instance()</code> method to access an instance of <a href="get_it/GetIt-class.html">GetIt</a>.
-If you really, REALLY need more than one <a href="get_it/GetIt-class.html">GetIt</a> instance please set allowMultipleInstances
-to true to signal you know what you are doing :-).
           <div class="constructor-modifier features">factory</div>
         </dd>
       </dl>
@@ -148,7 +147,7 @@ If you really need to you can disable the asserts by setting<a href="get_it/GetI
       <h2>Methods</h2>
       <dl class="callables">
         <dt id="call" class="callable">
-          <span class="name"><a href="get_it/GetIt/call.html">call</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr>[<span class="parameter" id="call-param-instanceName"><span class="type-annotation">String</span> <span class="parameter-name">instanceName</span></span> ])
+          <span class="name"><a href="get_it/GetIt/call.html">call</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="call-param-instanceName">[<span class="type-annotation">String</span> <span class="parameter-name">instanceName</span>]</span><wbr>)
             <span class="returntype parameter">&#8594; T</span>
           </span>
                   </dt>
@@ -157,7 +156,7 @@ If you really need to you can disable the asserts by setting<a href="get_it/GetI
                   
 </dd>
         <dt id="get" class="callable">
-          <span class="name"><a href="get_it/GetIt/get.html">get</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr>[<span class="parameter" id="get-param-instanceName"><span class="type-annotation">String</span> <span class="parameter-name">instanceName</span></span> ])
+          <span class="name"><a href="get_it/GetIt/get.html">get</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="get-param-instanceName">[<span class="type-annotation">String</span> <span class="parameter-name">instanceName</span>]</span><wbr>)
             <span class="returntype parameter">&#8594; T</span>
           </span>
                   </dt>
@@ -166,7 +165,7 @@ If you really need to you can disable the asserts by setting<a href="get_it/GetI
                   
 </dd>
         <dt id="registerFactory" class="callable">
-          <span class="name"><a href="get_it/GetIt/registerFactory.html">registerFactory</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="registerFactory-param-func"><span class="type-annotation"><a href="get_it/FactoryFunc.html">FactoryFunc</a><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span></span> <span class="parameter-name">func</span>, {</span> <span class="parameter" id="registerFactory-param-instanceName"><span class="type-annotation">String</span> <span class="parameter-name">instanceName</span></span> })
+          <span class="name"><a href="get_it/GetIt/registerFactory.html">registerFactory</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="registerFactory-param-func"><span class="type-annotation"><a href="get_it/FactoryFunc.html">FactoryFunc</a><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span></span> <span class="parameter-name">func</span>, </span><wbr><span class="parameter" id="registerFactory-param-instanceName">{<span class="type-annotation">String</span> <span class="parameter-name">instanceName</span>}</span><wbr>)
             <span class="returntype parameter">&#8594; void</span>
           </span>
                   </dt>
@@ -180,7 +179,7 @@ than one instance of one type. Its highly not recommended
                   
 </dd>
         <dt id="registerLazySingleton" class="callable">
-          <span class="name"><a href="get_it/GetIt/registerLazySingleton.html">registerLazySingleton</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="registerLazySingleton-param-func"><span class="type-annotation"><a href="get_it/FactoryFunc.html">FactoryFunc</a><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span></span> <span class="parameter-name">func</span>, {</span> <span class="parameter" id="registerLazySingleton-param-instanceName"><span class="type-annotation">String</span> <span class="parameter-name">instanceName</span>, </span> <span class="parameter" id="registerLazySingleton-param-signalsReady"><span class="type-annotation">bool</span> <span class="parameter-name">signalsReady</span>: <span class="default-value">false</span></span> })
+          <span class="name"><a href="get_it/GetIt/registerLazySingleton.html">registerLazySingleton</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="registerLazySingleton-param-func"><span class="type-annotation"><a href="get_it/FactoryFunc.html">FactoryFunc</a><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span></span> <span class="parameter-name">func</span>, </span><wbr><span class="parameter" id="registerLazySingleton-param-instanceName">{<span class="type-annotation">String</span> <span class="parameter-name">instanceName</span>, </span><wbr><span class="parameter" id="registerLazySingleton-param-signalsReady"><span class="type-annotation">bool</span> <span class="parameter-name">signalsReady</span>: <span class="default-value">false</span>}</span><wbr>)
             <span class="returntype parameter">&#8594; void</span>
           </span>
                   </dt>
@@ -196,7 +195,7 @@ than one instance of one type. Its highly not recommended
                   
 </dd>
         <dt id="registerSingleton" class="callable">
-          <span class="name"><a href="get_it/GetIt/registerSingleton.html">registerSingleton</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="registerSingleton-param-instance"><span class="type-annotation">T</span> <span class="parameter-name">instance</span>, {</span> <span class="parameter" id="registerSingleton-param-instanceName"><span class="type-annotation">String</span> <span class="parameter-name">instanceName</span>, </span> <span class="parameter" id="registerSingleton-param-signalsReady"><span class="type-annotation">bool</span> <span class="parameter-name">signalsReady</span>: <span class="default-value">false</span></span> })
+          <span class="name"><a href="get_it/GetIt/registerSingleton.html">registerSingleton</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="registerSingleton-param-instance"><span class="type-annotation">T</span> <span class="parameter-name">instance</span>, </span><wbr><span class="parameter" id="registerSingleton-param-instanceName">{<span class="type-annotation">String</span> <span class="parameter-name">instanceName</span>, </span><wbr><span class="parameter" id="registerSingleton-param-signalsReady"><span class="type-annotation">bool</span> <span class="parameter-name">signalsReady</span>: <span class="default-value">false</span>}</span><wbr>)
             <span class="returntype parameter">&#8594; void</span>
           </span>
                   </dt>
@@ -220,8 +219,17 @@ than one instance of one type. Its highly not recommended
           Clears all registered types. Handy when writing unit tests
                   
 </dd>
+        <dt id="resetLazySingleton" class="callable">
+          <span class="name"><a href="get_it/GetIt/resetLazySingleton.html">resetLazySingleton</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="resetLazySingleton-param-instance">{<span class="type-annotation">Object</span> <span class="parameter-name">instance</span>, </span><wbr><span class="parameter" id="resetLazySingleton-param-instanceName"><span class="type-annotation">String</span> <span class="parameter-name">instanceName</span>, </span><wbr><span class="parameter" id="resetLazySingleton-param-disposingFunction"><span class="type-annotation">void</span> <span class="parameter-name">disposingFunction</span>(<span class="parameter" id="param-"><span class="type-annotation">T</span></span><wbr>)}</span><wbr>)
+            <span class="returntype parameter">&#8594; void</span>
+          </span>
+                  </dt>
+        <dd>
+          Clears the instance of a lazy singleton registered type, being able to call the factory function on the first call of <a href="get_it/GetIt/get.html">get</a> on that type.
+                  
+</dd>
         <dt id="signalReady" class="callable">
-          <span class="name"><a href="get_it/GetIt/signalReady.html">signalReady</a></span><span class="signature">(<wbr>[<span class="parameter" id="signalReady-param-instance"><span class="type-annotation">Object</span> <span class="parameter-name">instance</span></span> ])
+          <span class="name"><a href="get_it/GetIt/signalReady.html">signalReady</a></span><span class="signature">(<wbr><span class="parameter" id="signalReady-param-instance">[<span class="type-annotation">Object</span> <span class="parameter-name">instance</span>]</span><wbr>)
             <span class="returntype parameter">&#8594; void</span>
           </span>
                   </dt>
@@ -230,7 +238,7 @@ than one instance of one type. Its highly not recommended
                   
 </dd>
         <dt id="unregister" class="callable">
-          <span class="name"><a href="get_it/GetIt/unregister.html">unregister</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr>{<span class="parameter" id="unregister-param-instance"><span class="type-annotation">Object</span> <span class="parameter-name">instance</span>, </span> <span class="parameter" id="unregister-param-instanceName"><span class="type-annotation">String</span> <span class="parameter-name">instanceName</span>, </span> <span class="parameter" id="unregister-param-disposingFunction"><span class="type-annotation">void</span> <span class="parameter-name">disposingFunction</span>(<span class="parameter" id="disposingFunction-param-"><span class="type-annotation">T</span></span>)</span> })
+          <span class="name"><a href="get_it/GetIt/unregister.html">unregister</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="unregister-param-instance">{<span class="type-annotation">Object</span> <span class="parameter-name">instance</span>, </span><wbr><span class="parameter" id="unregister-param-instanceName"><span class="type-annotation">String</span> <span class="parameter-name">instanceName</span>, </span><wbr><span class="parameter" id="unregister-param-disposingFunction"><span class="type-annotation">void</span> <span class="parameter-name">disposingFunction</span>(<span class="parameter" id="param-"><span class="type-annotation">T</span></span><wbr>)}</span><wbr>)
             <span class="returntype parameter">&#8594; void</span>
           </span>
                   </dt>
@@ -241,7 +249,7 @@ that provides a instance of your class to be disposed
                   
 </dd>
         <dt id="noSuchMethod" class="callable inherited">
-          <span class="name"><a href="get_it/GetIt/noSuchMethod.html">noSuchMethod</a></span><span class="signature">(<wbr><span class="parameter" id="noSuchMethod-param-invocation"><span class="type-annotation">Invocation</span> <span class="parameter-name">invocation</span></span>)
+          <span class="name"><a href="get_it/GetIt/noSuchMethod.html">noSuchMethod</a></span><span class="signature">(<wbr><span class="parameter" id="noSuchMethod-param-invocation"><span class="type-annotation">Invocation</span> <span class="parameter-name">invocation</span></span><wbr>)
             <span class="returntype parameter">&#8594; dynamic</span>
           </span>
                   </dt>
@@ -265,7 +273,7 @@ that provides a instance of your class to be disposed
       <h2>Operators</h2>
       <dl class="callables">
         <dt id="operator ==" class="callable inherited">
-          <span class="name"><a href="get_it/GetIt/operator_equals.html">operator ==</a></span><span class="signature">(<wbr><span class="parameter" id="==-param-other"><span class="type-annotation">dynamic</span> <span class="parameter-name">other</span></span>)
+          <span class="name"><a href="get_it/GetIt/operator_equals.html">operator ==</a></span><span class="signature">(<wbr><span class="parameter" id="==-param-other"><span class="type-annotation">dynamic</span> <span class="parameter-name">other</span></span><wbr>)
             <span class="returntype parameter">&#8594; bool</span>
           </span>
                   </dt>
@@ -280,15 +288,6 @@ that provides a instance of your class to be disposed
       <h2>Static Properties</h2>
 
       <dl class="properties">
-        <dt id="allowMultipleInstances" class="property">
-          <span class="name"><a href="get_it/GetIt/allowMultipleInstances.html">allowMultipleInstances</a></span>
-          <span class="signature">&#8596; bool</span>         
-        </dt>
-        <dd>
-          By default it's not allowed to create more than one <a href="get_it/GetIt-class.html">GetIt</a> instance.
-If you really need to you can disable the asserts by setting<a href="get_it/GetIt/allowReassignment.html">allowReassignment</a>= true
-                  <div class="features">read / write</div>
-</dd>
         <dt id="I" class="property">
           <span class="name"><a href="get_it/GetIt/I.html">I</a></span>
           <span class="signature">&#8594; <a href="get_it/GetIt-class.html">GetIt</a></span>         
@@ -314,6 +313,7 @@ If you really need to you can disable the asserts by setting<a href="get_it/GetI
 
   <div id="dartdoc-sidebar-right" class="col-xs-6 col-sm-6 col-md-2 sidebar sidebar-offcanvas-right">
     <ol>
+    
       <li class="section-title"><a href="get_it/GetIt-class.html#constructors">Constructors</a></li>
       <li><a href="get_it/GetIt/GetIt.asNewInstance.html">asNewInstance</a></li>
     
@@ -333,6 +333,7 @@ If you really need to you can disable the asserts by setting<a href="get_it/GetI
       <li><a href="get_it/GetIt/registerLazySingleton.html">registerLazySingleton</a></li>
       <li><a href="get_it/GetIt/registerSingleton.html">registerSingleton</a></li>
       <li><a href="get_it/GetIt/reset.html">reset</a></li>
+      <li><a href="get_it/GetIt/resetLazySingleton.html">resetLazySingleton</a></li>
       <li><a href="get_it/GetIt/signalReady.html">signalReady</a></li>
       <li><a href="get_it/GetIt/unregister.html">unregister</a></li>
       <li class="inherited"><a href="get_it/GetIt/noSuchMethod.html">noSuchMethod</a></li>
@@ -342,9 +343,9 @@ If you really need to you can disable the asserts by setting<a href="get_it/GetI
       <li class="inherited"><a href="get_it/GetIt/operator_equals.html">operator ==</a></li>
     
       <li class="section-title"><a href="get_it/GetIt-class.html#static-properties">Static properties</a></li>
-      <li><a href="get_it/GetIt/allowMultipleInstances.html">allowMultipleInstances</a></li>
       <li><a href="get_it/GetIt/I.html">I</a></li>
       <li><a href="get_it/GetIt/instance.html">instance</a></li>
+    
     
     
     </ol>
@@ -354,10 +355,11 @@ If you really need to you can disable the asserts by setting<a href="get_it/GetI
 
 <footer>
   <span class="no-break">
-    get_it 3.0.0
+    get_it
+      3.1.0
   </span>
 
-  
+  <!-- footer-text placeholder -->
 </footer>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
@@ -365,7 +367,7 @@ If you really need to you can disable the asserts by setting<a href="get_it/GetI
 <script src="static-assets/highlight.pack.js"></script>
 <script src="static-assets/URI.js"></script>
 <script src="static-assets/script.js"></script>
-
+<!-- footer placeholder -->
 
 </body>
 

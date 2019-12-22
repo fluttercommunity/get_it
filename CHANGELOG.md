@@ -1,3 +1,12 @@
+## [3.1.0] - 21.12.2019
+
+* New feature to reset lazySingletons
+
+* Bug fixes:
+    - When using named instances & generic type (you should not do that)
+      https://github.com/fluttercommunity/get_it/pull/32
+
+
 ## [3.0.2] - 23.10.2019
 
 * Bugfix when using named instances

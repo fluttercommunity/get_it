@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
-  <meta name="generator" content="made with love by dartdoc 0.28.4">
+  <meta name="generator" content="made with love by dartdoc 0.29.2">
   <meta name="description" content="get_it API docs, for the Dart programming language.">
   <title>get_it - Dart API docs</title>
 
@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="static-assets/github.css">
   <link rel="stylesheet" href="static-assets/styles.css">
   <link rel="icon" href="static-assets/favicon.png">
-  
+  <!-- header placeholder -->
 </head>
 
 <body>
@@ -57,15 +57,26 @@
 <h1 id="get_it">get_it</h1>
 <blockquote>
 <p><strong>Breaking Change with V2.0.0</strong> 
-you no longer can directly create instances of the type <code>GetIt</code> because <code>GetIt</code> is now a singleton please see <a href="#getting-started">Getting Started</a>.</p></blockquote>
+you no longer can directly create instances of the type <code>GetIt</code> because <code>GetIt</code> is now a singleton please see <a href="#getting-started">Getting Started</a>.</p>
+</blockquote>
 <h3 id="important-you-have-to-use-dart2-to-use-this-component"><strong>IMPORTANT: You have to use Dart2 to use this component</strong></h3>
 <p>You can find here a <a href="https://www.burkharts.net/apps/blog/one-to-find-them-all-how-to-use-service-locators-with-flutter/">detailed blog post on how to use GetIt</a></p>
 <p>This is a simple <strong>Service Locator</strong> for Dart and Flutter projects with some additional goodies highly inspired by <a href="https://github.com/reactiveui/splat">Splat</a>. </p>
 <blockquote>
 <p>If you are not familiar with the concept of Service Locators, its a way to decouple the interface (abstract base class) from a concrete implementation and at the same time allows to access the concrete implementation from everywhere in your App over the interface.
-I can only highly recommend to read this classic article by from Martin Fowler <a href="https://martinfowler.com/articles/injection.html">Inversion of Control Containers and the Dependency Injection  pattern</a></p></blockquote>
-<p>Accessing an object from anywhere in an App especially can be done by other ways too but:</p><ul><li>If you use a Singleton you cannot easily switch the implementation to another like a mock version for unit tests</li><li>IoC containers for Dependency Injections offer a similar functionality but with the cost of slow start-up time and less readability because you don't know where the magically injected object come from. As most IoC libs rely on reflection they cannot be used with Flutter. </li></ul>
-<p>Typical usage:</p><ul><li>Accessing service objects like REST API clients, databases so that they easily can be mocked.</li><li>Accessing View/AppModels/Managers from Flutter Views</li><li>Because interface and implementations are decoupled you could also register Flutter Views with different implementations and decide at start-up which one you want to use e.g. depending on screen resolutions</li></ul>
+I can only highly recommend to read this classic article by from Martin Fowler <a href="https://martinfowler.com/articles/injection.html">Inversion of Control Containers and the Dependency Injection  pattern</a></p>
+</blockquote>
+<p>Accessing an object from anywhere in an App especially can be done by other ways too but:</p>
+<ul>
+<li>If you use a Singleton you cannot easily switch the implementation to another like a mock version for unit tests</li>
+<li>IoC containers for Dependency Injections offer a similar functionality but with the cost of slow start-up time and less readability because you don't know where the magically injected object come from. As most IoC libs rely on reflection they cannot be used with Flutter. </li>
+</ul>
+<p>Typical usage:</p>
+<ul>
+<li>Accessing service objects like REST API clients, databases so that they easily can be mocked.</li>
+<li>Accessing View/AppModels/Managers from Flutter Views</li>
+<li>Because interface and implementations are decoupled you could also register Flutter Views with different implementations and decide at start-up which one you want to use e.g. depending on screen resolutions</li>
+</ul>
 <p><strong>Extremely important if you use GetIt: ALWAYS use the same style to import your project files either as relative paths OR as package which I recommend. DON'T mix them because currently Dart treats types imported in different ways as two different types although both reference the same file.</strong></p>
 <h2 id="getting-started">Getting Started</h2>
 <p><strong>Before V2.0.0</strong>
@@ -81,7 +92,8 @@ GetIt getIt = GetIt.I;
 <pre class="language-Dart"><code class="language-Dart">GetIt sl = GetIt.instance;
 </code></pre>
 <blockquote>
-<p>You can use any name you want which makes Brian happy like (<code>sl, backend, services...</code>) ;-) </p></blockquote>
+<p>You can use any name you want which makes Brian happy like (<code>sl, backend, services...</code>) ;-) </p>
+</blockquote>
 <p>Before you can access your objects you have to register them within <code>GetIt</code> typically direct in your start-up code.</p>
 <pre class="language-Dart"><code class="language-Dart">sl.registerSingleton&lt;AppModel&gt;(AppModelImplementation());
 sl.registerLazySingleton&lt;RESTAPI&gt;(() =&gt;RestAPIImplementation());
@@ -91,7 +103,8 @@ GetIt.instance.registerSingleton&lt;AppModel&gt;(AppModelImplementation());
 GetIt.I.registerLazySingleton&lt;RESTAPI&gt;(() =&gt;RestAPIImplementation());
 </code></pre>
 <blockquote>
-<p><code>AppModel</code> and <code>RESTAPI</code> are both abstract base classes in this example</p></blockquote>
+<p><code>AppModel</code> and <code>RESTAPI</code> are both abstract base classes in this example</p>
+</blockquote>
 <p>To access the registered objects call <code>get&lt;Type&gt;()</code> on your <code>GetIt</code>instance</p>
 <pre class="language-Dart"><code class="language-Dart">var myAppModel = sl.get&lt;AppModel&gt;();
 </code></pre>
@@ -104,7 +117,8 @@ var myAppModel = GetIt.I&lt;AppModel&gt;();
 </code></pre>
 <h2 id="different-ways-of-registration">Different ways of registration</h2>
 <blockquote>
-<p>Although I always would recommend using an abstract base class as registration type so that you can vary the implementations you don't have to do this. You can also register concrete types.</p></blockquote>
+<p>Although I always would recommend using an abstract base class as registration type so that you can vary the implementations you don't have to do this. You can also register concrete types.</p>
+</blockquote>
 <p><code>GetIt</code> offers different ways how objects are registered that effect the lifetime of this objects.</p>
 <h3 id="factory">Factory</h3>
 <pre class="language-Dart"><code class="language-Dart">void registerFactory&lt;T&gt;(FactoryFunc&lt;T&gt; func)
@@ -130,6 +144,13 @@ If you really have to overwrite a registration, then you can by setting the prop
 /// if you need to dispose any resources you can do it using [disposingFunction] function
 /// that provides a instance of your class to be disposed
 void unregister&lt;T&gt;({Object instance,String instanceName, void Function(T) disposingFunction})
+</code></pre>
+<h3 id="resetting-lazysingletons">Resetting LazySingletons</h3>
+<p>In some cases you might not want to unregister a LazySingleton but instead to reset its instance so that it gets newly created on the next access to it.</p>
+<pre class="language-Dart"><code class="language-Dart">  /// Clears the instance of a lazy singleton registered type, being able to call the factory function on the first call of [get] on that type.
+void resetLazySingleton&lt;T&gt;({Object instance,
+                            String instanceName,
+                            void Function(T) disposingFunction}) 
 </code></pre>
 <h3 id="resetting-getit-completely">Resetting GetIt completely</h3>
 <pre class="language-Dart"><code class="language-Dart">/// Clears all registered types. Handy when writing unit tests
@@ -194,10 +215,11 @@ GetIt myOwnInstance = GetIt.asNewInstance();
 
 <footer>
   <span class="no-break">
-    get_it 3.0.0
+    get_it
+      3.1.0
   </span>
 
-  
+  <!-- footer-text placeholder -->
 </footer>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
@@ -205,7 +227,7 @@ GetIt myOwnInstance = GetIt.asNewInstance();
 <script src="static-assets/highlight.pack.js"></script>
 <script src="static-assets/URI.js"></script>
 <script src="static-assets/script.js"></script>
-
+<!-- footer placeholder -->
 
 </body>
 
