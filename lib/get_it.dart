@@ -93,8 +93,10 @@ abstract class GetIt {
   /// [instanceName] if you provide a value here your factory gets registered with that
   /// name instead of a type. This should only be necessary if you need to register more
   /// than one instance of one type. Its highly not recommended
+  /// [registerLazySingleton] does not influence [allReady]
   void registerLazySingleton<T>(FactoryFunc<T> func,
       {String instanceName});
+  /// [registerLazySingletonAsync] does not influence [allReady]
   void registerLazySingletonAsync<T>(SingletonProviderFunc<T> func,
       {String instanceName});
 
@@ -108,8 +110,10 @@ abstract class GetIt {
   /// than one instance of one type. Its highly not recommended
   void registerSingleton<T>(T instance,
       {String instanceName});
-  void registerSingletonAsync<T>(SingletonProviderFunc<T> func,
-      {String instanceName});
+  /// [providerFunc] is executed immediately. If it returns an object the object has to complete the completer.
+  /// if it returns a future the completer will be completed automatically when that future completes    
+  void registerSingletonAsync<T>(SingletonProviderFunc<T> providerFunc,
+      {String instanceName, Iterable<Type> dependsOn});
 
   /// Clears all registered types. Handy when writing unit tests
   void reset();
@@ -139,9 +143,14 @@ abstract class GetIt {
   /// [instanceName] factory/Singleton to be waited for that was registered by name instead of a type.
   /// You should only use one of the
   /// [timeOut] if this is set and the future wasn't completed within that time period an
-  /// [callee] optional parameter which makes debugging easier. Pass `this` in here.
   Future<void> isReady<T>(
-      {Object instance, String instanceName, Duration timeOut, Object callee});
+      {Object instance, String instanceName, Duration timeOut});
+
+  bool isReadySync<T>(
+      {Object instance, String instanceName});
+
+  bool allReadySync<T>(
+      {Object instance, String instanceName});
 
   /// if [instance] is `null` and no factory/singleton is waiting to be signaled this will complete the future you got
   /// from [allReady]
@@ -175,9 +184,6 @@ class _GetItImplementation implements GetIt {
 
   final _readySignalStream = StreamController<void>.broadcast();
 
-  Stream<void> get ready => _readySignalStream.stream;
-
-  Future<void> get readyFuture => ready.first;
 
   /// By default it's not allowed to register a type a second time.
   /// If you really need to you can disable the asserts by setting[allowReassignment]= true
@@ -475,8 +481,21 @@ class _GetItImplementation implements GetIt {
     // TODO: implement registerLazySingletonAsync
   }
 
+
   @override
-  void registerSingletonAsync<T>(SingletonProviderFunc func, {String instanceName}) {
+  bool allReadySync<T>({Object instance, String instanceName}) {
+    // TODO: implement allReadySync
+    throw UnimplementedError();
+  }
+
+  @override
+  bool isReadySync<T>({Object instance, String instanceName}) {
+    // TODO: implement isReadySync
+    throw UnimplementedError();
+  }
+
+  @override
+  void registerSingletonAsync<T>(SingletonProviderFunc<T> providerFunc, {String instanceName, Iterable<Type> dependsOn}) {
     // TODO: implement registerSingletonAsync
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'main.dart';
@@ -11,9 +13,9 @@ abstract class AppModel extends ChangeNotifier {
 class AppModelImplementation extends AppModel {
   int _counter = 0;
 
-  AppModelImplementation() {
+  AppModelImplementation(Completer completer) {
     /// lets pretend we have to do some async initilization
-    Future.delayed(Duration(seconds: 3)).then((_) => getIt.signalReady(this));
+    Future.delayed(Duration(seconds: 3)).then((_) => completer.complete());
   }
 
   @override

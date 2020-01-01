@@ -7,8 +7,7 @@ GetIt getIt = GetIt.instance;
 
 void main() {
   
-  getIt.registerSingleton<AppModel>(AppModelImplementation(),
-      signalsReady: true);
+  getIt.registerSingletonAsync<AppModel>((completer) => AppModelImplementation(completer));
 
   runApp(MyApp());
 }
