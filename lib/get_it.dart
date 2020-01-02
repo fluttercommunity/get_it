@@ -13,10 +13,12 @@ typedef SingletonProviderFunc<T> = FutureOr Function(Completer initCompleter);
 /// This exception is thrown whith information about who is still waiting
 class WaitingTimeOutException implements Exception {
   /// if you pass the [callee] parameter to [isReady]
-  /// this maps lists which callees is waiting for whom 
+  /// this maps lists which callees is waiting for whom
   final Map<Type, Type> isWaitingFor;
+
   /// Lists with Types that are still not ready
   final List<Type> notSignaledYet;
+
   /// Lists with Types that are already ready
   final List<Type> hasSignaled;
 
@@ -94,8 +96,8 @@ abstract class GetIt {
   /// name instead of a type. This should only be necessary if you need to register more
   /// than one instance of one type. Its highly not recommended
   /// [registerLazySingleton] does not influence [allReady]
-  void registerLazySingleton<T>(FactoryFunc<T> func,
-      {String instanceName});
+  void registerLazySingleton<T>(FactoryFunc<T> func, {String instanceName});
+
   /// [registerLazySingletonAsync] does not influence [allReady]
   void registerLazySingletonAsync<T>(SingletonProviderFunc<T> func,
       {String instanceName});
@@ -108,10 +110,10 @@ abstract class GetIt {
   /// [instanceName] if you provide a value here your instance gets registered with that
   /// name instead of a type. This should only be necessary if you need to register more
   /// than one instance of one type. Its highly not recommended
-  void registerSingleton<T>(T instance,
-      {String instanceName});
+  void registerSingleton<T>(T instance, {String instanceName});
+
   /// [providerFunc] is executed immediately. If it returns an object the object has to complete the completer.
-  /// if it returns a future the completer will be completed automatically when that future completes    
+  /// if it returns a future the completer will be completed automatically when that future completes
   void registerSingletonAsync<T>(SingletonProviderFunc<T> providerFunc,
       {String instanceName, Iterable<Type> dependsOn});
 
@@ -146,11 +148,9 @@ abstract class GetIt {
   Future<void> isReady<T>(
       {Object instance, String instanceName, Duration timeOut});
 
-  bool isReadySync<T>(
-      {Object instance, String instanceName});
+  bool isReadySync<T>({Object instance, String instanceName});
 
-  bool allReadySync<T>(
-      {Object instance, String instanceName});
+  bool allReadySync<T>({Object instance, String instanceName});
 
   /// if [instance] is `null` and no factory/singleton is waiting to be signaled this will complete the future you got
   /// from [allReady]
@@ -184,7 +184,6 @@ class _GetItImplementation implements GetIt {
 
   final _readySignalStream = StreamController<void>.broadcast();
 
-
   /// By default it's not allowed to register a type a second time.
   /// If you really need to you can disable the asserts by setting[allowReassignment]= true
   @override
@@ -193,40 +192,39 @@ class _GetItImplementation implements GetIt {
   /// retrieves or creates an instance of a registered type [T] depending on the registration function used for this type or based on a name.
   @override
   T get<T>([String instanceName]) {
-    throwIf(
-      (!(const Object() is! T) && instanceName == null),
-      ArgumentError(
-          'GetIt: You have to provide either a type or a name. Did you accidentally do  `var sl=GetIt.instance();` instead of var sl=GetIt.instance;'),
-    );
+    var instanceFactory = _findFactoryByNameOrType<T>(instanceName);
+    var instance = instanceFactory.getObject();
 
-    _ServiceFactory<T> object;
-    if (instanceName == null) {
-      object = _factories[T];
-    } else {
-      final registeredObject = _factoriesByName[instanceName];
-      if (registeredObject != null) {
-        if (registeredObject.instance != null &&
-            registeredObject.instance is! T) {
-          print(T.toString());
-          throw ArgumentError(
-              "Object with name $instanceName has a different type (${registeredObject.registrationType.toString()}) than the one that is inferred (${T.toString()}) where you call it");
-        }
-      }
-      object = registeredObject;
-    }
-    if (object == null && instanceName == null) {
-      throw ArgumentError.value(T,
-          "Object of type ${T.toString()} is not registered inside GetIt.\n Did you forget to pass an instance name? \n(Did you accidentally do  GetIt sl=GetIt.instance(); instead of GetIt sl=GetIt.instance;)");
-    }
-    if (object == null && instanceName != null) {
-      throw ArgumentError.value(instanceName,
-          "Object with name $instanceName is not registered inside GetIt");
-    }
-    return object.getObject();
+    assert(instance is T,
+        "Object with name $instanceName has a different type (${instanceFactory.registrationType.toString()}) than the one that is inferred (${T.toString()}) where you call it");
+
+    return instance;
   }
 
   T call<T>([String instanceName]) {
     return get<T>(instanceName);
+  }
+
+  _findFactoryByNameOrType<T>(String instanceName) {
+    print(T.toString());
+    print(!(const Object() is! T));
+    assert(
+      !(!(const Object() is! T) &&
+          (instanceName == null)), 
+      'GetIt: You have to provide either a type or a name. Did you accidentally do  `var sl=GetIt.instance();` instead of var sl=GetIt.instance;',
+    );
+
+    _ServiceFactory<T> instanceFactory;
+    if (instanceName != null) {
+      instanceFactory = _factoriesByName[instanceName];
+      assert(instanceFactory != null,
+          "Object/factory with name $instanceName is not registered inside GetIt");
+    } else {
+      instanceFactory = _factories[T];
+      assert(instanceFactory != null,
+          "No type ${T.toString()} is registered inside GetIt.\n Did you forget to pass an instance name? \n(Did you accidentally do  GetIt sl=GetIt.instance(); instead of GetIt sl=GetIt.instance;)");
+    }
+    return instanceFactory;
   }
 
   /// registers a type so that a new instance will be created on each call of [get] on that type
@@ -248,7 +246,6 @@ class _GetItImplementation implements GetIt {
   void registerFactoryAsync<T>(FactoryFunc<T> func, {String instanceName}) {
     // TODO: implement registerFactoryAsync
   }
-
 
   /// registers a type as Singleton by passing a factory function that will be called on the first call of [get] on that type
   /// [T] type to register
@@ -277,17 +274,13 @@ class _GetItImplementation implements GetIt {
   /// name instead of a type. This should only be necessary if you need to register more
   /// than one instance of one type. Its highly not recommended
   @override
-  void registerSingleton<T>(T instance,
-      {String instanceName}) {
+  void registerSingleton<T>(T instance, {String instanceName}) {
     _register<T>(
         type: _ServiceFactoryType.constant,
         instanceName: instanceName,
         instance: instance,
         isAsync: false);
   }
-
-
-
 
   /// Clears all registered types. Handy when writing unit tests
   @override
@@ -296,82 +289,21 @@ class _GetItImplementation implements GetIt {
     _factoriesByName.clear();
   }
 
-  /// Clears the instance of a lazy singleton registered type, being able to call the factory function on the first call of [get] on that type.
-  @override
-  void resetLazySingleton<T>(
-      {Object instance,
-      String instanceName,
-      void Function(T) disposingFunction}) {
-    if (instance != null) {
-      var registeredInstance = _factories.values
-          .followedBy(_factoriesByName.values)
-          .where((x) => identical(x.instance, instance));
-
-      throwIf(
-        registeredInstance.isEmpty,
-        ArgumentError.value(instance,
-            'There is no object type ${instance.runtimeType} registered in GetIt'),
-      );
-
-      assert(registeredInstance.length == 1,
-          'One Instance more than once in getIt registered');
-
-      throwIf(
-        registeredInstance.first.factoryType != _ServiceFactoryType.lazy,
-        ArgumentError.value(instance,
-            'There is no type ${instance.runtimeType} registered as LazySingleton in GetIt'),
-      );
-
-      var _factory = registeredInstance.first;
-      disposingFunction?.call(_factory.instance);
-      _factory.instance = null;
-    } else {
-      throwIf(
-        (((const Object() is! T) && instanceName != null)),
-        ArgumentError(
-            'GetIt: You have to provide either a type OR a name not both.'),
-      );
-
-      var registeredFactory = _factoriesByName[instanceName] ?? _factories[T];
-
-      throwIf(
-        (registeredFactory == null),
-        ArgumentError(
-            'No Type registered ${T.toString()} or instance Name must not be null'),
-      );
-      throwIfNot(
-        registeredFactory.factoryType == _ServiceFactoryType.lazy,
-        ArgumentError.value(instance,
-            'There is no type ${T.toString()} registered as LazySingleton in GetIt'),
-      );
-      if (instanceName == null) {
-        disposingFunction?.call(get<T>());
-        _factories[T]?.instance = null;
-      } else {
-        disposingFunction?.call(get(instanceName));
-        _factoriesByName[T]?.instance = null;
-      }
-    }
-  }
-
   void _register<T>(
       {@required _ServiceFactoryType type,
       FactoryFunc factoryFunc,
       T instance,
       @required String instanceName,
       @required bool isAsync}) {
-    throwIfNot(
-      instanceName != null || allowReassignment || !_factories.containsKey(T),
-      ArgumentError.value(T, "Type ${T.toString()} is already registered"),
+    assert(
+      !(instanceName != null &&
+          (_factoriesByName.containsKey(instanceName) && !allowReassignment)),
+      "An object of name $instanceName is already registered",
     );
-    throwIfNot(
-      instanceName != null ||
-          (allowReassignment || !_factoriesByName.containsKey(instanceName)),
-      ArgumentError.value(
-        instanceName,
-        "An object of name $instanceName is already registered",
-      ),
-    );
+    assert(
+        !(instanceName == null && _factories.containsKey(T) &&
+            !allowReassignment),
+        "Type ${T.toString()} is already registered");
 
     var serviceFactory = _ServiceFactory<T>(type,
         creationFunction: factoryFunc,
@@ -393,69 +325,80 @@ class _GetItImplementation implements GetIt {
       {Object instance,
       String instanceName,
       void Function(T) disposingFunction}) {
+    _ServiceFactory factoryToRemove;
     if (instance != null) {
-      var registeredInstance = _factories.values
-          .followedBy(_factoriesByName.values)
-          .where((x) => identical(x.instance, instance));
-
-      throwIf(
-        registeredInstance.isEmpty,
-        ArgumentError.value(instance,
-            'There is no object type ${instance.runtimeType} registered in GetIt'),
-      );
-
-      var _factory = registeredInstance.first;
-      if (_factory.isNamedRegistration) {
-        _factoriesByName.remove(_factory.instanceName);
-      } else {
-        _factories.remove(_factory.registrationType);
-      }
-      disposingFunction?.call(_factory.instance);
+      factoryToRemove = _findFactoryByInstance(instance);
     } else {
-      throwIf(
-        (((const Object() is! T) && instanceName != null)),
-        ArgumentError(
-            'GetIt: You have to provide either a type OR a name not both.'),
-      );
-      throwIfNot(
-        (instanceName != null && _factoriesByName.containsKey(instanceName)) ||
-            _factories.containsKey(T),
-        ArgumentError(
-            'No Type registered ${T.toString()} or instance Name must not be null'),
-      );
-      if (instanceName == null) {
-        disposingFunction?.call(get<T>());
-        _factories.remove(T);
-      } else {
-        disposingFunction?.call(get(instanceName));
-        _factoriesByName.remove(instanceName);
-      }
+      factoryToRemove = _findFactoryByNameOrType<T>(instanceName);
     }
+
+    if (factoryToRemove.isNamedRegistration) {
+      _factoriesByName.remove(factoryToRemove.instanceName);
+    } else {
+      _factories.remove(factoryToRemove.registrationType);
+    }
+
+    if (factoryToRemove.instance != null) {
+      disposingFunction?.call(factoryToRemove.instance);
+    }
+  }
+
+  /// Clears the instance of a lazy singleton registered type, being able to call the factory function on the first call of [get] on that type.
+  @override
+  void resetLazySingleton<T>(
+      {Object instance,
+      String instanceName,
+      void Function(T) disposingFunction}) {
+    _ServiceFactory instanceFactory;
+
+    if (instance != null) {
+      instanceFactory = _findFactoryByInstance(instance);
+    } else {
+      instanceFactory = _findFactoryByNameOrType<T>(instanceName);
+    }
+    assert(instanceFactory.factoryType == _ServiceFactoryType.lazy,
+        'There is no type ${instance.runtimeType} registered as LazySingleton in GetIt');
+    if (instanceFactory.instance != null) {
+      disposingFunction?.call(instanceFactory.instance);
+      instanceFactory.instance = null;
+    }
+  }
+
+  _ServiceFactory _findFactoryByInstance(Object instance) {
+    var registeredFactories = _factories.values
+        .followedBy(_factoriesByName.values)
+        .where((x) => identical(x.instance, instance));
+
+    assert(registeredFactories.isNotEmpty,
+        'There is no object type ${instance.runtimeType} registered in GetIt');
+
+    assert(registeredFactories.length == 1,
+        'One Instance more than once in getIt registered');
+    return registeredFactories.first;
   }
 
   @override
   void signalReady() {
-      /// Manual signalReady without an instance
+    /// Manual signalReady without an instance
 
-      /// In case that there are still factories that are marked to wait for a signal
-      /// but aren't signalled we throw an error with details which objects are concerned
-      final notReadyTypes = _factories.entries
-          .where((x) => (x.value.isAsync && !x.value.result.isComplete))
-          .map<String>((x) => x.key.toString())
-          .toList();
-      final notReadyNames = _factoriesByName.entries
-          .where((x) => (x.value.isAsync && !x.value.result.isComplete))
-          .map<String>((x) => x.key)
-          .toList();
-      throwIf(
-          notReadyNames.isNotEmpty || notReadyTypes.isNotEmpty,
-          StateError(
-              'Registered types/names: $notReadyTypes  / $notReadyNames should signal ready but are not ready'));
+    /// In case that there are still factories that are marked to wait for a signal
+    /// but aren't signalled we throw an error with details which objects are concerned
+    final notReadyTypes = _factories.entries
+        .where((x) => (x.value.isAsync && !x.value.result.isComplete))
+        .map<String>((x) => x.key.toString())
+        .toList();
+    final notReadyNames = _factoriesByName.entries
+        .where((x) => (x.value.isAsync && !x.value.result.isComplete))
+        .map<String>((x) => x.key)
+        .toList();
+    throwIf(
+        notReadyNames.isNotEmpty || notReadyTypes.isNotEmpty,
+        StateError(
+            'Registered types/names: $notReadyTypes  / $notReadyNames should signal ready but are not ready'));
 
-      ///    signal the [ready] and [readyFuture]
-      _readySignalStream.add(true);
-    }
-  
+    ///    signal the [ready] and [readyFuture]
+    _readySignalStream.add(true);
+  }
 
   @override
   Future<void> allReady({Duration timeOut}) {
@@ -470,17 +413,17 @@ class _GetItImplementation implements GetIt {
   }
 
   @override
-  Future<void> isReady<T>({Object instance, String instanceName, Duration timeOut, Object callee}) {
+  Future<void> isReady<T>(
+      {Object instance, String instanceName, Duration timeOut, Object callee}) {
     // TODO: implement isReady
     return null;
   }
 
-
   @override
-  void registerLazySingletonAsync<T>(SingletonProviderFunc<T> func, {String instanceName}) {
+  void registerLazySingletonAsync<T>(SingletonProviderFunc<T> func,
+      {String instanceName}) {
     // TODO: implement registerLazySingletonAsync
   }
-
 
   @override
   bool allReadySync<T>({Object instance, String instanceName}) {
@@ -495,7 +438,8 @@ class _GetItImplementation implements GetIt {
   }
 
   @override
-  void registerSingletonAsync<T>(SingletonProviderFunc<T> providerFunc, {String instanceName, Iterable<Type> dependsOn}) {
+  void registerSingletonAsync<T>(SingletonProviderFunc<T> providerFunc,
+      {String instanceName, Iterable<Type> dependsOn}) {
     // TODO: implement registerSingletonAsync
   }
 }
@@ -512,15 +456,13 @@ class _ServiceFactory<T> {
   Completer _readyCompleter;
   ResultFuture result;
 
-  Future<void> get getReadyFuture
-  {
-    if (isAsync)
-    {
+  Future<void> get getReadyFuture {
+    if (isAsync) {
       return _readyCompleter.future;
     }
     // TODO check which exeption type is best here or if its an error
-   throw(Exception("You can't await this instance"));
-  } 
+    throw (Exception("You can't await this instance"));
+  }
 
   bool get isNamedRegistration => instanceName != null;
 
@@ -530,8 +472,7 @@ class _ServiceFactory<T> {
       this.isAsync = false,
       this.instanceName}) {
     registrationType = T;
-    if (isAsync)
-    {
+    if (isAsync) {
       _readyCompleter = Completer();
     }
   }

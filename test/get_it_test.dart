@@ -112,7 +112,7 @@ void main() {
   test('trying to access not registered type', () {
     var getIt = GetIt.instance;
 
-    expect(() => getIt.get<int>(), throwsA(TypeMatcher<ArgumentError>()));
+    expect(() => getIt.get<int>(), throwsA(TypeMatcher<AssertionError>()));
 
     GetIt.I.reset();
   });
@@ -203,7 +203,7 @@ void main() {
   test('trying to access not registered type by name', () {
     var getIt = GetIt.instance;
 
-    expect(() => getIt('not there'), throwsA(TypeMatcher<ArgumentError>()));
+    expect(() => getIt('not there'), throwsA(TypeMatcher<AssertionError>()));
     GetIt.I.reset();
   });
 
@@ -263,7 +263,7 @@ void main() {
 
     expect(disposeCounter, 1);
 
-    expect(() => getIt.get<TestClass>(), throwsA(TypeMatcher<ArgumentError>()));
+    expect(() => getIt.get<TestClass>(), throwsA(TypeMatcher<AssertionError>()));
   });
 
   test('unregister by type', () {
@@ -289,7 +289,7 @@ void main() {
 
     expect(disposeCounter, 1);
 
-    expect(() => getIt.get<TestClass>(), throwsA(TypeMatcher<ArgumentError>()));
+    expect(() => getIt.get<TestClass>(), throwsA(TypeMatcher<AssertionError>()));
   });
 
   test('unregister by name', () {
@@ -311,7 +311,7 @@ void main() {
 
     expect(disposeCounter, 1);
 
-    expect(() => getIt('instanceName'), throwsA(TypeMatcher<ArgumentError>()));
+    expect(() => getIt('instanceName'), throwsA(TypeMatcher<AssertionError>()));
   });
   
   test('unregister by instance without disposing function', () {
@@ -335,7 +335,7 @@ void main() {
 
     expect(disposeCounter, 0);
 
-    expect(() => getIt.get<TestClass>(), throwsA(TypeMatcher<ArgumentError>()));
+    expect(() => getIt.get<TestClass>(), throwsA(TypeMatcher<AssertionError>()));
   });
   
   test('unregister by type without disposing function', () {
@@ -359,7 +359,7 @@ void main() {
 
     expect(disposeCounter, 0);
 
-    expect(() => getIt.get<TestClass>(), throwsA(TypeMatcher<ArgumentError>()));
+    expect(() => getIt.get<TestClass>(), throwsA(TypeMatcher<AssertionError>()));
   });
 
   test('unregister by name without disposing function', () {
@@ -377,7 +377,7 @@ void main() {
 
     expect(disposeCounter, 0);
 
-    expect(() => getIt('instanceName'), throwsA(TypeMatcher<ArgumentError>()));
+    expect(() => getIt('instanceName'), throwsA(TypeMatcher<AssertionError>()));
   });
 
   test(
