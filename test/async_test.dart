@@ -380,7 +380,7 @@ void main() {
       () => Future.value(TestClass(internalCompletion: false)),
     );
 
-    expect(()=> getIt.get<TestClass>(), throwsA(TypeMatcher<ArgumentError>()));
+    expect(()=> getIt.get<TestClass>(), throwsA(TypeMatcher<AssertionError>()));
   });
 
   test('asyncLazySingleton called with get before it was ready', () async {
@@ -392,7 +392,7 @@ void main() {
     );
 
     await Future.delayed(Duration(microseconds: 1));
-    expect(()=> getIt.get<TestClass>(), throwsA(TypeMatcher<StateError>()));
+    expect(()=> getIt.get<TestClass>(), throwsA(TypeMatcher<AssertionError>()));
   });
  
   test('asyncLazySingleton called with getAsync', () async {

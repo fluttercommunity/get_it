@@ -16,36 +16,27 @@ typedef SingletonProviderFunc<T> = FutureOr<T> Function(
 /// In case of an timeout while waiting for an instance to signal ready
 /// This exception is thrown whith information about who is still waiting
 class WaitingTimeOutException implements Exception {
-  /// if you pass the [callee] parameter to [isReady]
-  /// this maps lists which callees is waiting for whom
-  final Map<Type, Type> isWaitingFor;
-
   /// Lists with Types that are still not ready
-  final List<Type> notSignaledYet;
-
-  /// Lists with Types that are already ready
-  final List<Type> hasSignaled;
+  final List<Type> typesNotSignaledYet;
+  /// Lists with named Instances that are still not ready
+  final List<String> namedInstancesNotSignaledYet;
 
   WaitingTimeOutException(
-      this.isWaitingFor, this.notSignaledYet, this.hasSignaled)
-      : assert(isWaitingFor != null &&
-            notSignaledYet != null &&
-            hasSignaled != null);
+      this.typesNotSignaledYet,this.namedInstancesNotSignaledYet)
+      : assert(
+            typesNotSignaledYet != null &&
+            namedInstancesNotSignaledYet != null);
 
   @override
   String toString() {
     print(
         'GetIt: There was a timeout while waiting for an instance to signal ready');
-    print('The following instance types where waiting for completion');
-    for (var entry in isWaitingFor.entries) {
-      print('${entry.key} is waiting for ${entry.value}');
-    }
     print('The following instance types have NOT signaled ready yet');
-    for (var entry in notSignaledYet) {
+    for (var entry in typesNotSignaledYet) {
       print('$entry');
     }
-    print('The following instance types HAVE signaled ready yet');
-    for (var entry in hasSignaled) {
+    print('The following named instances have NOT signaled ready yet');
+    for (var entry in namedInstancesNotSignaledYet) {
       print('$entry');
     }
     return super.toString();
