@@ -7,7 +7,8 @@ import 'package:meta/meta.dart';
 
 typedef FactoryFunc<T> = T Function();
 typedef FactoryFuncAsync<T> = Future<T> Function();
-typedef SingletonProviderFunc<T> = FutureOr Function(Completer initCompleter);
+typedef SingletonProviderFunc<T> = FutureOr<T> Function(
+    Completer initCompleter);
 
 /// In case of an timeout while waiting for an instance to signal ready
 /// This exception is thrown whith information about who is still waiting
@@ -204,7 +205,7 @@ class _GetItImplementation implements GetIt {
           instanceFactory._readyCompleter.isCompleted,
           StateError(
               'You tried to access an instance of ${instanceName != null ? instanceName : T.toString()} that was not ready yet'));
-      instance = instanceFactory.getObjectAsync();
+      instance = instanceFactory.instance;
     } else {
       instance = instanceFactory.getObject();
     }
@@ -366,9 +367,10 @@ class _GetItImplementation implements GetIt {
     // it is depdendent on other registered Singletons.
     if (isAsync) {
       if (type == _ServiceFactoryType.constant) {
+        FutureGroup outerFutureGroup = FutureGroup();
         Future dependentFuture;
         if (dependsOn?.isNotEmpty ?? false) {
-          var futureGroup = FutureGroup();
+          var dependentFutureGroup = FutureGroup();
           dependsOn.forEach((type) {
             var dependentFactory = _factories[type];
             throwIf(
@@ -377,27 +379,41 @@ class _GetItImplementation implements GetIt {
                     'Dependent Type $type is not registered in GetIt'));
             throwIfNot(dependentFactory.isAsync,
                 ArgumentError('Dependent Type $type is an async Singleton'));
-            futureGroup.add(dependentFactory.readyFuture);
+            dependentFutureGroup.add(dependentFactory.readyFuture);
           });
-          futureGroup.close();
+          dependentFutureGroup.close();
 
-          dependentFuture = futureGroup.future;
+          dependentFuture = dependentFutureGroup.future;
         } else {
           dependentFuture = Future.sync(() {}); // directly execute then
         }
+        outerFutureGroup.add(dependentFuture);
+
+        serviceFactory.pendingResult = outerFutureGroup.future.then((completedFutures) => completedFutures.last );
+/// if someone uses getAsync on an async Singleton that has not be started to get created
+/// because its dependend on other objects this doesn't wor because PendingResult is not set in
+/// that case
         dependentFuture.then((_) {
-          var result = singletonFactoryFunc(serviceFactory._readyCompleter);
-          if (result is Future) {
+          var asyncResult =
+              singletonFactoryFunc(serviceFactory._readyCompleter);
+             Future<T> isReadyFuture;
+          if (asyncResult is Future<T>) {
             // In this case we complete the completer automatically
-            serviceFactory.result = ResultFuture(result.then((instance) {
-              serviceFactory.instance = instance; 
-              serviceFactory._readyCompleter.complete();
-            }));
+             isReadyFuture = asyncResult.then((instance) {
+              serviceFactory.instance = instance;
+              // just in case if anyone has already completed this completer manually
+              if (!serviceFactory._readyCompleter.isCompleted) {
+                serviceFactory._readyCompleter.complete();
+              }
+              return instance;
+            });
           } else {
             serviceFactory.instance = instance;
             // In this case the instance has to complete the completer
-            serviceFactory.result = ResultFuture(Future.value(result));
+            isReadyFuture = Future.value(asyncResult);
           }
+          outerFutureGroup.add(isReadyFuture);
+          outerFutureGroup.close();
         });
       }
     }
@@ -447,6 +463,7 @@ class _GetItImplementation implements GetIt {
     if (instanceFactory.instance != null) {
       disposingFunction?.call(instanceFactory.instance);
       instanceFactory.instance = null;
+      instanceFactory.pendingResult == null;
     }
   }
 
@@ -520,10 +537,10 @@ class _GetItImplementation implements GetIt {
         factoryToCheck.isAsync &&
             factoryToCheck.registrationType != _ServiceFactoryType.alwaysNew,
         'You only can use this function on async Singletons');
-    if (factoryToCheck.factoryType == _ServiceFactoryType.lazy && !factoryToCheck._readyCompleter.isCompleted)
-    {
+    if (factoryToCheck.factoryType == _ServiceFactoryType.lazy &&
+        !factoryToCheck._readyCompleter.isCompleted) {
       return factoryToCheck.getObjectAsync();
-    }    
+    }
     if (timeout != null) {
       return factoryToCheck._readyCompleter.future.timeout(timeout);
     } else {
@@ -583,16 +600,17 @@ enum _ServiceFactoryType { alwaysNew, constant, lazy }
 
 class _ServiceFactory<T> {
   final _ServiceFactoryType factoryType;
-  final FactoryFunc creationFunction;
-  final FactoryFuncAsync asyncCreationFunction;
+  final FactoryFunc<T> creationFunction;
+  final FactoryFuncAsync<T> asyncCreationFunction;
   // We need a separate function type here because it gets passes a completer
-  final SingletonProviderFunc asyncSingletonCreationFunction;
+  final SingletonProviderFunc<T> asyncSingletonCreationFunction;
   final String instanceName;
   final bool isAsync;
+  // If a an existing Object gets registered r a Sinlgeton has finished its creation it is stored here
   Object instance;
   Type registrationType;
   Completer _readyCompleter;
-  ResultFuture result;
+  Future<T> pendingResult;
 
   bool get isReady => _readyCompleter.isCompleted;
 
@@ -655,37 +673,41 @@ class _ServiceFactory<T> {
           return asyncCreationFunction() as Future<T>;
           break;
         case _ServiceFactoryType.constant:
-          assert(result.isComplete);
-          if (result.result.isValue) {
-            return result.result.asValue as T;
-          }
-          if (result.result.isError) {
-            throw (result.result.asError);
+          if (instance != null) {
+            return Future<T>.value(instance);
+          } else {
+            assert(pendingResult != null);
+            return pendingResult;
           }
           break;
         case _ServiceFactoryType.lazy:
-          if (result != null && result.isComplete) {
-            if (result.result.isValue) {
-              return result.result.asValue as T;
-            }
-            if (result.result.isError) {
-              throw (result.result.asError);
-            }
+          if (instance != null) {
+            // We already have a finished instance
+            return Future<T>.value(instance);
           } else {
-            var asyncResult = asyncSingletonCreationFunction(_readyCompleter);
+            if (pendingResult !=
+                null) // an async creation is already in progress
+            {
+              return pendingResult;
+            }
+            // Seems this is really the first access to this async Signleton
+            FutureOr<T> asyncResult =
+                asyncSingletonCreationFunction(_readyCompleter);
 
             if (asyncResult is Future) {
               // In this case we complete the completer automatically
-              result = ResultFuture<T>(asyncResult.then((instance) {
+              // as soon as the creation function is done
+              pendingResult = (asyncResult as Future<T>).then((newInstance) {
                 _readyCompleter.complete();
-                return instance;
-              }));
-              return result;
+                instance = newInstance;
+                return newInstance;
+              });
+              return pendingResult;
             } else {
+              // This means the creation function has directly returned an instance and not a future
               // In this case the instance has to complete the completer
-              instance = asyncResult;
-              result = ResultFuture<T>(asyncResult);
-              return result;
+              instance = asyncResult as T;
+              return Future<T>.value(instance);
             }
           }
           break;

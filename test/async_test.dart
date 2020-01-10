@@ -160,7 +160,7 @@ void main() {
     var getIt = GetIt.instance;
     getIt.reset();
 
-    getIt.registerLazySingletonAsync<TestClass>(
+    getIt.registerSingletonAsync<TestClass>(
       (completer) async {
         var instance = TestClass(internalCompletion: false, completer: null);
         await instance.init();
@@ -168,7 +168,7 @@ void main() {
         return instance;
       },
     );
-    getIt.registerLazySingletonAsync<TestClass2>((completer) async {
+    getIt.registerSingletonAsync<TestClass2>((completer) async {
       var instance = TestClass2(internalCompletion: false, completer: null);
       await instance.init();
       completer.complete();
@@ -304,6 +304,61 @@ void main() {
         getIt.isReady<TestClass3>(timeout: Duration(seconds: 15)), completes);
     expect(getIt.allReady(timeout: Duration(seconds: 20)), completes);
   });
+  test('ready automatic synchronisation of sequence with following getAsync', () async {
+    var getIt = GetIt.instance;
+    getIt.reset();
+    errorCounter = 0;
+    var flag1 = false;
+    var flag2 = false;
+
+    getIt.registerSingletonAsync<TestClass>(
+      (completer) async {
+        var instance = TestClass(internalCompletion: false);
+        while (!flag1) {
+          await Future.delayed(Duration(milliseconds: 100));
+        }
+        return instance;
+      },
+    );
+
+    getIt.registerSingletonAsync<TestClass2>((completer) async {
+      var instance = TestClass2(internalCompletion: false);
+      while (!flag2) {
+        await Future.delayed(Duration(milliseconds: 100));
+      }
+      return instance;
+    }, dependsOn: [TestClass]);
+
+    getIt.registerSingletonAsync<TestClass3>((completer) async {
+      var instance = TestClass3(internalCompletion: false);
+      await instance.init();
+      return instance;
+    }, dependsOn: [TestClass, TestClass2]);
+
+    expect(getIt.isReadySync<TestClass>(), false);
+    expect(getIt.isReadySync<TestClass2>(), false);
+    expect(getIt.isReadySync<TestClass3>(), false);
+
+    flag1 = true;
+
+    // give the factory function a chance to run
+    await Future.delayed(Duration(microseconds: 1));
+
+    expect(getIt.isReady<TestClass>(), completes);
+    expect(getIt.isReadySync<TestClass2>(), false);
+    expect(getIt.isReadySync<TestClass3>(), false);
+    expect(getIt.allReadySync(), false);
+
+    flag2 = true;
+
+    expect(getIt.isReady<TestClass>(timeout: Duration(seconds: 5)), completes);
+    expect(
+        getIt.isReady<TestClass2>(timeout: Duration(seconds: 10)), completes);
+
+    var instance = await getIt.getAsync<TestClass3>();
+
+    expect(instance, TypeMatcher<TestClass3>());
+  });
 
   test('asyncFactory called with getAsync', () async {
     var getIt = GetIt.instance;
@@ -352,7 +407,7 @@ void main() {
     expect(instance, TypeMatcher<TestClass>());
   });
 
-  test('asyncLazySingleton called with get after wait for ready', () async {
+  test('asyncLazySingleton called with getAsync after wait for ready', () async {
     var getIt = GetIt.instance;
     getIt.reset();
 
@@ -363,6 +418,20 @@ void main() {
     await getIt.isReady<TestClass>(timeout: Duration(milliseconds: 20));
 
     var instance = await getIt.getAsync<TestClass>();
+    expect(instance, TypeMatcher<TestClass>());
+  });
+
+  test('asyncLazySingleton called with get after wait for ready', () async {
+    var getIt = GetIt.instance;
+    getIt.reset();
+
+    getIt.registerLazySingletonAsync<TestClass>(
+      (_) => Future.value(TestClass(internalCompletion: false)..init()),
+    );
+
+    await getIt.isReady<TestClass>(timeout: Duration(milliseconds: 20));
+
+    var instance = getIt.get<TestClass>();
     expect(instance, TypeMatcher<TestClass>());
   });
 
