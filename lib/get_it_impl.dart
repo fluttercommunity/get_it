@@ -434,7 +434,7 @@ class _GetItImplementation implements GetIt {
               return instance;
             });
           } else {
-            serviceFactory.instance = instance;
+            serviceFactory.instance = asyncResult;
             // In this case the instance has to complete the completer
             isReadyFuture = Future.value(asyncResult);
           }
@@ -553,7 +553,9 @@ class _GetItImplementation implements GetIt {
     FutureGroup futures = FutureGroup();
     _factories.values
         .followedBy(_factoriesByName.values)
-        .where((x) => (x.isAsync && !x.isReady && x.factoryType ==_ServiceFactoryType.constant ))
+        .where((x) => (x.isAsync &&
+            !x.isReady &&
+            x.factoryType == _ServiceFactoryType.constant))
         .forEach((f) => futures.add(f._readyCompleter.future));
     futures.close();
     if (timeout != null) {

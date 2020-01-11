@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:get_it_example/app_model.dart';
+
+import 'app_model.dart';
 
 // This is our global ServiceLocator
 GetIt getIt = GetIt.instance;
 
 void main() {
-  
-  getIt.registerSingletonAsync<AppModel>((completer) => AppModelImplementation(completer));
+  getIt.registerSingletonAsync<AppModel>(
+      (completer) => AppModelImplementation(completer));
 
   runApp(MyApp());
 }
@@ -39,9 +40,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   initState() {
     // Access the instance of the registered AppModel
-    getIt<AppModel>().addListener(update);
-    // Alternative
-    // getIt.get<AppModel>().addListener(update);
+    getIt.getAsync<AppModel>().then((model) => model.addListener(update));
 
     super.initState();
   }
@@ -56,47 +55,55 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: FutureBuilder(
-            future: getIt.allReady(),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                return Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Text(
-                      'You have pushed the button this many times:',
-                    ),
-                    Text(
-                      '${getIt<AppModel>().counter}',
-                      style: Theme.of(context).textTheme.display1,
-                    ),
-                  ],
-                );
-              } else {
-                return Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text('Waiting for initialisation'),
-                    SizedBox(
-                      height: 16,
-                    ),
-                    CircularProgressIndicator(),
-                  ],
-                );
-              }
-            }),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: getIt<AppModel>().incrementCounter,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
-      ),
+    return FutureBuilder(
+      future: getIt.allReady(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(widget.title),
+            ),
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Text(
+                    'You have pushed the button this many times:',
+                  ),
+                  Text(
+                    '${getIt<AppModel>().counter}',
+                    style: Theme.of(context).textTheme.display1,
+                  ),
+                ],
+              ),
+            ),
+            floatingActionButton: FloatingActionButton(
+              onPressed: getIt<AppModel>().incrementCounter,
+              tooltip: 'Increment',
+              child: Icon(Icons.add),
+            ),
+          );
+        } else {
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(widget.title),
+            ),
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Waiting for initialisation'),
+                  SizedBox(
+                    height: 16,
+                  ),
+                  CircularProgressIndicator(),
+                ],
+              ),
+            ),
+          );
+        }
+      },
     );
   }
 }
