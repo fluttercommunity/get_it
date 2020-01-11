@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:meta/meta.dart';
 import 'package:test/test.dart';
@@ -360,6 +361,42 @@ void main() {
     expect(instance, TypeMatcher<TestClass3>());
   });
 
+
+  test(
+      'allReady will throw after timeout',
+      () async {
+    var getIt = GetIt.instance;
+    getIt.reset();
+
+    getIt.registerSingletonAsync<TestClass>(
+      (completer) => TestClass(internalCompletion: true, completer: completer),
+    );
+    getIt.registerSingletonAsync<TestClass>(
+        (_) => TestClass(internalCompletion: false),
+        instanceName: "Second instance");
+    getIt.registerSingletonAsync<TestClass2>(
+        (_) async => TestClass2(internalCompletion: false)..init());
+    // this here should signal internally but doesn't do it.
+    getIt.registerSingletonAsync<TestClass3>(
+        (_) => TestClass3(internalCompletion: false));
+
+    try
+    {
+      await getIt.allReady(timeout: Duration(seconds: 1));
+    }
+    catch (ex)
+    {
+        expect(ex, TypeMatcher<WaitingTimeOutException>());
+        var timeOut = ex as WaitingTimeOutException;
+        expect(timeOut.namedInstancesNotSignaledYet[0], 'Second instance');
+        expect(timeOut.typesNotSignaledYet[0], TestClass3);
+
+    }
+
+
+  });
+
+
   test('asyncFactory called with getAsync', () async {
     var getIt = GetIt.instance;
     getIt.reset();
@@ -435,4 +472,48 @@ void main() {
     expect(instance, TypeMatcher<TestClass>());
   });
 
+  test('Code for ReadMe', () async {
+    var sl = GetIt.instance;
+
+    sl.registerSingletonAsync<Service1>((_) async {
+      var instance = Service1Implementation();
+      await instance.init();
+      return instance;
+    });
+  });
+
 }
+
+
+abstract class Service1
+{
+}
+
+abstract class Service2
+{
+}
+
+class Service1Implementation implements Service1
+{
+  Future init()
+  {
+    // dummy async call
+    return Future.delayed(Duration(microseconds: 1));
+  }
+}
+
+class Service2Implementation implements Service2
+{
+  Service2(Completer completer)
+  {
+    _init(completer); // we call _init here without awaiting it.
+  }
+
+  Future _init(Completer completer) async
+  {
+    // dummy async call
+    await Future.delayed(Duration(microseconds: 1));
+    // From here on we are ready
+    completer.complete();  }
+}
+

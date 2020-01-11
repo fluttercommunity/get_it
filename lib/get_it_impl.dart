@@ -176,6 +176,9 @@ class _GetItImplementation implements GetIt {
   /// Completer. This feature will get deprecated unless users vote for it
   final _globalReadyCompleter = Completer();
 
+  @override
+  Future get manualReady => _globalReadyCompleter.future;
+
   /// By default it's not allowed to register a type a second time.
   /// If you really need to you can disable the asserts by setting[allowReassignment]= true
   @override
@@ -259,7 +262,7 @@ class _GetItImplementation implements GetIt {
         isAsync: false);
   }
 
-  /// I use a separate function for the async registration instead just a new parameter
+  /// We use a separate function for the async registration instead just a new parameter
   /// so make the intention explicit
   @override
   void registerFactoryAsync<T>(FactoryFuncAsync<T> asyncFunc,
@@ -550,7 +553,7 @@ class _GetItImplementation implements GetIt {
     FutureGroup futures = FutureGroup();
     _factories.values
         .followedBy(_factoriesByName.values)
-        .where((x) => (x.isAsync && !x.isReady))
+        .where((x) => (x.isAsync && !x.isReady && x.factoryType ==_ServiceFactoryType.constant ))
         .forEach((f) => futures.add(f._readyCompleter.future));
     futures.close();
     if (timeout != null) {
