@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="static-assets/github.css">
   <link rel="stylesheet" href="static-assets/styles.css">
   <link rel="icon" href="static-assets/favicon.png">
-  
+  <!-- header placeholder -->
 </head>
 
 <body>
@@ -27,7 +27,7 @@
     <li><a href="index.html">get_it</a></li>
     <li><a href="get_it/get_it-library.html">get_it</a></li>
     <li><a href="get_it/GetIt-class.html">GetIt</a></li>
-    <li class="self-crumb">reset method</li>
+    <li class="self-crumb">reset abstract method</li>
   </ol>
   <div class="self-name">reset</div>
   <form class="search navbar-right" role="search">
@@ -48,42 +48,52 @@
       <li><a href="index.html">get_it</a></li>
       <li><a href="get_it/get_it-library.html">get_it</a></li>
       <li><a href="get_it/GetIt-class.html">GetIt</a></li>
-      <li class="self-crumb">reset method</li>
+      <li class="self-crumb">reset abstract method</li>
     </ol>
     
     <h5>GetIt class</h5>
     <ol>
-      <li class="section-title"><a href="get_it/GetIt-class.html#constructors">Constructors</a></li>
-      <li><a href="get_it/GetIt/GetIt.asNewInstance.html">asNewInstance</a></li>
     
-      <li class="section-title">
-        <a href="get_it/GetIt-class.html#instance-properties">Properties</a>
-      </li>
-      <li><a href="get_it/GetIt/allowReassignment.html">allowReassignment</a></li>
-      <li><a href="get_it/GetIt/ready.html">ready</a></li>
-      <li><a href="get_it/GetIt/readyFuture.html">readyFuture</a></li>
-      <li class="inherited"><a href="get_it/GetIt/hashCode.html">hashCode</a></li>
-      <li class="inherited"><a href="get_it/GetIt/runtimeType.html">runtimeType</a></li>
+        <li class="section-title"><a href="get_it/GetIt-class.html#constructors">Constructors</a></li>
+        <li><a href="get_it/GetIt/GetIt.asNewInstance.html">asNewInstance</a></li>
     
-      <li class="section-title"><a href="get_it/GetIt-class.html#instance-methods">Methods</a></li>
-      <li><a href="get_it/GetIt/call.html">call</a></li>
-      <li><a href="get_it/GetIt/get.html">get</a></li>
-      <li><a href="get_it/GetIt/registerFactory.html">registerFactory</a></li>
-      <li><a href="get_it/GetIt/registerLazySingleton.html">registerLazySingleton</a></li>
-      <li><a href="get_it/GetIt/registerSingleton.html">registerSingleton</a></li>
-      <li><a href="get_it/GetIt/reset.html">reset</a></li>
-      <li><a href="get_it/GetIt/signalReady.html">signalReady</a></li>
-      <li><a href="get_it/GetIt/unregister.html">unregister</a></li>
-      <li class="inherited"><a href="get_it/GetIt/noSuchMethod.html">noSuchMethod</a></li>
-      <li class="inherited"><a href="get_it/GetIt/toString.html">toString</a></li>
+        <li class="section-title">
+            <a href="get_it/GetIt-class.html#instance-properties">Properties</a>
+        </li>
+        <li><a href="get_it/GetIt/allowReassignment.html">allowReassignment</a></li>
+        <li><a class="deprecated" href="get_it/GetIt/manualReady.html">manualReady</a></li>
+        <li class="inherited"><a href="get_it/GetIt/hashCode.html">hashCode</a></li>
+        <li class="inherited"><a href="get_it/GetIt/runtimeType.html">runtimeType</a></li>
     
-      <li class="section-title inherited"><a href="get_it/GetIt-class.html#operators">Operators</a></li>
-      <li class="inherited"><a href="get_it/GetIt/operator_equals.html">operator ==</a></li>
+        <li class="section-title"><a href="get_it/GetIt-class.html#instance-methods">Methods</a></li>
+        <li><a href="get_it/GetIt/allReady.html">allReady</a></li>
+        <li><a href="get_it/GetIt/allReadySync.html">allReadySync</a></li>
+        <li><a href="get_it/GetIt/call.html">call</a></li>
+        <li><a href="get_it/GetIt/get.html">get</a></li>
+        <li><a href="get_it/GetIt/getAsync.html">getAsync</a></li>
+        <li><a href="get_it/GetIt/isReady.html">isReady</a></li>
+        <li><a href="get_it/GetIt/isReadySync.html">isReadySync</a></li>
+        <li><a href="get_it/GetIt/registerFactory.html">registerFactory</a></li>
+        <li><a href="get_it/GetIt/registerFactoryAsync.html">registerFactoryAsync</a></li>
+        <li><a href="get_it/GetIt/registerLazySingleton.html">registerLazySingleton</a></li>
+        <li><a href="get_it/GetIt/registerLazySingletonAsync.html">registerLazySingletonAsync</a></li>
+        <li><a href="get_it/GetIt/registerSingleton.html">registerSingleton</a></li>
+        <li><a href="get_it/GetIt/registerSingletonAsync.html">registerSingletonAsync</a></li>
+        <li><a href="get_it/GetIt/reset.html">reset</a></li>
+        <li><a href="get_it/GetIt/resetLazySingleton.html">resetLazySingleton</a></li>
+        <li><a class="deprecated" href="get_it/GetIt/signalReady.html">signalReady</a></li>
+        <li><a href="get_it/GetIt/unregister.html">unregister</a></li>
+        <li class="inherited"><a href="get_it/GetIt/noSuchMethod.html">noSuchMethod</a></li>
+        <li class="inherited"><a href="get_it/GetIt/toString.html">toString</a></li>
     
-      <li class="section-title"><a href="get_it/GetIt-class.html#static-properties">Static properties</a></li>
-      <li><a href="get_it/GetIt/allowMultipleInstances.html">allowMultipleInstances</a></li>
-      <li><a href="get_it/GetIt/I.html">I</a></li>
-      <li><a href="get_it/GetIt/instance.html">instance</a></li>
+        <li class="section-title inherited"><a href="get_it/GetIt-class.html#operators">Operators</a></li>
+        <li class="inherited"><a href="get_it/GetIt/operator_equals.html">operator ==</a></li>
+    
+        <li class="section-title"><a href="get_it/GetIt-class.html#static-properties">Static properties</a></li>
+        <li><a href="get_it/GetIt/I.html">I</a></li>
+        <li><a href="get_it/GetIt/instance.html">instance</a></li>
+    
+    
     
     
     </ol>
@@ -104,10 +114,7 @@
     
     <section class="summary source-code" id="source">
       <h2><span>Implementation</span></h2>
-      <pre class="language-dart"><code class="language-dart">void reset() {
-  _factories.clear();
-  _factoriesByName.clear();
-}</code></pre>
+      <pre class="language-dart"><code class="language-dart">void reset();</code></pre>
     </section>
 
   </div> <!-- /.main-content -->
@@ -119,10 +126,11 @@
 
 <footer>
   <span class="no-break">
-    get_it 3.0.0
+    get_it
+      3.0.3
   </span>
 
-  
+  <!-- footer-text placeholder -->
 </footer>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
@@ -130,7 +138,7 @@
 <script src="static-assets/highlight.pack.js"></script>
 <script src="static-assets/URI.js"></script>
 <script src="static-assets/script.js"></script>
-
+<!-- footer placeholder -->
 
 </body>
 

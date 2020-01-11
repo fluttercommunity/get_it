@@ -381,6 +381,12 @@ dl dt.callable .name {
   display: unset;
 }
 
+.parameter-list {
+  display: table-cell;
+  margin-left: 10px;
+  list-style-type: none;
+}
+
 .signature {
   color: #727272;
 }

@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="static-assets/github.css">
   <link rel="stylesheet" href="static-assets/styles.css">
   <link rel="icon" href="static-assets/favicon.png">
-  
+  <!-- header placeholder -->
 </head>
 
 <body>
@@ -26,7 +26,7 @@
   <ol class="breadcrumbs gt-separated dark hidden-xs">
     <li><a href="index.html">get_it</a></li>
     <li><a href="get_it/get_it-library.html">get_it</a></li>
-    <li class="self-crumb">GetIt class</li>
+    <li class="self-crumb">GetIt abstract class</li>
   </ol>
   <div class="self-name">GetIt</div>
   <form class="search navbar-right" role="search">
@@ -46,13 +46,14 @@
     <ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
       <li><a href="index.html">get_it</a></li>
       <li><a href="get_it/get_it-library.html">get_it</a></li>
-      <li class="self-crumb">GetIt class</li>
+      <li class="self-crumb">GetIt abstract class</li>
     </ol>
     
     <h5>get_it library</h5>
     <ol>
       <li class="section-title"><a href="get_it/get_it-library.html#classes">Classes</a></li>
       <li><a href="get_it/GetIt-class.html">GetIt</a></li>
+    
     
     
     
@@ -64,7 +65,11 @@
     
       <li class="section-title"><a href="get_it/get_it-library.html#typedefs">Typedefs</a></li>
       <li><a href="get_it/FactoryFunc.html">FactoryFunc</a></li>
+      <li><a href="get_it/FactoryFuncAsync.html">FactoryFuncAsync</a></li>
+      <li><a href="get_it/SingletonProviderFunc.html">SingletonProviderFunc</a></li>
     
+      <li class="section-title"><a href="get_it/get_it-library.html#exceptions">Exceptions</a></li>
+      <li><a href="get_it/WaitingTimeOutException-class.html">WaitingTimeOutException</a></li>
     </ol>
   </div>
 
@@ -73,10 +78,12 @@
 
     <section class="desc markdown">
       <p>Very simple and easy to use service locator
-You register your object creation or an instance of an object with <a href="get_it/GetIt/registerFactory.html">registerFactory</a>,
+You register your object creation factory or an instance of an object with <a href="get_it/GetIt/registerFactory.html">registerFactory</a>,
 <a href="get_it/GetIt/registerSingleton.html">registerSingleton</a> or <a href="get_it/GetIt/registerLazySingleton.html">registerLazySingleton</a>
 And retrieve the desired object using <a href="get_it/GetIt/get.html">get</a> or call your locator das as function as its a
-callable class</p>
+callable class
+Additionally GetIt offers asynchronous creation function as well as functions to synchronize
+the async initialization of multiple Singletons</p>
     </section>
     
 
@@ -88,9 +95,8 @@ callable class</p>
           <span class="name"><a href="get_it/GetIt/GetIt.asNewInstance.html">GetIt.asNewInstance</a></span><span class="signature">()</span>
         </dt>
         <dd>
-          You should prefer to use the <code>instance()</code> method to access an instance of <a href="get_it/GetIt-class.html">GetIt</a>.
-If you really, REALLY need more than one <a href="get_it/GetIt-class.html">GetIt</a> instance please set allowMultipleInstances
-to true to signal you know what you are doing :-).
+          If you need more than one instance of GetIt you can use <a href="get_it/GetIt/GetIt.asNewInstance.html">asNewInstance()</a>
+You should prefer to use the <code>instance()</code> method to access the global instance of <a href="get_it/GetIt-class.html">GetIt</a>. 
           <div class="constructor-modifier features">factory</div>
         </dd>
       </dl>
@@ -106,23 +112,15 @@ to true to signal you know what you are doing :-).
         </dt>
         <dd>
           By default it's not allowed to register a type a second time.
-If you really need to you can disable the asserts by setting<a href="get_it/GetIt/allowReassignment.html">allowReassignment</a>= true
+If you really need to you can disable the asserts by setting<a href="get_it/GetIt/allowReassignment.html">allowReassignment</a>= true 
                   <div class="features">read / write</div>
 </dd>
-        <dt id="ready" class="property">
-          <span class="name"><a href="get_it/GetIt/ready.html">ready</a></span>
-          <span class="signature">&#8594; Stream<span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>         
+        <dt id="manualReady" class="property">
+          <span class="name"><a class="deprecated" href="get_it/GetIt/manualReady.html">manualReady</a></span>
+          <span class="signature">&#8594; Future</span>         
         </dt>
         <dd>
-          
-                  <div class="features">read-only</div>
-</dd>
-        <dt id="readyFuture" class="property">
-          <span class="name"><a href="get_it/GetIt/readyFuture.html">readyFuture</a></span>
-          <span class="signature">&#8594; Future<span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>         
-        </dt>
-        <dd>
-          
+           
                   <div class="features">read-only</div>
 </dd>
         <dt id="hashCode" class="property inherited">
@@ -138,7 +136,7 @@ If you really need to you can disable the asserts by setting<a href="get_it/GetI
           <span class="signature">&#8594; Type</span>         
         </dt>
         <dd class="inherited">
-          A representation of the runtime type of the object.
+          A representation of the runtime type of the object. 
                   <div class="features">read-only, inherited</div>
 </dd>
       </dl>
@@ -147,26 +145,86 @@ If you really need to you can disable the asserts by setting<a href="get_it/GetI
     <section class="summary offset-anchor" id="instance-methods">
       <h2>Methods</h2>
       <dl class="callables">
+        <dt id="allReady" class="callable">
+          <span class="name"><a href="get_it/GetIt/allReady.html">allReady</a></span><span class="signature">(<wbr><span class="parameter" id="allReady-param-timeout">{<span class="type-annotation">Duration</span> <span class="parameter-name">timeout</span>}</span><wbr>)
+            <span class="returntype parameter">&#8594; Future<span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>
+          </span>
+                  </dt>
+        <dd>
+          returns a Future that completes if all asynchronously created Singletons are ready
+This can be used inside a FutureBuilder to change the UI as soon as all initialization
+is done
+If you pass a <code>timeout</code>, an <a href="get_it/WaitingTimeOutException-class.html">WaitingTimeOutException</a> will be thrown if not all Singletons
+were ready in the given time. The Exception contains details on which Singletons are not ready yet. 
+                  
+</dd>
+        <dt id="allReadySync" class="callable">
+          <span class="name"><a href="get_it/GetIt/allReadySync.html">allReadySync</a></span><span class="signature">(<wbr>)
+            <span class="returntype parameter">&#8594; bool</span>
+          </span>
+                  </dt>
+        <dd>
+          Returns if all async Singletons are ready 
+                  
+</dd>
         <dt id="call" class="callable">
-          <span class="name"><a href="get_it/GetIt/call.html">call</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr>[<span class="parameter" id="call-param-instanceName"><span class="type-annotation">String</span> <span class="parameter-name">instanceName</span></span> ])
+          <span class="name"><a href="get_it/GetIt/call.html">call</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="call-param-instanceName">[<span class="type-annotation">String</span> <span class="parameter-name">instanceName</span>]</span><wbr>)
             <span class="returntype parameter">&#8594; T</span>
           </span>
                   </dt>
         <dd>
-          
+          Callable class so that you can write <code>GetIt.instance&lt;MyType&gt;</code> instead of
+<code>GetIt.instance.get&lt;MyType&gt;</code> 
                   
 </dd>
         <dt id="get" class="callable">
-          <span class="name"><a href="get_it/GetIt/get.html">get</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr>[<span class="parameter" id="get-param-instanceName"><span class="type-annotation">String</span> <span class="parameter-name">instanceName</span></span> ])
+          <span class="name"><a href="get_it/GetIt/get.html">get</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="get-param-instanceName">[<span class="type-annotation">String</span> <span class="parameter-name">instanceName</span>]</span><wbr>)
             <span class="returntype parameter">&#8594; T</span>
           </span>
                   </dt>
         <dd>
-          retrieves or creates an instance of a registered type <code>T</code> depending on the registration function used for this type or based on a name.
+          retrieves or creates an instance of a registered type <code>T</code> depending on the registration
+function used for this type or based on a name. 
+                  
+</dd>
+        <dt id="getAsync" class="callable">
+          <span class="name"><a href="get_it/GetIt/getAsync.html">getAsync</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="getAsync-param-instanceName">[<span class="type-annotation">String</span> <span class="parameter-name">instanceName</span>]</span><wbr>)
+            <span class="returntype parameter">&#8594; Future<span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span></span>
+          </span>
+                  </dt>
+        <dd>
+          Returns an Future of an instance that is created by an async factory or a Singleton that is
+not ready with its initialization. 
+                  
+</dd>
+        <dt id="isReady" class="callable">
+          <span class="name"><a href="get_it/GetIt/isReady.html">isReady</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="isReady-param-instance">{<span class="type-annotation">Object</span> <span class="parameter-name">instance</span>, </span><wbr><span class="parameter" id="isReady-param-instanceName"><span class="type-annotation">String</span> <span class="parameter-name">instanceName</span>, </span><wbr><span class="parameter" id="isReady-param-timeout"><span class="type-annotation">Duration</span> <span class="parameter-name">timeout</span>}</span><wbr>)
+            <span class="returntype parameter">&#8594; Future<span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>
+          </span>
+                  </dt>
+        <dd>
+          Returns a Future that is completed when a given registered Factories/Singletons has
+signalled that it is ready
+<code>T</code> Type of the factory/Singleton to be waited for
+<code>instance</code> registered instance to be waited for
+<code>instanceName</code> factory/Singleton to be waited for that was registered by name instead of a type.
+You should only use one of the
+If you pass a <code>timeout</code>, an <a href="get_it/WaitingTimeOutException-class.html">WaitingTimeOutException</a> will be thrown if not all Singletons
+were ready in the given time. The Exception contains details on which Singletons are not ready yet. 
+                  
+</dd>
+        <dt id="isReadySync" class="callable">
+          <span class="name"><a href="get_it/GetIt/isReadySync.html">isReadySync</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="isReadySync-param-instance">{<span class="type-annotation">Object</span> <span class="parameter-name">instance</span>, </span><wbr><span class="parameter" id="isReadySync-param-instanceName"><span class="type-annotation">String</span> <span class="parameter-name">instanceName</span>}</span><wbr>)
+            <span class="returntype parameter">&#8594; bool</span>
+          </span>
+                  </dt>
+        <dd>
+          Checks if an async Singleton defined by an <code>instance</code>, a type <code>T</code> or an <code>instanceName</code>
+is ready 
                   
 </dd>
         <dt id="registerFactory" class="callable">
-          <span class="name"><a href="get_it/GetIt/registerFactory.html">registerFactory</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="registerFactory-param-func"><span class="type-annotation"><a href="get_it/FactoryFunc.html">FactoryFunc</a><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span></span> <span class="parameter-name">func</span>, {</span> <span class="parameter" id="registerFactory-param-instanceName"><span class="type-annotation">String</span> <span class="parameter-name">instanceName</span></span> })
+          <span class="name"><a href="get_it/GetIt/registerFactory.html">registerFactory</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="registerFactory-param-func"><span class="type-annotation"><a href="get_it/FactoryFunc.html">FactoryFunc</a><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span></span> <span class="parameter-name">func</span>, </span><wbr><span class="parameter" id="registerFactory-param-instanceName">{<span class="type-annotation">String</span> <span class="parameter-name">instanceName</span>}</span><wbr>)
             <span class="returntype parameter">&#8594; void</span>
           </span>
                   </dt>
@@ -176,27 +234,67 @@ If you really need to you can disable the asserts by setting<a href="get_it/GetI
 <code>func</code> factory function for this type
 <code>instanceName</code> if you provide a value here your factory gets registered with that
 name instead of a type. This should only be necessary if you need to register more
-than one instance of one type. Its highly not recommended
+than one instance of one type. Its highly not recommended 
                   
 </dd>
-        <dt id="registerLazySingleton" class="callable">
-          <span class="name"><a href="get_it/GetIt/registerLazySingleton.html">registerLazySingleton</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="registerLazySingleton-param-func"><span class="type-annotation"><a href="get_it/FactoryFunc.html">FactoryFunc</a><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span></span> <span class="parameter-name">func</span>, {</span> <span class="parameter" id="registerLazySingleton-param-instanceName"><span class="type-annotation">String</span> <span class="parameter-name">instanceName</span>, </span> <span class="parameter" id="registerLazySingleton-param-signalsReady"><span class="type-annotation">bool</span> <span class="parameter-name">signalsReady</span>: <span class="default-value">false</span></span> })
+        <dt id="registerFactoryAsync" class="callable">
+          <span class="name"><a href="get_it/GetIt/registerFactoryAsync.html">registerFactoryAsync</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="registerFactoryAsync-param-func"><span class="type-annotation"><a href="get_it/FactoryFuncAsync.html">FactoryFuncAsync</a><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span></span> <span class="parameter-name">func</span>, </span><wbr><span class="parameter" id="registerFactoryAsync-param-instanceName">{<span class="type-annotation">String</span> <span class="parameter-name">instanceName</span>}</span><wbr>)
             <span class="returntype parameter">&#8594; void</span>
           </span>
                   </dt>
         <dd>
-          registers a type as Singleton by passing a factory function that will be called on the first call of <a href="get_it/GetIt/get.html">get</a> on that type
+          We use a separate function for the async registration instead just a new parameter
+to make the intention explicit
 <code>T</code> type to register
 <code>func</code> factory function for this type
-If <code>signalsReady</code> is set to <code>true</code> it means that the <code>ready</code> property cannot emit a ready event until this
-registration was signalled ready
+<code>instanceName</code> if you provide a value here your factory gets registered with that
+name instead of a type. This should only be necessary if you need to register more
+than one instance of one type. Its highly not recommended 
+                  
+</dd>
+        <dt id="registerLazySingleton" class="callable">
+          <span class="name"><a href="get_it/GetIt/registerLazySingleton.html">registerLazySingleton</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="registerLazySingleton-param-func"><span class="type-annotation"><a href="get_it/FactoryFunc.html">FactoryFunc</a><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span></span> <span class="parameter-name">func</span>, </span><wbr><span class="parameter" id="registerLazySingleton-param-instanceName">{<span class="type-annotation">String</span> <span class="parameter-name">instanceName</span>}</span><wbr>)
+            <span class="returntype parameter">&#8594; void</span>
+          </span>
+                  </dt>
+        <dd>
+          registers a type as Singleton by passing a factory function that will be called
+on the first call of <a href="get_it/GetIt/get.html">get</a> on that type
+<code>T</code> type to register
+<code>func</code> factory function for this type
 <code>instanceName</code> if you provide a value here your factory gets registered with that
 name instead of a type. This should only be necessary if you need to register more
 than one instance of one type. Its highly not recommended
+<a href="get_it/GetIt/registerLazySingleton.html">registerLazySingleton</a> does not influence <a href="get_it/GetIt/allReady.html">allReady</a> 
+                  
+</dd>
+        <dt id="registerLazySingletonAsync" class="callable">
+          <span class="name"><a href="get_it/GetIt/registerLazySingletonAsync.html">registerLazySingletonAsync</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="registerLazySingletonAsync-param-providerFunc"><span class="type-annotation"><a href="get_it/SingletonProviderFunc.html">SingletonProviderFunc</a><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span></span> <span class="parameter-name">providerFunc</span>, </span><wbr><span class="parameter" id="registerLazySingletonAsync-param-instanceName">{<span class="type-annotation">String</span> <span class="parameter-name">instanceName</span>}</span><wbr>)
+            <span class="returntype parameter">&#8594; void</span>
+          </span>
+                  </dt>
+        <dd>
+          registers a type as Singleton by passing an asynchronous factory function which has to return the
+that will be returned on each call of <a href="get_it/GetIt/get.html">get</a> on that type.
+This is a rather esoteric requirement so you should seldom have the need to use it.
+This factory function <code>providerFunc</code> isn't called immediately but wait till the first call by
+<a href="get_it/GetIt/getAsync.html">getAsync()</a> or <a href="get_it/GetIt/isReady.html">isReady()</a> is made
+To control if an async Singleton has completed its <code>providerFunc</code> gets a <code>Completer</code> passed
+as parameter that has to be completed to signal that this instance is ready.
+Therefore you have to ensure that the instance is ready before you use <a href="get_it/GetIt/get.html">get</a> on it or use <a href="get_it/GetIt/getAsync.html">getAsync()</a> to
+wait for the completion.
+You can check if the instance is ready by using <a href="get_it/GetIt/isReady.html">isReady()</a> and <a href="get_it/GetIt/isReadySync.html">isReadySync()</a>.
+<code>providerFunc</code> when it returns an object and not a Future the
+object has to complete the completer itself.
+if it returns a future the completer will be completed automatically when that future completes.
+<code>instanceName</code> if you provide a value here your instance gets registered with that
+name instead of a type. This should only be necessary if you need to register more
+than one instance of one type. Its highly not recommended.
+<a href="get_it/GetIt/registerLazySingletonAsync.html">registerLazySingletonAsync</a> does not influence <a href="get_it/GetIt/allReady.html">allReady</a> 
                   
 </dd>
         <dt id="registerSingleton" class="callable">
-          <span class="name"><a href="get_it/GetIt/registerSingleton.html">registerSingleton</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="registerSingleton-param-instance"><span class="type-annotation">T</span> <span class="parameter-name">instance</span>, {</span> <span class="parameter" id="registerSingleton-param-instanceName"><span class="type-annotation">String</span> <span class="parameter-name">instanceName</span>, </span> <span class="parameter" id="registerSingleton-param-signalsReady"><span class="type-annotation">bool</span> <span class="parameter-name">signalsReady</span>: <span class="default-value">false</span></span> })
+          <span class="name"><a href="get_it/GetIt/registerSingleton.html">registerSingleton</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="registerSingleton-param-instance"><span class="type-annotation">T</span> <span class="parameter-name">instance</span>, </span><wbr><span class="parameter" id="registerSingleton-param-instanceName">{<span class="type-annotation">String</span> <span class="parameter-name">instanceName</span>}</span><wbr>)
             <span class="returntype parameter">&#8594; void</span>
           </span>
                   </dt>
@@ -204,11 +302,33 @@ than one instance of one type. Its highly not recommended
           registers a type as Singleton by passing an <code>instance</code> of that type
  that will be returned on each call of <a href="get_it/GetIt/get.html">get</a> on that type
 <code>T</code> type to register
-If <code>signalsReady</code> is set to <code>true</code> it means that the <code>ready</code> property cannot emit a ready event until this
-registration was signalled ready
+<code>instanceName</code> if you provide a value here your instance gets registered with that
+name instead of a type. This should only be necessary if you need to register more
+than one instance of one type. Its highly not recommended 
+                  
+</dd>
+        <dt id="registerSingletonAsync" class="callable">
+          <span class="name"><a href="get_it/GetIt/registerSingletonAsync.html">registerSingletonAsync</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="registerSingletonAsync-param-providerFunc"><span class="type-annotation"><a href="get_it/SingletonProviderFunc.html">SingletonProviderFunc</a><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span></span> <span class="parameter-name">providerFunc</span>, </span><wbr><span class="parameter" id="registerSingletonAsync-param-instanceName">{<span class="type-annotation">String</span> <span class="parameter-name">instanceName</span>, </span><wbr><span class="parameter" id="registerSingletonAsync-param-dependsOn"><span class="type-annotation">Iterable<span class="signature">&lt;<wbr><span class="type-parameter">Type</span>&gt;</span></span> <span class="parameter-name">dependsOn</span>}</span><wbr>)
+            <span class="returntype parameter">&#8594; void</span>
+          </span>
+                  </dt>
+        <dd>
+          registers a type as Singleton by passing an asynchronous factory function which has to return the
+that will be returned on each call of <a href="get_it/GetIt/get.html">get</a> on that type.
+To control if an async Singleton has completed its initialisation <code>providerFunc</code> gets a <code>Completer</code> passed
+as parameter that has to be completed to signal that this instance is ready.
+Therefore you have to ensure that the instance is ready before you use <a href="get_it/GetIt/get.html">get</a> on it or use <a href="get_it/GetIt/getAsync.html">getAsync()</a> to
+wait for the completion.
+You can check if the instance is ready by using <a href="get_it/GetIt/isReady.html">isReady()</a> and <a href="get_it/GetIt/isReadySync.html">isReadySync()</a>.
+<code>providerFunc</code> is executed immediately. If it returns an object and not a Future the
+object has to complete the completer itself.
+if it returns a future the completer will be completed automatically when that future completes
 <code>instanceName</code> if you provide a value here your instance gets registered with that
 name instead of a type. This should only be necessary if you need to register more
 than one instance of one type. Its highly not recommended
+<code>dependsOn</code> if this instance depends on other registered async instances before it can be initilaized
+you can either orchestrate this manually using <a href="get_it/GetIt/isReady.html">isReady()</a> or pass a list of the type that the
+instance depends on here. The async factory will wait to be executed till this types are ready. 
                   
 </dd>
         <dt id="reset" class="callable">
@@ -217,31 +337,42 @@ than one instance of one type. Its highly not recommended
           </span>
                   </dt>
         <dd>
-          Clears all registered types. Handy when writing unit tests
+          Clears all registered types. Handy when writing unit tests 
+                  
+</dd>
+        <dt id="resetLazySingleton" class="callable">
+          <span class="name"><a href="get_it/GetIt/resetLazySingleton.html">resetLazySingleton</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="resetLazySingleton-param-instance">{<span class="type-annotation">Object</span> <span class="parameter-name">instance</span>, </span><wbr><span class="parameter" id="resetLazySingleton-param-instanceName"><span class="type-annotation">String</span> <span class="parameter-name">instanceName</span>, </span><wbr><span class="parameter" id="resetLazySingleton-param-disposingFunction"><span class="type-annotation">void</span> <span class="parameter-name">disposingFunction</span>(<span class="parameter" id="param-"><span class="type-annotation">T</span></span><wbr>)}</span><wbr>)
+            <span class="returntype parameter">&#8594; void</span>
+          </span>
+                  </dt>
+        <dd>
+          Clears the instance of a lazy singleton registered type,
+being able to call the factory function on the next call
+of <a href="get_it/GetIt/get.html">get</a> on that type again. 
                   
 </dd>
         <dt id="signalReady" class="callable">
-          <span class="name"><a href="get_it/GetIt/signalReady.html">signalReady</a></span><span class="signature">(<wbr>[<span class="parameter" id="signalReady-param-instance"><span class="type-annotation">Object</span> <span class="parameter-name">instance</span></span> ])
+          <span class="name deprecated"><a class="deprecated" href="get_it/GetIt/signalReady.html">signalReady</a></span><span class="signature">(<wbr>)
             <span class="returntype parameter">&#8594; void</span>
           </span>
                   </dt>
         <dd>
-          
+          You should no longer us this manual mechanism to sync your app startup 
                   
 </dd>
         <dt id="unregister" class="callable">
-          <span class="name"><a href="get_it/GetIt/unregister.html">unregister</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr>{<span class="parameter" id="unregister-param-instance"><span class="type-annotation">Object</span> <span class="parameter-name">instance</span>, </span> <span class="parameter" id="unregister-param-instanceName"><span class="type-annotation">String</span> <span class="parameter-name">instanceName</span>, </span> <span class="parameter" id="unregister-param-disposingFunction"><span class="type-annotation">void</span> <span class="parameter-name">disposingFunction</span>(<span class="parameter" id="disposingFunction-param-"><span class="type-annotation">T</span></span>)</span> })
+          <span class="name"><a href="get_it/GetIt/unregister.html">unregister</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="unregister-param-instance">{<span class="type-annotation">Object</span> <span class="parameter-name">instance</span>, </span><wbr><span class="parameter" id="unregister-param-instanceName"><span class="type-annotation">String</span> <span class="parameter-name">instanceName</span>, </span><wbr><span class="parameter" id="unregister-param-disposingFunction"><span class="type-annotation">void</span> <span class="parameter-name">disposingFunction</span>(<span class="parameter" id="param-"><span class="type-annotation">T</span></span><wbr>)}</span><wbr>)
             <span class="returntype parameter">&#8594; void</span>
           </span>
                   </dt>
         <dd>
-          Unregister an instance of an object or a factory/singleton by Type <code>T</code> or by name <code>instanceName</code>
+          Unregister an <code>instance</code> of an object or a factory/singleton by Type <code>T</code> or by name <code>instanceName</code>
 if you need to dispose any resources you can do it using <code>disposingFunction</code> function
-that provides a instance of your class to be disposed
+that provides a instance of your class to be disposed 
                   
 </dd>
         <dt id="noSuchMethod" class="callable inherited">
-          <span class="name"><a href="get_it/GetIt/noSuchMethod.html">noSuchMethod</a></span><span class="signature">(<wbr><span class="parameter" id="noSuchMethod-param-invocation"><span class="type-annotation">Invocation</span> <span class="parameter-name">invocation</span></span>)
+          <span class="name"><a href="get_it/GetIt/noSuchMethod.html">noSuchMethod</a></span><span class="signature">(<wbr><span class="parameter" id="noSuchMethod-param-invocation"><span class="type-annotation">Invocation</span> <span class="parameter-name">invocation</span></span><wbr>)
             <span class="returntype parameter">&#8594; dynamic</span>
           </span>
                   </dt>
@@ -255,7 +386,7 @@ that provides a instance of your class to be disposed
           </span>
                   </dt>
         <dd class="inherited">
-          Returns a string representation of this object.
+          Returns a string representation of this object. 
                   <div class="features">inherited</div>
 </dd>
       </dl>
@@ -265,7 +396,7 @@ that provides a instance of your class to be disposed
       <h2>Operators</h2>
       <dl class="callables">
         <dt id="operator ==" class="callable inherited">
-          <span class="name"><a href="get_it/GetIt/operator_equals.html">operator ==</a></span><span class="signature">(<wbr><span class="parameter" id="==-param-other"><span class="type-annotation">dynamic</span> <span class="parameter-name">other</span></span>)
+          <span class="name"><a href="get_it/GetIt/operator_equals.html">operator ==</a></span><span class="signature">(<wbr><span class="parameter" id="==-param-other"><span class="type-annotation">dynamic</span> <span class="parameter-name">other</span></span><wbr>)
             <span class="returntype parameter">&#8594; bool</span>
           </span>
                   </dt>
@@ -280,21 +411,12 @@ that provides a instance of your class to be disposed
       <h2>Static Properties</h2>
 
       <dl class="properties">
-        <dt id="allowMultipleInstances" class="property">
-          <span class="name"><a href="get_it/GetIt/allowMultipleInstances.html">allowMultipleInstances</a></span>
-          <span class="signature">&#8596; bool</span>         
-        </dt>
-        <dd>
-          By default it's not allowed to create more than one <a href="get_it/GetIt-class.html">GetIt</a> instance.
-If you really need to you can disable the asserts by setting<a href="get_it/GetIt/allowReassignment.html">allowReassignment</a>= true
-                  <div class="features">read / write</div>
-</dd>
         <dt id="I" class="property">
           <span class="name"><a href="get_it/GetIt/I.html">I</a></span>
           <span class="signature">&#8594; <a href="get_it/GetIt-class.html">GetIt</a></span>         
         </dt>
         <dd>
-          
+          Short form to access the instance of GetIt 
                   <div class="features">read-only</div>
 </dd>
         <dt id="instance" class="property">
@@ -302,7 +424,7 @@ If you really need to you can disable the asserts by setting<a href="get_it/GetI
           <span class="signature">&#8594; <a href="get_it/GetIt-class.html">GetIt</a></span>         
         </dt>
         <dd>
-          
+          access to the Singleton instance of GetIt 
                   <div class="features">read-only</div>
 </dd>
       </dl>
@@ -314,6 +436,7 @@ If you really need to you can disable the asserts by setting<a href="get_it/GetI
 
   <div id="dartdoc-sidebar-right" class="col-xs-6 col-sm-6 col-md-2 sidebar sidebar-offcanvas-right">
     <ol>
+    
       <li class="section-title"><a href="get_it/GetIt-class.html#constructors">Constructors</a></li>
       <li><a href="get_it/GetIt/GetIt.asNewInstance.html">asNewInstance</a></li>
     
@@ -321,19 +444,27 @@ If you really need to you can disable the asserts by setting<a href="get_it/GetI
         <a href="get_it/GetIt-class.html#instance-properties">Properties</a>
       </li>
       <li><a href="get_it/GetIt/allowReassignment.html">allowReassignment</a></li>
-      <li><a href="get_it/GetIt/ready.html">ready</a></li>
-      <li><a href="get_it/GetIt/readyFuture.html">readyFuture</a></li>
+      <li><a class="deprecated" href="get_it/GetIt/manualReady.html">manualReady</a></li>
       <li class="inherited"><a href="get_it/GetIt/hashCode.html">hashCode</a></li>
       <li class="inherited"><a href="get_it/GetIt/runtimeType.html">runtimeType</a></li>
     
       <li class="section-title"><a href="get_it/GetIt-class.html#instance-methods">Methods</a></li>
+      <li><a href="get_it/GetIt/allReady.html">allReady</a></li>
+      <li><a href="get_it/GetIt/allReadySync.html">allReadySync</a></li>
       <li><a href="get_it/GetIt/call.html">call</a></li>
       <li><a href="get_it/GetIt/get.html">get</a></li>
+      <li><a href="get_it/GetIt/getAsync.html">getAsync</a></li>
+      <li><a href="get_it/GetIt/isReady.html">isReady</a></li>
+      <li><a href="get_it/GetIt/isReadySync.html">isReadySync</a></li>
       <li><a href="get_it/GetIt/registerFactory.html">registerFactory</a></li>
+      <li><a href="get_it/GetIt/registerFactoryAsync.html">registerFactoryAsync</a></li>
       <li><a href="get_it/GetIt/registerLazySingleton.html">registerLazySingleton</a></li>
+      <li><a href="get_it/GetIt/registerLazySingletonAsync.html">registerLazySingletonAsync</a></li>
       <li><a href="get_it/GetIt/registerSingleton.html">registerSingleton</a></li>
+      <li><a href="get_it/GetIt/registerSingletonAsync.html">registerSingletonAsync</a></li>
       <li><a href="get_it/GetIt/reset.html">reset</a></li>
-      <li><a href="get_it/GetIt/signalReady.html">signalReady</a></li>
+      <li><a href="get_it/GetIt/resetLazySingleton.html">resetLazySingleton</a></li>
+      <li><a class="deprecated" href="get_it/GetIt/signalReady.html">signalReady</a></li>
       <li><a href="get_it/GetIt/unregister.html">unregister</a></li>
       <li class="inherited"><a href="get_it/GetIt/noSuchMethod.html">noSuchMethod</a></li>
       <li class="inherited"><a href="get_it/GetIt/toString.html">toString</a></li>
@@ -342,9 +473,9 @@ If you really need to you can disable the asserts by setting<a href="get_it/GetI
       <li class="inherited"><a href="get_it/GetIt/operator_equals.html">operator ==</a></li>
     
       <li class="section-title"><a href="get_it/GetIt-class.html#static-properties">Static properties</a></li>
-      <li><a href="get_it/GetIt/allowMultipleInstances.html">allowMultipleInstances</a></li>
       <li><a href="get_it/GetIt/I.html">I</a></li>
       <li><a href="get_it/GetIt/instance.html">instance</a></li>
+    
     
     
     </ol>
@@ -354,10 +485,11 @@ If you really need to you can disable the asserts by setting<a href="get_it/GetI
 
 <footer>
   <span class="no-break">
-    get_it 3.0.0
+    get_it
+      3.0.3
   </span>
 
-  
+  <!-- footer-text placeholder -->
 </footer>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
@@ -365,7 +497,7 @@ If you really need to you can disable the asserts by setting<a href="get_it/GetI
 <script src="static-assets/highlight.pack.js"></script>
 <script src="static-assets/URI.js"></script>
 <script src="static-assets/script.js"></script>
-
+<!-- footer placeholder -->
 
 </body>
 

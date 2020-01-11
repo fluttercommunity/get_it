@@ -1,1 +1,1 @@
-dartdoc  --exclude dart:io,dart:ui,dart:isolate,dart:convert,dart:async,dart:collection,dart:core,dart:developer,dart:math,dart:typed_data
+dartdoc  --exclude 'dart:async,dart:collection,dart:convert,dart:core,dart:developer,dart:ffi,dart:html,dart:io,dart:isolate,dart:js,dart:js_util,dart:math,dart:typed_data,dart:ui'
