@@ -59,7 +59,7 @@
 <blockquote>
 <p><strong>Breaking Change with V4.0.0</strong> 
 Principle on how to synchronize your registered instances creation has been rethought and completely change :-)
-I hope for the better. Please see <code>Synchronising asynchronous creation of instances</code>(#synchronising-asynchronous creation-of-instances).</p>
+I hope for the better. Please see <a href="#asynchronous-singletons">Asynchronous Singletons</a>.</p>
 </blockquote>
 <p>Synchronising asynchronous creation of instances</p>
 <blockquote>
@@ -162,7 +162,7 @@ void resetLazySingleton&lt;T&gt;({Object instance,
 <pre class="language-Dart"><code class="language-Dart">/// Clears all registered types. Handy when writing unit tests
 void reset()
 </code></pre>
-<h2 id="asynchronous-factories-and-singletons">Asynchronous Factories and Singletons</h2>
+<h2 id="asynchronous-factories">Asynchronous Factories</h2>
 <p>If a factory needs to call an async function you can use <code>registerFactoryAsync()</code></p>
 <pre class="language-Dart"><code class="language-Dart">/// [T] type to register
 /// [func] factory function for this type
@@ -178,8 +178,8 @@ you can await the creation of the requested new instance.</p>
 Future&lt;T&gt; getAsync&lt;T&gt;([String instanceName]);
 </code></pre>
 <p>Additionally you can register asynchronous Singletons which means Singletons that have an initialisation that requires async function calls. To be able to control such asynchronous start-up behaviour GetIt supports mechanisms to ensure the correct initialization sequence. </p>
-<h3 id="asynchronous-creation-of-singletons">Asynchronous creation of Singletons</h3>
-<p>You create an Singleton with an asynchronous initialsation by calling </p>
+<h3 id="asynchronous-singletons">Asynchronous Singletons</h3>
+<p>You create an Singleton with an asynchronous initialisation by calling </p>
 <pre class="language-Dart"><code class="language-Dart"> void registerSingletonAsync&lt;T&gt;(SingletonProviderFunc&lt;T&gt; providerFunc,
       {String instanceName, Iterable&lt;Type&gt; dependsOn});
 </code></pre>
@@ -298,7 +298,7 @@ GetIt myOwnInstance = GetIt.asNewInstance();
 <footer>
   <span class="no-break">
     get_it
-      3.0.3
+      4.0.0-beta
   </span>
 
   <!-- footer-text placeholder -->

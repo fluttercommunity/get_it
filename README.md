@@ -7,7 +7,7 @@ This is a simple **Service Locator** for Dart and Flutter projects with some add
 
 >**Breaking Change with V4.0.0** 
 Principle on how to synchronize your registered instances creation has been rethought and completely change :-)
-I hope for the better. Please see [Synchronising asynchronous creation of instances](#synchronising-asynchronous creation-of-instances).
+I hope for the better. Please see [Asynchronous Singletons](#asynchronous-singletons).
 
 Synchronising asynchronous creation of instances
 
@@ -159,7 +159,7 @@ void reset()
 ```
 
 
-## Asynchronous Factories and Singletons
+## Asynchronous Factories
 If a factory needs to call an async function you can use `registerFactoryAsync()`
 
 ```Dart
@@ -182,9 +182,9 @@ Future<T> getAsync<T>([String instanceName]);
 
 Additionally you can register asynchronous Singletons which means Singletons that have an initialisation that requires async function calls. To be able to control such asynchronous start-up behaviour GetIt supports mechanisms to ensure the correct initialization sequence. 
 
-### Asynchronous creation of Singletons 
+### Asynchronous Singletons 
 
-You create an Singleton with an asynchronous initialsation by calling 
+You create an Singleton with an asynchronous initialisation by calling 
 
 ```Dart
  void registerSingletonAsync<T>(SingletonProviderFunc<T> providerFunc,
