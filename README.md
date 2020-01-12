@@ -282,6 +282,14 @@ Additionally GetIt has two complementary functions `isReadySync` and `isAllReady
 
 You also can use `getAsync` to wait and directly access an async Singleton.
 
+### How to make a non async Singleton wait
+In some case you might have a normal Singleton that doesn't have an async initialisation function but that depends on other async Singletons. In this case you still use `registerSingletonAsync` in the following way:
+
+```Dart
+sl.registerSingletonAsync<Service1>((_) => Future.value(NonAsyncService()), dependsOn: [Service1,Service2]);
+```
+
+
 
 **You only can synchronize async instances with each other! Not normal Singletons**
 
