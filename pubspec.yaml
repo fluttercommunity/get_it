@@ -1,6 +1,6 @@
 name: get_it
 description: Simple direct Service Locator that allows to decouple the interface from a concrete implementation and  to access the concrete implementation from everywhere in your App"
-version: 4.0.0-beta2
+version: 4.0.0-beta3
 maintainer: Thomas Burkhart (@escamoteur)
 authors: 
 - Flutter Community <community@flutter.zone>

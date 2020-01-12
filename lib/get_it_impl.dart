@@ -434,7 +434,7 @@ class _GetItImplementation implements GetIt {
               return instance;
             });
           } else {
-            serviceFactory.instance = instance;
+            serviceFactory.instance = asyncResult;
             // In this case the instance has to complete the completer
             isReadyFuture = Future.value(asyncResult);
           }

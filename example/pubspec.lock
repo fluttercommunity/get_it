@@ -115,7 +115,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "3.0.3"
+    version: "4.0.0-beta2"
   glob:
     dependency: transitive
     description:
