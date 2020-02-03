@@ -9,37 +9,41 @@ part 'get_it_impl.dart';
 
 /// Signature of the factory function used by normal factories
 typedef FactoryFunc<T> = T Function();
+
 /// Signature of the factory function used by async factories
 typedef FactoryFuncAsync<T> = Future<T> Function();
 
-/// Signature of the factory function used by async Signletons
-typedef SingletonProviderFunc<T> = FutureOr<T> Function(
-    Completer initCompleter);
-
-/// In case of an timeout while waiting for an instance to get ready
-/// This exception is thrown whith information about who is still waiting
 class WaitingTimeOutException implements Exception {
+  /// In case of an timeout while waiting for an instance to get ready
+  /// This exception is thrown whith information about who is still waiting
+  /// if you pass the [callee] parameter to [isReady]
+  /// this maps lists which callees is waiting for whom
+  final Map<String, List<String>> areWaitedBy;
+
   /// Lists with Types that are still not ready
-  final List<Type> typesNotSignaledYet;
+  final List<String> notReadyYet;
 
-  /// Lists with named Instances that are still not ready
-  final List<String> namedInstancesNotSignaledYet;
+  /// Lists with Types that are already ready
+  final List<String> areReady;
 
-  WaitingTimeOutException(
-      this.typesNotSignaledYet, this.namedInstancesNotSignaledYet)
-      : assert(typesNotSignaledYet != null &&
-            namedInstancesNotSignaledYet != null);
+  WaitingTimeOutException(this.areWaitedBy, this.notReadyYet, this.areReady)
+      : assert(
+            areWaitedBy != null && notReadyYet != null && areReady != null);
 
   @override
   String toString() {
     print(
         'GetIt: There was a timeout while waiting for an instance to signal ready');
-    print('The following instance types have NOT signaled ready yet');
-    for (var entry in typesNotSignaledYet) {
+    print('The following instance types where waiting for completion');
+    for (var entry in areWaitedBy.entries) {
+      print('${entry.value} is waiting for ${entry.key}');
+    }
+    print('The following instance types have NOT signalled ready yet');
+    for (var entry in notReadyYet) {
       print('$entry');
     }
-    print('The following named instances have NOT signaled ready yet');
-    for (var entry in namedInstancesNotSignaledYet) {
+    print('The following instance types HAVE signalled ready yet');
+    for (var entry in areReady) {
       print('$entry');
     }
     return super.toString();
@@ -110,7 +114,13 @@ abstract class GetIt {
   /// [instanceName] if you provide a value here your instance gets registered with that
   /// name instead of a type. This should only be necessary if you need to register more
   /// than one instance of one type. Its highly not recommended
-  void registerSingleton<T>(T instance, {String instanceName});
+  void registerSingleton<T>(T instance,
+      {String instanceName, bool signalsReady = false});
+
+  void registerSingletonWithDependencies<T>(FactoryFunc<T> providerFunc,
+      {String instanceName,
+      Iterable<Type> dependsOn,
+      bool signalsReady = false});
 
   /// registers a type as Singleton by passing an asynchronous factory function which has to return the
   /// that will be returned on each call of [get] on that type.
@@ -128,8 +138,10 @@ abstract class GetIt {
   /// [dependsOn] if this instance depends on other registered async instances before it can be initilaized
   /// you can either orchestrate this manually using [isReady()] or pass a list of the type that the
   /// instance depends on here. The async factory will wait to be executed till this types are ready.
-  void registerSingletonAsync<T>(SingletonProviderFunc<T> providerFunc,
-      {String instanceName, Iterable<Type> dependsOn});
+  void registerSingletonAsync<T>(FactoryFuncAsync<T> providerFunc,
+      {String instanceName,
+      Iterable<Type> dependsOn,
+      bool signalsReady = false});
 
   /// registers a type as Singleton by passing a factory function that will be called
   /// on the first call of [get] on that type
@@ -158,7 +170,7 @@ abstract class GetIt {
   /// name instead of a type. This should only be necessary if you need to register more
   /// than one instance of one type. Its highly not recommended.
   /// [registerLazySingletonAsync] does not influence [allReady]
-  void registerLazySingletonAsync<T>(SingletonProviderFunc<T> providerFunc,
+  void registerLazySingletonAsync<T>(FactoryFuncAsync<T> providerFunc,
       {String instanceName});
 
   /// Clears all registered types. Handy when writing unit tests
@@ -195,19 +207,30 @@ abstract class GetIt {
   /// You should only use one of the
   /// If you pass a [timeout], an [WaitingTimeOutException] will be thrown if not all Singletons
   /// were ready in the given time. The Exception contains details on which Singletons are not ready yet.
-  Future<void> isReady<T>(
-      {Object instance, String instanceName, Duration timeout});
+  /// [callee] optional parameter which makes debugging easier. Pass `this` in here.
+  Future<void> isReady<T>({
+    Object instance,
+    String instanceName,
+    Duration timeout,
+    Object callee,
+  });
 
   /// Checks if an async Singleton defined by an [instance], a type [T] or an [instanceName]
   /// is ready
   bool isReadySync<T>({Object instance, String instanceName});
 
   /// Returns if all async Singletons are ready
-  bool allReadySync();
+  bool allReadySync([ignorePendingAsyncCreation = false]);
 
-  /// You should no longer us this manual mechanism to sync your app startup
-  @deprecated
-  void signalReady();
-  @deprecated
-  Future get manualReady;
+  /// if [instance] is `null` and no factory/singleton is waiting to be signaled this will complete the future you got
+  /// from [allReady]
+  ///
+  /// If [instance] has a value GetIt will search for the responsible factory/singleton and complete all futures you might
+  /// have received by calling [isReady]
+  /// Typically this is use in this way inside the registered objects init method `GetIt.instance.signalReady(this);`
+  /// If all waiting singletons/factories have signaled ready the future you can get from [allReady] is automatically completed
+  ///
+  /// Both ways are mutual exclusive meaning either only use the global `signalReady()` and don't register a singlton/fatory as signaling ready
+  /// Or let indiviual instance signal their ready state on their own.
+  void signalReady(Object instance);
 }

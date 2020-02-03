@@ -6,9 +6,8 @@ import 'package:get_it_example/app_model.dart';
 GetIt getIt = GetIt.instance;
 
 void main() {
-  getIt.registerSingletonAsync<AppModel>(
-      (completer) => AppModelImplementation(completer));
-
+  getIt.registerSingleton<AppModel>(AppModelImplementation());
+          
   runApp(MyApp());
 }
 

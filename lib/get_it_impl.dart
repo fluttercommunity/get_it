@@ -35,8 +35,6 @@ class _ServiceFactory<T> {
   /// only one of them is always set.
   final FactoryFunc<T> creationFunction;
   final FactoryFuncAsync<T> asyncCreationFunction;
-  // We need a separate function type here because it gets passes a completer
-  final SingletonProviderFunc<T> asyncSingletonCreationFunction;
 
   /// In case of a named registration the instance name is here stored for easy access
   final String instanceName;
@@ -44,34 +42,44 @@ class _ServiceFactory<T> {
   /// true if one of the async registration functions have been used
   final bool isAsync;
 
-  /// If a an existing Object gets registered or an async Singleton has finished its creation it is stored here
+  /// If a an existing Object gets registered or an async/lazy Singleton has finished
+  /// its creation it is stored here
   Object instance;
 
   /// the type that was used when registering. used for runtime checks
   Type registrationType;
 
-  /// to enable async Singletons to signal that they are ready (their initialization is finished)
-  /// they get passed this completer in their factory function.
+  /// to enable Singletons to signal that they are ready (their initialization is finished)
   Completer _readyCompleter;
 
-  /// the returned future of pending async factory calls
+  /// the returned future of pending async factory calls or facttory call with dependencies
   Future<T> pendingResult;
+
+  /// If other objects are waiting for this one
+  /// they are stored here
+  final List<Type> objectsWaiting = [];
 
   bool get isReady => _readyCompleter.isCompleted;
 
   bool get isNamedRegistration => instanceName != null;
 
+  String get debugName =>
+      isNamedRegistration ? instanceName : registrationType.toString();
+
+  bool get canBeWaitedFor =>
+      shouldSignalReady || pendingResult != null || isAsync;
+
+  final bool shouldSignalReady;
+
   _ServiceFactory(this.factoryType,
       {this.creationFunction,
       this.asyncCreationFunction,
-      this.asyncSingletonCreationFunction,
       this.instance,
       this.isAsync = false,
-      this.instanceName}) {
+      this.instanceName,
+      @required this.shouldSignalReady}) {
     registrationType = T;
-    if (isAsync) {
       _readyCompleter = Completer();
-    }
   }
 
   /// returns an instance depending on the type of the registration if [async==false]
@@ -87,6 +95,7 @@ class _ServiceFactory<T> {
         case _ServiceFactoryType.lazy:
           if (instance == null) {
             instance = creationFunction();
+            _readyCompleter.complete();
           }
           return instance as T;
           break;
@@ -100,10 +109,10 @@ class _ServiceFactory<T> {
     }
   }
 
-  /// returns an instance depending on the type of the registration if [async==true]
+  /// returns an async instance depending on the type of the registration if [async==true] or if [dependsOn.isnoEmpty].
   Future<T> getObjectAsync() async {
     throwIfNot(
-        isAsync,
+        isAsync || pendingResult != null,
         StateError(
             'You can only access registered factories/objects this way if they are created asynchronously'));
     try {
@@ -131,27 +140,17 @@ class _ServiceFactory<T> {
             }
 
             /// Seems this is really the first access to this async Signleton
-            /// `FutureOr` can store either Futures or a simple value
-            FutureOr<T> asyncResult =
-                asyncSingletonCreationFunction(_readyCompleter);
+            Future<T> asyncResult = asyncCreationFunction();
 
-            if (asyncResult is Future) {
-              // This means we really got an async creation function passed that returns a future
-              //
-              // In this case we complete the completer automatically
-              // as soon as the creation function is done
-              pendingResult = (asyncResult as Future<T>).then((newInstance) {
+            pendingResult = (asyncResult).then((newInstance) {
+              if (!shouldSignalReady) {
+                ///only complete automatically if the registration wasn't marked with [signalsReady==true]
                 _readyCompleter.complete();
-                instance = newInstance;
-                return newInstance;
-              });
-              return pendingResult;
-            } else {
-              // This means the creation function has directly returned an instance and not a future
-              // In this case the instance has to complete the completer
-              instance = asyncResult as T;
-              return Future<T>.value(instance);
-            }
+              }
+              instance = newInstance;
+              return newInstance;
+            });
+            return pendingResult;
           }
           break;
         default:
@@ -173,11 +172,8 @@ class _GetItImplementation implements GetIt {
   final _factoriesByName = Map<String, _ServiceFactory<dynamic>>();
 
   /// We still support a global ready signal mechanism for that we use this
-  /// Completer. This feature will get deprecated unless users vote for it
+  /// Completer.
   final _globalReadyCompleter = Completer();
-
-  @override
-  Future get manualReady => _globalReadyCompleter.future;
 
   /// By default it's not allowed to register a type a second time.
   /// If you really need to you can disable the asserts by setting[allowReassignment]= true
@@ -214,7 +210,7 @@ class _GetItImplementation implements GetIt {
     var instanceFactory = _findFactoryByNameOrType<T>(instanceName);
 
     Object instance;
-    if (instanceFactory.isAsync) {
+    if (instanceFactory.isAsync || instanceFactory.pendingResult != null) {
       /// We use an assert here instead of an `if..throw` for performance reasons
       assert(
           instanceFactory.factoryType == _ServiceFactoryType.constant ||
@@ -239,7 +235,7 @@ class _GetItImplementation implements GetIt {
     return get<T>(instanceName);
   }
 
-  /// Returns an Future of an instance that is created async and may not be ready yet
+  /// Returns an Future of an instance that may not be ready yet
   @override
   Future<T> getAsync<T>([String instanceName]) {
     _ServiceFactory<T> factoryToGet;
@@ -259,7 +255,8 @@ class _GetItImplementation implements GetIt {
         type: _ServiceFactoryType.alwaysNew,
         instanceName: instanceName,
         factoryFunc: func,
-        isAsync: false);
+        isAsync: false,
+        shouldSignalReady: false);
   }
 
   /// We use a separate function for the async registration instead just a new parameter
@@ -271,17 +268,18 @@ class _GetItImplementation implements GetIt {
         type: _ServiceFactoryType.alwaysNew,
         instanceName: instanceName,
         factoryFuncAsync: asyncFunc,
-        isAsync: true);
+        isAsync: true,
+        shouldSignalReady: false);
   }
 
   /// registers a type as Singleton by passing a factory function that will be called on the first call of [get] on that type
   /// [T] type to register
   /// [func] factory function for this type
-  /// If [signalsReady] is set to `true` it means that the future you can get from `allReady()`  cannot complete until this
-  /// registration was signalled ready by calling [signalsReady(instance)]
   /// [instanceName] if you provide a value here your factory gets registered with that
   /// name instead of a type. This should only be necessary if you need to register more
   /// than one instance of one type. Its highly not recommended
+  /// If [signalsReady] is set to `true` it means that the future you can get from `allReady()`  cannot complete until this
+  /// registration was signalled ready by calling [signalsReady(instance)]
   @override
   void registerLazySingleton<T>(FactoryFunc<T> func,
       {String instanceName, bool signalsReady = false}) {
@@ -289,7 +287,8 @@ class _GetItImplementation implements GetIt {
         type: _ServiceFactoryType.lazy,
         instanceName: instanceName,
         factoryFunc: func,
-        isAsync: signalsReady);
+        isAsync: signalsReady,
+        shouldSignalReady: signalsReady);
   }
 
   /// registers a type as Singleton by passing an [instance] of that type
@@ -301,33 +300,58 @@ class _GetItImplementation implements GetIt {
   /// name instead of a type. This should only be necessary if you need to register more
   /// than one instance of one type. Its highly not recommended
   @override
-  void registerSingleton<T>(T instance, {String instanceName}) {
+  void registerSingleton<T>(
+    T instance, {
+    String instanceName,
+    bool signalsReady = false,
+  }) {
     _register<T>(
         type: _ServiceFactoryType.constant,
         instanceName: instanceName,
         instance: instance,
-        isAsync: false);
+        isAsync: false,
+        shouldSignalReady: signalsReady);
   }
 
   @override
-  void registerSingletonAsync<T>(SingletonProviderFunc<T> providerFunc,
-      {String instanceName, Iterable<Type> dependsOn}) {
+  void registerSingletonWithDependencies<T>(
+    FactoryFunc<T> providerFunc, {
+    String instanceName,
+    Iterable<Type> dependsOn,
+    bool signalsReady = false,
+  }) {
+    _register<T>(
+        type: _ServiceFactoryType.constant,
+        instanceName: instanceName,
+        isAsync: false,
+        factoryFunc: providerFunc,
+        dependsOn: dependsOn,
+        shouldSignalReady: signalsReady);
+  }
+
+  @override
+  void registerSingletonAsync<T>(FactoryFuncAsync<T> providerFunc,
+      {String instanceName,
+      Iterable<Type> dependsOn,
+      bool signalsReady = false}) {
     _register<T>(
         type: _ServiceFactoryType.constant,
         instanceName: instanceName,
         isAsync: true,
-        singletonFactoryFunc: providerFunc,
-        dependsOn: dependsOn);
+        factoryFuncAsync: providerFunc,
+        dependsOn: dependsOn,
+        shouldSignalReady: signalsReady);
   }
 
   @override
-  void registerLazySingletonAsync<T>(SingletonProviderFunc<T> func,
-      {String instanceName}) {
+  void registerLazySingletonAsync<T>(FactoryFuncAsync<T> func,
+      {String instanceName, bool signalsReady = false}) {
     _register<T>(
         isAsync: true,
         type: _ServiceFactoryType.lazy,
         instanceName: instanceName,
-        singletonFactoryFunc: func);
+        factoryFuncAsync: func,
+        shouldSignalReady: signalsReady);
   }
 
   /// Clears all registered types. Handy when writing unit tests
@@ -341,11 +365,11 @@ class _GetItImplementation implements GetIt {
       {@required _ServiceFactoryType type,
       FactoryFunc<T> factoryFunc,
       FactoryFuncAsync<T> factoryFuncAsync,
-      SingletonProviderFunc<T> singletonFactoryFunc,
       T instance,
       @required String instanceName,
       @required bool isAsync,
-      Iterable<Type> dependsOn}) {
+      Iterable<Type> dependsOn,
+      @required bool shouldSignalReady}) {
     print(T.toString());
 
     throwIf(
@@ -364,13 +388,13 @@ class _GetItImplementation implements GetIt {
             !allowReassignment),
         ArgumentError("Type ${T.toString()} is already registered"));
 
-    var serviceFactory = _ServiceFactory<T>(type,
+    final serviceFactory = _ServiceFactory<T>(type,
         creationFunction: factoryFunc,
         asyncCreationFunction: factoryFuncAsync,
-        asyncSingletonCreationFunction: singletonFactoryFunc,
         instance: instance,
         isAsync: isAsync,
-        instanceName: instanceName);
+        instanceName: instanceName,
+        shouldSignalReady: shouldSignalReady);
 
     if (instanceName == null) {
       _factories[T] = serviceFactory;
@@ -378,76 +402,88 @@ class _GetItImplementation implements GetIt {
       _factoriesByName[instanceName] = serviceFactory;
     }
 
-    // if its an async Singleton we start its creation function here after we check if
+    // simple Singletons get creates immediately
+    if (type == _ServiceFactoryType.constant &&
+        !shouldSignalReady &&
+        !isAsync &&
+        (dependsOn?.isEmpty ?? false)) {
+      serviceFactory.instance = factoryFunc();
+      serviceFactory._readyCompleter.complete();
+      return;
+    }
+
+    // if its an async or an dependent Singleton we start its creation function here after we check if
     // it is dependent on other registered Singletons.
-    if (isAsync) {
-      if (type == _ServiceFactoryType.constant) {
-        /// Any client awaiting the completion of this Singleton
-        /// Has to wait for the completion of the Singleton itself as well
-        /// as for the completion of all the Singletons this one depends on
-        /// For this we use [outerFutureGroup]
-        /// A `FutureGroup` completes only of it's closed and all contained
-        /// Futures have completed
-        FutureGroup outerFutureGroup = FutureGroup();
-        Future dependentFuture;
+    if ((isAsync || (dependsOn?.isNotEmpty ?? false)) &&
+        type == _ServiceFactoryType.constant) {
+      /// Any client awaiting the completion of this Singleton
+      /// Has to wait for the completion of the Singleton itself as well
+      /// as for the completion of all the Singletons this one depends on
+      /// For this we use [outerFutureGroup]
+      /// A `FutureGroup` completes only if it's closed and all contained
+      /// Futures have completed
+      FutureGroup outerFutureGroup = FutureGroup();
+      Future dependentFuture;
 
-        if (dependsOn?.isNotEmpty ?? false) {
-          /// To wait for the completion of all Singletons this one is depending on
-          /// before we start to create itself we use [dependentFutureGroup]
-          var dependentFutureGroup = FutureGroup();
+      if (dependsOn?.isNotEmpty ?? false) {
+        /// To wait for the completion of all Singletons this one is depending on
+        /// before we start to create itself we use [dependentFutureGroup]
+        var dependentFutureGroup = FutureGroup();
 
-          dependsOn.forEach((type) {
-            var dependentFactory = _factories[type];
-            throwIf(
-                dependentFactory == null,
-                ArgumentError(
-                    'Dependent Type $type is not registered in GetIt'));
-            throwIfNot(dependentFactory.isAsync,
-                ArgumentError('Dependent Type $type is an async Singleton'));
-            dependentFutureGroup.add(dependentFactory._readyCompleter.future);
-          });
-          dependentFutureGroup.close();
-
-          dependentFuture = dependentFutureGroup.future;
-        } else {
-          /// if we have no dependencies we still create a dummy Future so that
-          /// we can use the same code path further down
-          dependentFuture = Future.sync(() {}); // directly execute then
-        }
-        outerFutureGroup.add(dependentFuture);
-
-        /// if someone uses getAsync on an async Singleton that has not be started to get created
-        /// because its dependend on other objects this doesn't wor because PendingResult is not set in
-        /// that case
-        dependentFuture.then((_) {
-          var asyncResult =
-              singletonFactoryFunc(serviceFactory._readyCompleter);
-          Future<T> isReadyFuture;
-          if (asyncResult is Future<T>) {
-            // In this case we complete the completer automatically
-            isReadyFuture = asyncResult.then((instance) {
-              serviceFactory.instance = instance;
-              // just in case if anyone has already completed this completer manually
-              if (!serviceFactory.isReady) {
-                serviceFactory._readyCompleter.complete();
-              }
-              return instance;
-            });
-          } else {
-            serviceFactory.instance = asyncResult;
-            // In this case the instance has to complete the completer
-            isReadyFuture = Future.value(asyncResult);
-          }
-          outerFutureGroup.add(isReadyFuture);
-          outerFutureGroup.close();
+        dependsOn.forEach((type) {
+          var dependentFactory = _factories[type];
+          throwIf(dependentFactory == null,
+              ArgumentError('Dependent Type $type is not registered in GetIt'));
+          throwIfNot(dependentFactory.canBeWaitedFor,
+              ArgumentError('Dependent Type $type is an async Singleton'));
+          dependentFactory.objectsWaiting.add(serviceFactory.registrationType);
+          dependentFutureGroup.add(dependentFactory._readyCompleter.future);
         });
+        dependentFutureGroup.close();
 
-        /// outerFutureGroup.future returns a Future<List> and not a Future<T>
-        /// As we know that the actual factory function was added last to the FutureGroup
-        /// we just use that one
-        serviceFactory.pendingResult = outerFutureGroup.future
-            .then((completedFutures) => completedFutures.last);
+        dependentFuture = dependentFutureGroup.future;
+      } else {
+        /// if we have no dependencies we still create a dummy Future so that
+        /// we can use the same code path further down
+        dependentFuture = Future.sync(() {}); // directly execute then
       }
+      outerFutureGroup.add(dependentFuture);
+
+      /// if someone uses getAsync on an async Singleton that has not be started to get created
+      /// because its dependent on other objects this doesn't work because [pendingResult] is not set in
+      /// that case. Therefore we have to set [outerFutureGroup] as [pendingResult]
+      dependentFuture.then((_) {
+        if (!isAsync) {
+          /// SingletonWithDepencencies
+          serviceFactory.instance = factoryFunc();
+          if (!serviceFactory.shouldSignalReady) {
+            /// As this isn't an asnc function we declare it as ready here
+            /// if is wasn't marked that it will signalReady
+            serviceFactory._readyCompleter.complete();
+          }
+        } else {
+          /// Async Singleton with dependencies
+          final asyncResult = factoryFuncAsync();
+          Future<T> isReadyFuture;
+
+          isReadyFuture = asyncResult.then((instance) {
+            serviceFactory.instance = instance;
+
+            if (!serviceFactory.shouldSignalReady && !serviceFactory.isReady) {
+              serviceFactory._readyCompleter.complete();
+            }
+            return instance;
+          });
+          outerFutureGroup.add(isReadyFuture);
+        }
+        outerFutureGroup.close();
+      });
+
+      /// outerFutureGroup.future returns a Future<List> and not a Future<T>
+      /// As we know that the actual factory function was added last to the FutureGroup
+      /// we just use that one
+      serviceFactory.pendingResult = outerFutureGroup.future
+          .then((completedFutures) => completedFutures.last);
     }
   }
 
@@ -465,6 +501,11 @@ class _GetItImplementation implements GetIt {
     } else {
       factoryToRemove = _findFactoryByNameOrType<T>(instanceName);
     }
+
+    throwIf(
+        factoryToRemove.objectsWaiting.isNotEmpty,
+        StateError(
+            'There are still other objects waiting for this instance so signal ready'));
 
     if (factoryToRemove.isNamedRegistration) {
       _factoriesByName.remove(factoryToRemove.instanceName);
@@ -521,26 +562,62 @@ class _GetItImplementation implements GetIt {
     return registeredFactories.first;
   }
 
+  /// if [instance] is `null` and no factory/singleton is waiting to be signaled this will complete the future you got
+  /// from [allReady]
+  ///
+  /// If [instance] has a value GetIt will search for the responsible factory/singleton and complete all futures you might
+  /// have received by calling [isReady]
+  /// Typically this is use in this way inside the registered objects init method `GetIt.instance.signalReady(this);`
+  /// If all waiting singletons/factories have signaled ready the future you can get from [allReady] is automatically completed
+  ///
+  /// Both ways are mutual exclusive meaning either only use the global `signalReady()` and don't register a singlton/fatory as signaling ready
+  /// Or let indiviual instance signal their ready state on their own.
   @override
-  void signalReady() {
-    /// Manual signalReady
+  void signalReady(Object instance) {
+    _ServiceFactory registeredInstance;
+    if (instance != null) {
+      registeredInstance = _findFactoryByInstance(instance);
+      throwIf(
+          registeredInstance == null,
+          ArgumentError.value(instance,
+              'There is no object type ${instance.runtimeType} registered in GetIt'));
 
-    /// In case that there are still factories that are marked to wait for a signal
-    /// but aren't signalled we throw an error with details which objects are concerned
-    final notReadyTypes = _factories.entries
-        .where((x) => (x.value.isAsync && !x.value.isReady))
-        .map<String>((x) => x.key.toString())
-        .toList();
-    final notReadyNames = _factoriesByName.entries
-        .where((x) => (x.value.isAsync && !x.value.isReady))
-        .map<String>((x) => x.key)
-        .toList();
-    throwIf(
-        notReadyNames.isNotEmpty || notReadyTypes.isNotEmpty,
-        StateError(
-            'Registered types/names: $notReadyTypes  / $notReadyNames should signal ready but are not ready'));
+      throwIfNot(
+          registeredInstance.shouldSignalReady,
+          ArgumentError.value(instance,
+              'This instance of type ${instance.runtimeType} is not supposed to be signalled.\nDid you forget to set signalsReady==true when registering it?'));
 
-    _globalReadyCompleter.complete();
+      throwIf(
+          registeredInstance.isReady,
+          StateError(
+              'This instance of type ${instance.runtimeType} was already signalled'));
+
+      registeredInstance._readyCompleter.complete();
+      registeredInstance.objectsWaiting.clear();
+    } else {
+      /// Manual signalReady without an instance
+
+      /// In case that there are still factories that are marked to wait for a signal
+      /// but aren't signalled we throw an error with details which objects are concerned
+      final notReadyTypes = _factories.entries
+          .where((x) =>
+              (x.value.shouldSignalReady) && (!x.value.isReady) ||
+              (x.value.pendingResult != null) && (!x.value.isReady))
+          .map<String>((x) => x.key.toString())
+          .toList();
+      final notReadyNames = _factoriesByName.entries
+          .where((x) => x.value.canBeWaitedFor && !x.value.isReady)
+          .map<String>((x) => x.key)
+          .toList();
+      throwIf(
+          notReadyNames.isNotEmpty || notReadyTypes.isNotEmpty,
+          StateError(
+              'You can\'t signal reads manually if you have registered instances that should signal ready or are asnyc.\n'
+              'Did you forget to pass an object instance?'
+              'This registered types/names: $notReadyTypes  / $notReadyNames should signal ready but are not ready'));
+
+      _globalReadyCompleter.complete();
+    }
   }
 
   /// returns a Future that completes if all asynchronously created Singletons are ready
@@ -549,12 +626,20 @@ class _GetItImplementation implements GetIt {
   /// If you pass a [timeout], an [WaitingTimeOutException] will be thrown if not all Singletons
   /// were ready in the given time. The Exception contains details on which Singletons are not ready yet.
   @override
-  Future<void> allReady({Duration timeout}) {
+  Future<void> allReady(
+      {Duration timeout, ignorePendingAsyncCreation = false}) {
     FutureGroup futures = FutureGroup();
     _factories.values
         .followedBy(_factoriesByName.values)
-        .where((x) => (x.isAsync && !x.isReady && x.factoryType ==_ServiceFactoryType.constant ))
-        .forEach((f) => futures.add(f._readyCompleter.future));
+        .where((x) => ((x.isAsync && !ignorePendingAsyncCreation ||
+                    (!x.isAsync && x.pendingResult != null) ||  // Singletons with dependencies
+                    x.shouldSignalReady) &&
+                !x.isReady &&
+                x.factoryType == _ServiceFactoryType.constant ||
+            x.factoryType == _ServiceFactoryType.lazy))
+        .forEach((f) {
+          futures.add(f._readyCompleter.future);
+        });
     futures.close();
     if (timeout != null) {
       return futures.future.timeout(timeout, onTimeout: _throwTimeoutError);
@@ -563,57 +648,17 @@ class _GetItImplementation implements GetIt {
     }
   }
 
-  FutureOr<List> _throwTimeoutError() {
-    final notReadyTypes = _factories.entries
-        .where((x) => (x.value.isAsync && !x.value.isReady))
-        .map<Type>((x) => x.value.registrationType)
-        .toList();
-    final notReadyNames = _factoriesByName.entries
-        .where((x) => (x.value.isAsync && !x.value.isReady))
-        .map<String>((x) => x.key)
-        .toList();
-
-    throw WaitingTimeOutException(notReadyTypes, notReadyNames);
-  }
-
-  /// Returns a Future that completes if an instance of an Singleton defined by Type [T] or by name [instanceName]
-  /// or by passing the an existing [instance]  is ready
-  /// This can be used inside a FutureBuilder to change the UI as soon as all initialization
-  /// is done
-  /// If you pass a [timeout], an [WaitingTimeOutException] will be thrown if not all Singletons
-  /// were ready in the given time. The Exception contains details on which Singletons are not ready yet.
-  @override
-  Future<void> isReady<T>(
-      {Object instance, String instanceName, Duration timeout}) {
-    _ServiceFactory factoryToCheck;
-    if (instance != null) {
-      factoryToCheck = _findFactoryByInstance(instance);
-    } else {
-      factoryToCheck = _findFactoryByNameOrType<T>(instanceName);
-    }
-    throwIfNot(
-        factoryToCheck.isAsync &&
-            factoryToCheck.registrationType != _ServiceFactoryType.alwaysNew,
-        ArgumentError('You only can use this function on async Singletons'));
-    if (factoryToCheck.factoryType == _ServiceFactoryType.lazy &&
-        !factoryToCheck.isReady) {
-      return factoryToCheck.getObjectAsync();
-    }
-    if (timeout != null) {
-      return factoryToCheck._readyCompleter.future
-          .timeout(timeout, onTimeout: _throwTimeoutError);
-    } else {
-      return factoryToCheck._readyCompleter.future;
-    }
-  }
-
   /// Returns if all async Singletons are ready without waiting
   @override
-  bool allReadySync() {
+  bool allReadySync([ignorePendingAsyncCreation = false]) {
     final notReadyTypes = _factories.values
         .followedBy(_factoriesByName.values)
-        .where((x) => (x.isAsync && !x.isReady))
-        .map<String>((x) {
+        .where((x) => ((x.isAsync && !ignorePendingAsyncCreation ||
+                    (!x.isAsync && x.pendingResult != null) ||  // Singletons with dependencies
+                    x.shouldSignalReady) &&
+                !x.isReady &&
+                x.factoryType == _ServiceFactoryType.constant ||
+            x.factoryType == _ServiceFactoryType.lazy))        .map<String>((x) {
       if (x.isNamedRegistration) {
         return 'Object ${x.instanceName} has not completed';
       } else {
@@ -625,12 +670,78 @@ class _GetItImplementation implements GetIt {
     if (notReadyTypes.isNotEmpty) {
       // Hack to only output this in debug mode;
       assert(() {
+        print('Not yet ready objects:');
         print(notReadyTypes);
         return true;
       }());
     }
     return notReadyTypes.isEmpty;
   }
+
+
+  List<dynamic> _throwTimeoutError() {
+    final allFactories = _factories.values.followedBy(_factoriesByName.values);
+    final waitedBy = Map.fromEntries(
+      allFactories
+          .where((x) =>
+              (x.shouldSignalReady || x.pendingResult != null) && !x.isReady)
+          .map<MapEntry<String, List<String>>>(
+            (isWaitedFor) => MapEntry(
+                isWaitedFor.debugName,
+                isWaitedFor.objectsWaiting
+                    .map((waitedByType) => waitedByType.toString())
+                    .toList()),
+          ),
+    );
+    final notReady = allFactories
+        .where((x) =>
+            (x.shouldSignalReady || x.pendingResult != null) && !x.isReady)
+        .map((f) => f.debugName)
+        .toList();
+    final areReady = allFactories
+        .where((x) =>
+            (x.shouldSignalReady || x.pendingResult != null) && x.isReady)
+        .map((f) => f.debugName)
+        .toList();
+
+    throw WaitingTimeOutException(waitedBy, notReady, areReady);
+  }
+
+  /// Returns a Future that completes if an instance of an Singleton defined by Type [T] or by name [instanceName]
+  /// or by passing the an existing [instance]  is ready
+  /// This can be used inside a FutureBuilder to change the UI as soon as all initialization
+  /// is done
+  /// If you pass a [timeout], an [WaitingTimeOutException] will be thrown if not all Singletons
+  /// were ready in the given time. The Exception contains details on which Singletons are not ready yet.
+  @override
+  Future<void> isReady<T>({
+    Object instance,
+    String instanceName,
+    Duration timeout,
+    Object callee,
+  }) {
+    _ServiceFactory factoryToCheck;
+    if (instance != null) {
+      factoryToCheck = _findFactoryByInstance(instance);
+    } else {
+      factoryToCheck = _findFactoryByNameOrType<T>(instanceName);
+    }
+    throwIfNot(
+      factoryToCheck.canBeWaitedFor &&
+          factoryToCheck.registrationType != _ServiceFactoryType.alwaysNew,
+      ArgumentError(
+          'You only can use this function on Singletons that are async, that are marked as dependen '
+          'or that are marked with "signalsReady==true"'),
+    );
+    factoryToCheck.objectsWaiting.add(callee);
+    if (timeout != null) {
+      return factoryToCheck._readyCompleter.future
+          .timeout(timeout, onTimeout: _throwTimeoutError);
+    } else {
+      return factoryToCheck._readyCompleter.future;
+    }
+  }
+
 
   /// Checks if an async Singleton defined by an [instance], a type [T] or an [instanceName]
   /// is ready without waiting.
@@ -643,9 +754,11 @@ class _GetItImplementation implements GetIt {
       factoryToCheck = _findFactoryByNameOrType<T>(instanceName);
     }
     throwIfNot(
-        factoryToCheck.isAsync &&
+        factoryToCheck.canBeWaitedFor &&
             factoryToCheck.registrationType != _ServiceFactoryType.alwaysNew,
-        ArgumentError('You only can use this function on async Singletons'));
+        ArgumentError(
+            'You only can use this function on async Singletons or Singletons '
+            'that have ben marked with "signalsReady" or that they depend on others'));
     return factoryToCheck.isReady;
   }
 }
