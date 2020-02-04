@@ -21,7 +21,8 @@ class TestClass extends TestBaseClass {
   TestClass({@required bool internalCompletion, this.getIt}) {
     constructorCounter++;
     if (internalCompletion) {
-      init();
+      assert(getIt != null);
+      initWithSignal();
     }
   }
 
@@ -149,6 +150,30 @@ void main() {
     /// We call [signalReady] before the last has completed
     expect(() => getIt.signalReady(null), throwsA(TypeMatcher<StateError>()));
   });
+  test('all ready ignoring pending async Singletons', () async {
+    var getIt = GetIt.instance;
+    getIt.reset();
+
+    getIt.registerSingletonAsync<TestClass>(
+        () => Future.delayed(Duration(milliseconds: 100))
+            .then((_) => TestClass(internalCompletion: false, getIt: getIt)),
+    );
+    getIt.registerSingletonAsync<TestClass2>(
+      () => Future.delayed(Duration(milliseconds: 100))
+          .then((_) => TestClass2(internalCompletion: false, getIt: getIt)),
+    );
+    getIt.registerSingleton<TestClass3>(
+      TestClass3(internalCompletion: true, getIt: getIt),
+      signalsReady: true,
+    );
+
+    await Future.delayed(Duration(milliseconds: 15));
+
+    expect( getIt.allReady(timeout: Duration(milliseconds: 2),ignorePendingAsyncCreation: true), completes);
+
+    await Future.delayed(Duration(milliseconds: 15));
+
+  });
 
   test('Normal Singletons,ready with internal signalling', () async {
     var getIt = GetIt.instance;
@@ -181,7 +206,7 @@ void main() {
         instanceName: 'Second Instance', signalsReady: true);
 
     expect(getIt.allReadySync(), false);
-    // this is an async call fire and forget
+    // this are async calls fire and forget
     getIt<TestClass>().initWithSignal();
     getIt<TestClass2>().initWithSignal();
     TestClass2 instance = getIt('Second Instance');
@@ -271,7 +296,6 @@ void main() {
     getIt.reset();
     errorCounter = 0;
     var flag1 = false;
-    var flag2 = false;
 
     getIt.registerSingletonAsync<TestClass>(
       () async {
@@ -283,7 +307,7 @@ void main() {
       },
     );
 
-    getIt.registerSingletonWithDependencies<TestClass2>(()  {
+    getIt.registerSingletonWithDependencies<TestClass2>(() {
       return TestClass2(internalCompletion: false);
     }, dependsOn: [TestClass]);
 
@@ -303,11 +327,9 @@ void main() {
     await Future.delayed(Duration(microseconds: 1));
 
     expect(getIt.isReady<TestClass>(), completes);
-    expect(getIt.isReady<TestClass2>(), true);
+    expect(getIt.isReady<TestClass2>(), completes);
     expect(getIt.isReadySync<TestClass3>(), false);
     expect(getIt.allReadySync(), false);
-
-    flag2 = true;
 
     expect(getIt.isReady<TestClass>(timeout: Duration(seconds: 5)), completes);
     expect(
@@ -316,6 +338,7 @@ void main() {
         getIt.isReady<TestClass3>(timeout: Duration(seconds: 15)), completes);
     expect(getIt.allReady(timeout: Duration(seconds: 20)), completes);
   });
+
   test('ready automatic synchronisation of sequence with following getAsync',
       () async {
     var getIt = GetIt.instance;
@@ -335,18 +358,16 @@ void main() {
     );
 
     getIt.registerSingletonAsync<TestClass2>(() async {
-      var instance = TestClass2(internalCompletion: false);
       while (!flag2) {
         await Future.delayed(Duration(milliseconds: 100));
       }
+      var instance = TestClass2(internalCompletion: true, getIt: getIt);
       return instance;
-    }, dependsOn: [TestClass]);
+    }, dependsOn: [TestClass], signalsReady: true);
 
-    getIt.registerSingletonAsync<TestClass3>(() async {
-      var instance = TestClass3(internalCompletion: false);
-      await instance.init();
-      return instance;
-    }, dependsOn: [TestClass, TestClass2]);
+    getIt.registerSingletonWithDependencies<TestClass3>(
+        () => TestClass3(internalCompletion: false),
+        dependsOn: [TestClass, TestClass2]);
 
     expect(getIt.isReadySync<TestClass>(), false);
     expect(getIt.isReadySync<TestClass2>(), false);
@@ -378,24 +399,40 @@ void main() {
     getIt.reset();
 
     getIt.registerSingletonAsync<TestClass>(
-      () async => TestClass(internalCompletion: true, getIt: getIt),
-    );
+        () async => TestClass(internalCompletion: false, getIt: getIt),
+        signalsReady: true);
     getIt.registerSingletonAsync<TestClass>(
-        () async => TestClass(internalCompletion: false),
-        instanceName: "Second instance");
+        () async => TestClass(
+              internalCompletion: true,
+              getIt: getIt,
+            ),
+        instanceName: "Second instance",
+        signalsReady: true);
     getIt.registerSingletonAsync<TestClass2>(
-        () async => TestClass2(internalCompletion: false)..init());
+        () async => TestClass2(internalCompletion: false)..init(),
+        dependsOn: [TestClass]);
     // this here should signal internally but doesn't do it.
     getIt.registerSingletonAsync<TestClass3>(
-        () async => TestClass3(internalCompletion: false));
+        () async => TestClass3(internalCompletion: false),
+        signalsReady: true);
+    getIt.registerSingletonAsync<TestClass4>(
+      () async => TestClass4(internalCompletion: false),
+    );
+
+    Future.delayed((Duration(milliseconds: 1)),
+        () async => await getIt.isReady<TestClass3>(callee: 'asyncTest'));
 
     try {
       await getIt.allReady(timeout: Duration(seconds: 1));
     } catch (ex) {
       expect(ex, TypeMatcher<WaitingTimeOutException>());
       var timeOut = ex as WaitingTimeOutException;
-      // expect(timeOut.namedInstancesNotSignaledYet[0], 'Second instance');
-      // expect(timeOut.typesNotSignaledYet[0], TestClass3);
+      expect(timeOut.notReadyYet.contains('TestClass'), true);
+      expect(timeOut.notReadyYet.contains('TestClass2'), true);
+      expect(timeOut.notReadyYet.contains('TestClass3'), true);
+      expect(timeOut.areReady.contains('TestClass4'), true);
+      expect(timeOut.areWaitedBy['TestClass'].contains('TestClass2'), true);
+      expect(timeOut.areWaitedBy['TestClass3'].contains('String'), true);
     }
   });
 
@@ -428,7 +465,7 @@ void main() {
     getIt.reset();
 
     getIt.registerLazySingletonAsync<TestClass>(
-      () => Future.value(TestClass(internalCompletion: false)..init()),
+      () => Future.value(TestClass(internalCompletion: false)),
     );
 
     await Future.delayed(Duration(microseconds: 1));
@@ -448,32 +485,19 @@ void main() {
     expect(instance, TypeMatcher<TestClass>());
   });
 
-  test('asyncLazySingleton called with getAsync after wait for ready',
-      () async {
-    var getIt = GetIt.instance;
-    getIt.reset();
-
-    getIt.registerLazySingletonAsync<TestClass>(
-      () => Future.value(TestClass(internalCompletion: false)..init()),
-    );
-
-    await getIt.isReady<TestClass>(timeout: Duration(milliseconds: 20));
-
-    var instance = await getIt.getAsync<TestClass>();
-    expect(instance, TypeMatcher<TestClass>());
-  });
-
   test('asyncLazySingleton called with get after wait for ready', () async {
     var getIt = GetIt.instance;
     getIt.reset();
 
     getIt.registerLazySingletonAsync<TestClass>(
-      () => Future.value(TestClass(internalCompletion: false)..init()),
+      () => Future.value(TestClass(internalCompletion: false)),
     );
+
+    var instance = await getIt.getAsync<TestClass>();
 
     await getIt.isReady<TestClass>(timeout: Duration(milliseconds: 20));
 
-    var instance = getIt.get<TestClass>();
+    instance = getIt.get<TestClass>();
     expect(instance, TypeMatcher<TestClass>());
   });
 

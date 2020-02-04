@@ -197,7 +197,7 @@ abstract class GetIt {
   /// is done
   /// If you pass a [timeout], an [WaitingTimeOutException] will be thrown if not all Singletons
   /// were ready in the given time. The Exception contains details on which Singletons are not ready yet.
-  Future<void> allReady({Duration timeout});
+  Future<void> allReady({Duration timeout,ignorePendingAsyncCreation = false});
 
   /// Returns a Future that is completed when a given registered Factories/Singletons has
   /// signalled that it is ready

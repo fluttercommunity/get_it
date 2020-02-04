@@ -79,7 +79,7 @@ class _ServiceFactory<T> {
       this.instanceName,
       @required this.shouldSignalReady}) {
     registrationType = T;
-      _readyCompleter = Completer();
+    _readyCompleter = Completer();
   }
 
   /// returns an instance depending on the type of the registration if [async==false]
@@ -453,9 +453,11 @@ class _GetItImplementation implements GetIt {
       /// because its dependent on other objects this doesn't work because [pendingResult] is not set in
       /// that case. Therefore we have to set [outerFutureGroup] as [pendingResult]
       dependentFuture.then((_) {
+        Future<T> isReadyFuture;
         if (!isAsync) {
           /// SingletonWithDepencencies
           serviceFactory.instance = factoryFunc();
+          isReadyFuture = Future.value(serviceFactory.instance);
           if (!serviceFactory.shouldSignalReady) {
             /// As this isn't an asnc function we declare it as ready here
             /// if is wasn't marked that it will signalReady
@@ -464,7 +466,6 @@ class _GetItImplementation implements GetIt {
         } else {
           /// Async Singleton with dependencies
           final asyncResult = factoryFuncAsync();
-          Future<T> isReadyFuture;
 
           isReadyFuture = asyncResult.then((instance) {
             serviceFactory.instance = instance;
@@ -474,16 +475,18 @@ class _GetItImplementation implements GetIt {
             }
             return instance;
           });
-          outerFutureGroup.add(isReadyFuture);
         }
+        outerFutureGroup.add(isReadyFuture);
         outerFutureGroup.close();
       });
 
       /// outerFutureGroup.future returns a Future<List> and not a Future<T>
       /// As we know that the actual factory function was added last to the FutureGroup
       /// we just use that one
-      serviceFactory.pendingResult = outerFutureGroup.future
-          .then((completedFutures) => completedFutures.last);
+      serviceFactory.pendingResult =
+          outerFutureGroup.future.then((completedFutures) {
+        return completedFutures.last;
+      });
     }
   }
 
@@ -632,14 +635,16 @@ class _GetItImplementation implements GetIt {
     _factories.values
         .followedBy(_factoriesByName.values)
         .where((x) => ((x.isAsync && !ignorePendingAsyncCreation ||
-                    (!x.isAsync && x.pendingResult != null) ||  // Singletons with dependencies
+                    (!x.isAsync &&
+                        x.pendingResult !=
+                            null) || // Singletons with dependencies
                     x.shouldSignalReady) &&
                 !x.isReady &&
                 x.factoryType == _ServiceFactoryType.constant ||
             x.factoryType == _ServiceFactoryType.lazy))
         .forEach((f) {
-          futures.add(f._readyCompleter.future);
-        });
+      futures.add(f._readyCompleter.future);
+    });
     futures.close();
     if (timeout != null) {
       return futures.future.timeout(timeout, onTimeout: _throwTimeoutError);
@@ -654,11 +659,14 @@ class _GetItImplementation implements GetIt {
     final notReadyTypes = _factories.values
         .followedBy(_factoriesByName.values)
         .where((x) => ((x.isAsync && !ignorePendingAsyncCreation ||
-                    (!x.isAsync && x.pendingResult != null) ||  // Singletons with dependencies
+                    (!x.isAsync &&
+                        x.pendingResult !=
+                            null) || // Singletons with dependencies
                     x.shouldSignalReady) &&
                 !x.isReady &&
                 x.factoryType == _ServiceFactoryType.constant ||
-            x.factoryType == _ServiceFactoryType.lazy))        .map<String>((x) {
+            x.factoryType == _ServiceFactoryType.lazy))
+        .map<String>((x) {
       if (x.isNamedRegistration) {
         return 'Object ${x.instanceName} has not completed';
       } else {
@@ -678,13 +686,12 @@ class _GetItImplementation implements GetIt {
     return notReadyTypes.isEmpty;
   }
 
-
   List<dynamic> _throwTimeoutError() {
     final allFactories = _factories.values.followedBy(_factoriesByName.values);
     final waitedBy = Map.fromEntries(
       allFactories
           .where((x) =>
-              (x.shouldSignalReady || x.pendingResult != null) && !x.isReady)
+              (x.shouldSignalReady || x.pendingResult != null) && !x.isReady && x.objectsWaiting.isNotEmpty)
           .map<MapEntry<String, List<String>>>(
             (isWaitedFor) => MapEntry(
                 isWaitedFor.debugName,
@@ -733,7 +740,7 @@ class _GetItImplementation implements GetIt {
           'You only can use this function on Singletons that are async, that are marked as dependen '
           'or that are marked with "signalsReady==true"'),
     );
-    factoryToCheck.objectsWaiting.add(callee);
+    factoryToCheck.objectsWaiting.add(callee.runtimeType);
     if (timeout != null) {
       return factoryToCheck._readyCompleter.future
           .timeout(timeout, onTimeout: _throwTimeoutError);
@@ -741,7 +748,6 @@ class _GetItImplementation implements GetIt {
       return factoryToCheck._readyCompleter.future;
     }
   }
-
 
   /// Checks if an async Singleton defined by an [instance], a type [T] or an [instanceName]
   /// is ready without waiting.
