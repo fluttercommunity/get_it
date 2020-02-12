@@ -16,7 +16,8 @@ typedef FactoryFuncAsync<T> = Future<T> Function();
 class WaitingTimeOutException implements Exception {
   /// In case of an timeout while waiting for an instance to get ready
   /// This exception is thrown whith information about who is still waiting
-  /// if you pass the [callee] parameter to [isReady]
+  ///
+  /// if you pass the [callee] parameter to [isReady], or define dependent Singletons
   /// this maps lists which callees is waiting for whom
   final Map<String, List<String>> areWaitedBy;
 
@@ -27,8 +28,7 @@ class WaitingTimeOutException implements Exception {
   final List<String> areReady;
 
   WaitingTimeOutException(this.areWaitedBy, this.notReadyYet, this.areReady)
-      : assert(
-            areWaitedBy != null && notReadyYet != null && areReady != null);
+      : assert(areWaitedBy != null && notReadyYet != null && areReady != null);
 
   @override
   String toString() {
@@ -55,7 +55,7 @@ class WaitingTimeOutException implements Exception {
 /// [registerSingleton] or [registerLazySingleton]
 /// And retrieve the desired object using [get] or call your locator das as function as its a
 /// callable class
-/// Additionally GetIt offers asynchronous creation function as well as functions to synchronize
+/// Additionally GetIt offers asynchronous creation functions as well as functions to synchronize
 /// the async initialization of multiple Singletons
 abstract class GetIt {
   static GetIt _instance;
@@ -99,46 +99,48 @@ abstract class GetIt {
   /// than one instance of one type. Its highly not recommended
   void registerFactory<T>(FactoryFunc<T> func, {String instanceName});
 
-  /// We use a separate function for the async registration instead just a new parameter
-  /// to make the intention explicit
+  /// registers a type so that a new instance will be created on each call of [get] on that type
+  /// the creation function is executed asynchronously and has to be accessed  with [getAsync]
   /// [T] type to register
-  /// [func] factory function for this type
+  /// [func] async factory function for this type
   /// [instanceName] if you provide a value here your factory gets registered with that
   /// name instead of a type. This should only be necessary if you need to register more
   /// than one instance of one type. Its highly not recommended
   void registerFactoryAsync<T>(FactoryFuncAsync<T> func, {String instanceName});
 
   /// registers a type as Singleton by passing an [instance] of that type
-  ///  that will be returned on each call of [get] on that type
+  /// that will be returned on each call of [get] on that type
   /// [T] type to register
   /// [instanceName] if you provide a value here your instance gets registered with that
   /// name instead of a type. This should only be necessary if you need to register more
   /// than one instance of one type. Its highly not recommended
+  /// If [signalsReady] is set to `true` it means that the future you can get from `allReady()`  cannot complete until this
+  /// this instance was signalled ready by calling [signalsReady(instance)]. 
   void registerSingleton<T>(T instance,
       {String instanceName, bool signalsReady = false});
 
-  void registerSingletonWithDependencies<T>(FactoryFunc<T> providerFunc,
+  void registerSingletonWithDependencies<T>(FactoryFunc<T> factoryFunc,
       {String instanceName,
       Iterable<Type> dependsOn,
       bool signalsReady = false});
 
   /// registers a type as Singleton by passing an asynchronous factory function which has to return the
   /// that will be returned on each call of [get] on that type.
-  /// To control if an async Singleton has completed its initialisation [providerFunc] gets a `Completer` passed
-  /// as parameter that has to be completed to signal that this instance is ready.
   /// Therefore you have to ensure that the instance is ready before you use [get] on it or use [getAsync()] to
   /// wait for the completion.
   /// You can check if the instance is ready by using [isReady()] and [isReadySync()].
-  /// [providerFunc] is executed immediately. If it returns an object and not a Future the
-  /// object has to complete the completer itself.
-  /// if it returns a future the completer will be completed automatically when that future completes
+  /// [factoryfunc] is executed immediately if there are no dependencies to other Singletons (see below).
+  /// As soon as it returns this instance is marked as ready unless you don't set [signalsReady==true]
   /// [instanceName] if you provide a value here your instance gets registered with that
   /// name instead of a type. This should only be necessary if you need to register more
   /// than one instance of one type. Its highly not recommended
-  /// [dependsOn] if this instance depends on other registered async instances before it can be initilaized
-  /// you can either orchestrate this manually using [isReady()] or pass a list of the type that the
+  /// [dependsOn] if this instance depends on other registered  Singletons before it can be initilaized
+  /// you can either orchestrate this manually using [isReady()] or pass a list of the types that the
   /// instance depends on here. The async factory will wait to be executed till this types are ready.
-  void registerSingletonAsync<T>(FactoryFuncAsync<T> providerFunc,
+  /// If [signalsReady] is set to `true` it means that the future you can get from `allReady()`  cannot complete until this
+  /// this instance was signalled ready by calling [signalsReady(instance)]. In that case no automatic ready signal
+  /// is made after completion of [factoryfunc] 
+  void registerSingletonAsync<T>(FactoryFuncAsync<T> factoryfunc,
       {String instanceName,
       Iterable<Type> dependsOn,
       bool signalsReady = false});
@@ -173,6 +175,8 @@ abstract class GetIt {
   void registerLazySingletonAsync<T>(FactoryFuncAsync<T> providerFunc,
       {String instanceName});
 
+  bool isRegistered<T>({Object instance, String instanceName});
+
   /// Clears all registered types. Handy when writing unit tests
   void reset();
 
@@ -197,7 +201,7 @@ abstract class GetIt {
   /// is done
   /// If you pass a [timeout], an [WaitingTimeOutException] will be thrown if not all Singletons
   /// were ready in the given time. The Exception contains details on which Singletons are not ready yet.
-  Future<void> allReady({Duration timeout,ignorePendingAsyncCreation = false});
+  Future<void> allReady({Duration timeout, ignorePendingAsyncCreation = false});
 
   /// Returns a Future that is completed when a given registered Factories/Singletons has
   /// signalled that it is ready

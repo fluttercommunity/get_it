@@ -45,6 +45,8 @@ void main() {
 
     var instance2 = getIt.get<TestBaseClass>();
 
+    expect(getIt.isRegistered<TestBaseClass>(), true);
+    expect(getIt.isRegistered<TestClass2>(), false);
     expect(instance1, isNot(instance2));
 
     expect(constructorCounter, 2);

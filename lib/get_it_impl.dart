@@ -490,6 +490,24 @@ class _GetItImplementation implements GetIt {
     }
   }
 
+  @override
+  bool isRegistered<T>({Object instance, String instanceName}) {
+    _ServiceFactory factoryToCheck;
+    try {
+      if (instance != null) {
+        factoryToCheck = _findFactoryByInstance(instance);
+      } else {
+        factoryToCheck = _findFactoryByNameOrType<T>(instanceName);
+      }
+    } on StateError {
+      return false;
+    }
+    on  AssertionError {
+      return false;
+    }    
+    return factoryToCheck != null;
+  }
+
   /// Unregister an instance of an object or a factory/singleton by Type [T] or by name [instanceName]
   /// if you need to dispose any resources you can do it using [disposingFunction] function
   /// that provides a instance of your class to be disposed
@@ -691,7 +709,9 @@ class _GetItImplementation implements GetIt {
     final waitedBy = Map.fromEntries(
       allFactories
           .where((x) =>
-              (x.shouldSignalReady || x.pendingResult != null) && !x.isReady && x.objectsWaiting.isNotEmpty)
+              (x.shouldSignalReady || x.pendingResult != null) &&
+              !x.isReady &&
+              x.objectsWaiting.isNotEmpty)
           .map<MapEntry<String, List<String>>>(
             (isWaitedFor) => MapEntry(
                 isWaitedFor.debugName,
