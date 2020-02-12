@@ -9,9 +9,11 @@ part 'get_it_impl.dart';
 
 /// Signature of the factory function used by normal factories
 typedef FactoryFunc<T> = T Function();
+typedef FactoryFuncParam<T,P1,P2> = T Function(P1 param1,P2 param2);
 
 /// Signature of the factory function used by async factories
 typedef FactoryFuncAsync<T> = Future<T> Function();
+typedef FactoryFuncParamAsync<T,P1,P2> = Future<T> Function(P1 param1,P2 param2);
 
 class WaitingTimeOutException implements Exception {
   /// In case of an timeout while waiting for an instance to get ready
@@ -81,15 +83,15 @@ abstract class GetIt {
 
   /// retrieves or creates an instance of a registered type [T] depending on the registration
   /// function used for this type or based on a name.
-  T get<T>([String instanceName]);
+  T get<T>({String instanceName,dynamic param1, dynamic param2});
 
   /// Returns an Future of an instance that is created by an async factory or a Singleton that is
   /// not ready with its initialization.
-  Future<T> getAsync<T>([String instanceName]);
+  Future<T> getAsync<T>({String instanceName,dynamic param1, dynamic param2});
 
   /// Callable class so that you can write `GetIt.instance<MyType>` instead of
   /// `GetIt.instance.get<MyType>`
-  T call<T>([String instanceName]);
+  T call<T>({String instanceName, dynamic param1,dynamic param2});
 
   /// registers a type so that a new instance will be created on each call of [get] on that type
   /// [T] type to register
@@ -98,6 +100,7 @@ abstract class GetIt {
   /// name instead of a type. This should only be necessary if you need to register more
   /// than one instance of one type. Its highly not recommended
   void registerFactory<T>(FactoryFunc<T> func, {String instanceName});
+  void registerFactoryParam<T,P1,P2>(FactoryFuncParam<T,P1,P2> func, {String instanceName});
 
   /// registers a type so that a new instance will be created on each call of [get] on that type
   /// the creation function is executed asynchronously and has to be accessed  with [getAsync]
@@ -107,6 +110,7 @@ abstract class GetIt {
   /// name instead of a type. This should only be necessary if you need to register more
   /// than one instance of one type. Its highly not recommended
   void registerFactoryAsync<T>(FactoryFuncAsync<T> func, {String instanceName});
+  void registerFactoryParamAsync<T,P1,P2>(FactoryFuncParamAsync<T,P1,P2> func, {String instanceName});
 
   /// registers a type as Singleton by passing an [instance] of that type
   /// that will be returned on each call of [get] on that type

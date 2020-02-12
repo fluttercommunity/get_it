@@ -28,13 +28,18 @@ enum _ServiceFactoryType {
 
 /// If I use `Singleton` without specifier in the comments I mean normal and lazy
 
-class _ServiceFactory<T> {
+class _ServiceFactory<T, P1, P2> {
   final _ServiceFactoryType factoryType;
+
+  Type param1Type;
+  Type param2Type;
 
   /// Because of the different creation methods we need alternative factory functions
   /// only one of them is always set.
   final FactoryFunc<T> creationFunction;
   final FactoryFuncAsync<T> asyncCreationFunction;
+  final FactoryFuncParam<T, P1, P2> creationFunctionParam;
+  final FactoryFuncParamAsync<T, P1, P2> asyncCreationFunctionParam;
 
   /// In case of a named registration the instance name is here stored for easy access
   final String instanceName;
@@ -71,23 +76,46 @@ class _ServiceFactory<T> {
 
   final bool shouldSignalReady;
 
-  _ServiceFactory(this.factoryType,
-      {this.creationFunction,
-      this.asyncCreationFunction,
-      this.instance,
-      this.isAsync = false,
-      this.instanceName,
-      @required this.shouldSignalReady}) {
+  _ServiceFactory(
+    this.factoryType, {
+    this.creationFunction,
+    this.asyncCreationFunction,
+    this.creationFunctionParam,
+    this.asyncCreationFunctionParam,
+    this.instance,
+    this.isAsync = false,
+    this.instanceName,
+    @required this.shouldSignalReady,
+  }) {
     registrationType = T;
+    param1Type = P1;
+    param2Type = P2;
     _readyCompleter = Completer();
   }
 
   /// returns an instance depending on the type of the registration if [async==false]
-  T getObject() {
+  T getObject(dynamic param1, dynamic param2) {
+    assert(
+        !(factoryType != _ServiceFactoryType.alwaysNew &&
+            (param1 != null || param2 != null)),
+        'You can only pass parameters to factories!');
+
     try {
       switch (factoryType) {
         case _ServiceFactoryType.alwaysNew:
-          return creationFunction();
+          if (creationFunctionParam != null) {
+            assert(
+                param1 == null || param1.runtimeType == param1Type,
+                'Incompatible Type passed as param1\n'
+                'expected: $param1Type actual: ${param1.runtimeType}');
+            assert(
+                param2 == null || param2.runtimeType == param2Type,
+                'Incompatible Type passed as param2\n'
+                'expected: $param2Type actual: ${param2.runtimeType}');
+            return creationFunctionParam(param1, param2);
+          } else {
+            return creationFunction();
+          }
           break;
         case _ServiceFactoryType.constant:
           return instance as T;
@@ -110,7 +138,12 @@ class _ServiceFactory<T> {
   }
 
   /// returns an async instance depending on the type of the registration if [async==true] or if [dependsOn.isnoEmpty].
-  Future<T> getObjectAsync() async {
+  Future<T> getObjectAsync(dynamic param1, dynamic param2) async {
+    assert(
+        !(factoryType != _ServiceFactoryType.alwaysNew &&
+            (param1 != null || param2 != null)),
+        'You can only pass parameters to factories!');
+
     throwIfNot(
         isAsync || pendingResult != null,
         StateError(
@@ -118,7 +151,19 @@ class _ServiceFactory<T> {
     try {
       switch (factoryType) {
         case _ServiceFactoryType.alwaysNew:
-          return asyncCreationFunction();
+          if (asyncCreationFunctionParam != null) {
+            assert(
+                param1 == null || param1.runtimeType == param1Type,
+                'Incompatible Type passed a param1\n'
+                'expected: $param1Type actual: ${param1.runtimeType}');
+            assert(
+                param2 == null || param2.runtimeType == param2Type,
+                'Incompatible Type passed a param2\n'
+                'expected: $param2Type actual: ${param2.runtimeType}');
+            return asyncCreationFunctionParam(param1, param2);
+          } else {
+            return asyncCreationFunction();
+          }
           break;
         case _ServiceFactoryType.constant:
           if (instance != null) {
@@ -166,10 +211,11 @@ class _ServiceFactory<T> {
 
 class _GetItImplementation implements GetIt {
   /// stores all [_ServiceFactory] that get registered by Type
-  final _factories = Map<Type, _ServiceFactory<dynamic>>();
+  final _factories = Map<Type, _ServiceFactory<dynamic, dynamic, dynamic>>();
 
   /// the ones that get registered by name.
-  final _factoriesByName = Map<String, _ServiceFactory<dynamic>>();
+  final _factoriesByName =
+      Map<String, _ServiceFactory<dynamic, dynamic, dynamic>>();
 
   /// We still support a global ready signal mechanism for that we use this
   /// Completer.
@@ -190,7 +236,7 @@ class _GetItImplementation implements GetIt {
       'GetIt: You have to provide either a type or a name. Did you accidentally do  `var sl=GetIt.instance();` instead of var sl=GetIt.instance;',
     );
 
-    _ServiceFactory<T> instanceFactory;
+    _ServiceFactory<T, dynamic, dynamic> instanceFactory;
     if (instanceName != null) {
       instanceFactory = _factoriesByName[instanceName];
       assert(instanceFactory != null,
@@ -206,7 +252,7 @@ class _GetItImplementation implements GetIt {
   /// retrieves or creates an instance of a registered type [T] depending
   /// on if the registration function used for this type or based on a name.
   @override
-  T get<T>([String instanceName]) {
+  T get<T>({String instanceName, dynamic param1, dynamic param2}) {
     var instanceFactory = _findFactoryByNameOrType<T>(instanceName);
 
     Object instance;
@@ -220,7 +266,7 @@ class _GetItImplementation implements GetIt {
           'You tried to access an instance of ${instanceName != null ? instanceName : T.toString()} that was not ready yet');
       instance = instanceFactory.instance;
     } else {
-      instance = instanceFactory.getObject();
+      instance = instanceFactory.getObject(param1, param2);
     }
 
     assert(instance is T,
@@ -231,16 +277,15 @@ class _GetItImplementation implements GetIt {
 
   /// Callable class so that you can write `GetIt.instance<MyType>` instead of
   /// `GetIt.instance.get<MyType>`
-  T call<T>([String instanceName]) {
-    return get<T>(instanceName);
+  T call<T>({String instanceName, dynamic param1, dynamic param2}) {
+    return get<T>(instanceName: instanceName,param1: param1,param2: param2);
   }
 
   /// Returns an Future of an instance that may not be ready yet
   @override
-  Future<T> getAsync<T>([String instanceName]) {
-    _ServiceFactory<T> factoryToGet;
-    factoryToGet = _findFactoryByNameOrType<T>(instanceName);
-    return factoryToGet.getObjectAsync();
+  Future<T> getAsync<T>({String instanceName, dynamic param1, dynamic param2}) {
+    final factoryToGet = _findFactoryByNameOrType<T>(instanceName);
+    return factoryToGet.getObjectAsync(param1, param2);
   }
 
   /// registers a type so that a new instance will be created on each call of [get] on that type
@@ -251,10 +296,21 @@ class _GetItImplementation implements GetIt {
   /// than one instance of one type. Its highly not recommended
   @override
   void registerFactory<T>(FactoryFunc<T> func, {String instanceName}) {
-    _register<T>(
+    _register<T, void, void>(
         type: _ServiceFactoryType.alwaysNew,
         instanceName: instanceName,
         factoryFunc: func,
+        isAsync: false,
+        shouldSignalReady: false);
+  }
+
+  @override
+  void registerFactoryParam<T, P1, P2>(FactoryFuncParam<T, P1, P2> func,
+      {String instanceName}) {
+    _register<T, P1, P2>(
+        type: _ServiceFactoryType.alwaysNew,
+        instanceName: instanceName,
+        factoryFuncParam: func,
         isAsync: false,
         shouldSignalReady: false);
   }
@@ -264,10 +320,22 @@ class _GetItImplementation implements GetIt {
   @override
   void registerFactoryAsync<T>(FactoryFuncAsync<T> asyncFunc,
       {String instanceName}) {
-    _register<T>(
+    _register<T, void, void>(
         type: _ServiceFactoryType.alwaysNew,
         instanceName: instanceName,
         factoryFuncAsync: asyncFunc,
+        isAsync: true,
+        shouldSignalReady: false);
+  }
+
+  @override
+  void registerFactoryParamAsync<T, P1, P2>(
+      FactoryFuncParamAsync<T, P1, P2> func,
+      {String instanceName}) {
+    _register<T, P1, P2>(
+        type: _ServiceFactoryType.alwaysNew,
+        instanceName: instanceName,
+        factoryFuncParamAsync: func,
         isAsync: true,
         shouldSignalReady: false);
   }
@@ -283,7 +351,7 @@ class _GetItImplementation implements GetIt {
   @override
   void registerLazySingleton<T>(FactoryFunc<T> func,
       {String instanceName, bool signalsReady = false}) {
-    _register<T>(
+    _register<T, void, void>(
         type: _ServiceFactoryType.lazy,
         instanceName: instanceName,
         factoryFunc: func,
@@ -305,7 +373,7 @@ class _GetItImplementation implements GetIt {
     String instanceName,
     bool signalsReady = false,
   }) {
-    _register<T>(
+    _register<T, void, void>(
         type: _ServiceFactoryType.constant,
         instanceName: instanceName,
         instance: instance,
@@ -320,7 +388,7 @@ class _GetItImplementation implements GetIt {
     Iterable<Type> dependsOn,
     bool signalsReady = false,
   }) {
-    _register<T>(
+    _register<T, void, void>(
         type: _ServiceFactoryType.constant,
         instanceName: instanceName,
         isAsync: false,
@@ -334,7 +402,7 @@ class _GetItImplementation implements GetIt {
       {String instanceName,
       Iterable<Type> dependsOn,
       bool signalsReady = false}) {
-    _register<T>(
+    _register<T, void, void>(
         type: _ServiceFactoryType.constant,
         instanceName: instanceName,
         isAsync: true,
@@ -346,7 +414,7 @@ class _GetItImplementation implements GetIt {
   @override
   void registerLazySingletonAsync<T>(FactoryFuncAsync<T> func,
       {String instanceName, bool signalsReady = false}) {
-    _register<T>(
+    _register<T, void, void>(
         isAsync: true,
         type: _ServiceFactoryType.lazy,
         instanceName: instanceName,
@@ -361,15 +429,18 @@ class _GetItImplementation implements GetIt {
     _factoriesByName.clear();
   }
 
-  void _register<T>(
-      {@required _ServiceFactoryType type,
-      FactoryFunc<T> factoryFunc,
-      FactoryFuncAsync<T> factoryFuncAsync,
-      T instance,
-      @required String instanceName,
-      @required bool isAsync,
-      Iterable<Type> dependsOn,
-      @required bool shouldSignalReady}) {
+  void _register<T, P1, P2>({
+    @required _ServiceFactoryType type,
+    FactoryFunc<T> factoryFunc,
+    FactoryFuncParam<T, P1, P2> factoryFuncParam,
+    FactoryFuncAsync<T> factoryFuncAsync,
+    FactoryFuncParamAsync<T, P1, P2> factoryFuncParamAsync,
+    T instance,
+    @required String instanceName,
+    @required bool isAsync,
+    Iterable<Type> dependsOn,
+    @required bool shouldSignalReady,
+  }) {
     print(T.toString());
 
     throwIf(
@@ -388,13 +459,17 @@ class _GetItImplementation implements GetIt {
             !allowReassignment),
         ArgumentError("Type ${T.toString()} is already registered"));
 
-    final serviceFactory = _ServiceFactory<T>(type,
-        creationFunction: factoryFunc,
-        asyncCreationFunction: factoryFuncAsync,
-        instance: instance,
-        isAsync: isAsync,
-        instanceName: instanceName,
-        shouldSignalReady: shouldSignalReady);
+    final serviceFactory = _ServiceFactory<T, P1, P2>(
+      type,
+      creationFunction: factoryFunc,
+      creationFunctionParam: factoryFuncParam,
+      asyncCreationFunctionParam: factoryFuncParamAsync,
+      asyncCreationFunction: factoryFuncAsync,
+      instance: instance,
+      isAsync: isAsync,
+      instanceName: instanceName,
+      shouldSignalReady: shouldSignalReady,
+    );
 
     if (instanceName == null) {
       _factories[T] = serviceFactory;
@@ -501,10 +576,9 @@ class _GetItImplementation implements GetIt {
       }
     } on StateError {
       return false;
-    }
-    on  AssertionError {
+    } on AssertionError {
       return false;
-    }    
+    }
     return factoryToCheck != null;
   }
 
