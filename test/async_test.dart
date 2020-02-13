@@ -567,6 +567,22 @@ void main() {
     expect(instance, TypeMatcher<TestClass>());
   });
 
+  test('isReady called on asyncLazySingleton ', () async {
+    var getIt = GetIt.instance;
+    getIt.reset();
+
+    getIt.registerLazySingletonAsync<TestClass>(
+      () => Future.value(TestClass(internalCompletion: false)),
+    );
+
+    await getIt.isReady<TestClass>(timeout: Duration(milliseconds: 20));
+
+    final instance = getIt.get<TestClass>();
+    expect(instance, TypeMatcher<TestClass>());
+  });
+
+
+
   test('Code for ReadMe', () async {
     var sl = GetIt.instance;
 

@@ -106,7 +106,6 @@ void main() {
     constructorCounter = 0;
     getIt.registerFactoryParam<TestClassParam,String,int>((s,i) => TestClassParam(param1:s, param2: i));
 
-    //var instance1 = getIt.get<TestBaseClass>();
 
     expect(()=>getIt.get<TestClassParam>(param1: 'abc',param2:'3'), throwsA(const TypeMatcher<AssertionError>()));
 
