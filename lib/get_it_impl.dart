@@ -112,7 +112,7 @@ class _ServiceFactory<T, P1, P2> {
                 param2 == null || param2.runtimeType == param2Type,
                 'Incompatible Type passed as param2\n'
                 'expected: $param2Type actual: ${param2.runtimeType}');
-            return creationFunctionParam(param1, param2);
+            return creationFunctionParam(param1 as P1, param2 as P2);
           } else {
             return creationFunction();
           }
@@ -138,7 +138,7 @@ class _ServiceFactory<T, P1, P2> {
   }
 
   /// returns an async instance depending on the type of the registration if [async==true] or if [dependsOn.isnoEmpty].
-  Future<T> getObjectAsync(dynamic param1, dynamic param2) async {
+  Future<R> getObjectAsync<R>(dynamic param1, dynamic param2) async {
     assert(
         !(factoryType != _ServiceFactoryType.alwaysNew &&
             (param1 != null || param2 != null)),
@@ -160,28 +160,28 @@ class _ServiceFactory<T, P1, P2> {
                 param2 == null || param2.runtimeType == param2Type,
                 'Incompatible Type passed a param2\n'
                 'expected: $param2Type actual: ${param2.runtimeType}');
-            return asyncCreationFunctionParam(param1, param2);
+            return asyncCreationFunctionParam(param1 as P1, param2 as P2) as R;
           } else {
-            return asyncCreationFunction();
+            return asyncCreationFunction() as R;
           }
           break;
         case _ServiceFactoryType.constant:
           if (instance != null) {
-            return Future<T>.value(instance);
+            return Future<R>.value(instance as R);
           } else {
             assert(pendingResult != null);
-            return pendingResult;
+            return pendingResult as Future<R>;
           }
           break;
         case _ServiceFactoryType.lazy:
           if (instance != null) {
             // We already have a finished instance
-            return Future<T>.value(instance);
+            return Future<R>.value(instance as R);
           } else {
             if (pendingResult !=
                 null) // an async creation is already in progress
             {
-              return pendingResult;
+              return pendingResult as Future<R>;
             }
 
             /// Seems this is really the first access to this async Signleton
@@ -195,7 +195,7 @@ class _ServiceFactory<T, P1, P2> {
               instance = newInstance;
               return newInstance;
             });
-            return pendingResult;
+            return pendingResult as Future<R>;
           }
           break;
         default:
@@ -238,11 +238,11 @@ class _GetItImplementation implements GetIt {
 
     _ServiceFactory<T, dynamic, dynamic> instanceFactory;
     if (instanceName != null) {
-      instanceFactory = _factoriesByName[instanceName];
+      instanceFactory = _factoriesByName[instanceName] as _ServiceFactory<T, dynamic, dynamic>;
       assert(instanceFactory != null,
           "Object/factory with name $instanceName is not registered inside GetIt");
     } else {
-      instanceFactory = _factories[T];
+      instanceFactory = _factories[T] as _ServiceFactory<T, dynamic, dynamic>;
       assert(instanceFactory != null,
           "No type ${T.toString()} is registered inside GetIt.\n Did you forget to pass an instance name? \n(Did you accidentally do  GetIt sl=GetIt.instance(); instead of GetIt sl=GetIt.instance;)");
     }
@@ -274,7 +274,7 @@ class _GetItImplementation implements GetIt {
     assert(instance is T,
         "Object with name $instanceName has a different type (${instanceFactory.registrationType.toString()}) than the one that is inferred (${T.toString()}) where you call it");
 
-    return instance;
+    return instance as T;
   }
 
   /// Callable class so that you can write `GetIt.instance<MyType>` instead of
@@ -290,7 +290,7 @@ class _GetItImplementation implements GetIt {
   @override
   Future<T> getAsync<T>({String instanceName, dynamic param1, dynamic param2}) {
     final factoryToGet = _findFactoryByNameOrType<T>(instanceName);
-    return factoryToGet.getObjectAsync(param1, param2);
+    return factoryToGet.getObjectAsync<T>(param1, param2);
   }
 
   /// registers a type so that a new instance will be created on each call of [get] on that type
@@ -431,7 +431,7 @@ class _GetItImplementation implements GetIt {
   /// [instanceName] if you provide a value here your instance gets registered with that
   /// name instead of a type. This should only be necessary if you need to register more
   /// than one instance of one type. Its highly not recommended
-  /// [dependsOn] if this instance depends on other registered  Singletons before it can be initilaized
+  /// [dependsOn] if this instance depends on other registered  Singletons before it can be initialized
   /// you can either orchestrate this manually using [isReady()] or pass a list of the types that the
   /// instance depends on here. [factoryFunc] won't get executed till this types are ready.
   /// [func] is called
@@ -463,7 +463,7 @@ class _GetItImplementation implements GetIt {
   /// [instanceName] if you provide a value here your instance gets registered with that
   /// name instead of a type. This should only be necessary if you need to register more
   /// than one instance of one type. Its highly not recommended
-  /// [dependsOn] if this instance depends on other registered  Singletons before it can be initilaized
+  /// [dependsOn] if this instance depends on other registered  Singletons before it can be initialized
   /// you can either orchestrate this manually using [isReady()] or pass a list of the types that the
   /// instance depends on here. [factoryFunc] won't get  executed till this types are ready.
   /// If [signalsReady] is set to `true` it means that the future you can get from `allReady()`  cannot complete until this
@@ -549,8 +549,8 @@ class _GetItImplementation implements GetIt {
     final serviceFactory = _ServiceFactory<T, P1, P2>(
       type,
       creationFunction: factoryFunc,
-      creationFunctionParam: factoryFuncParam,
-      asyncCreationFunctionParam: factoryFuncParamAsync,
+      creationFunctionParam: factoryFuncParam as FactoryFuncParam<T, P1, P2>,
+      asyncCreationFunctionParam: factoryFuncParamAsync ,
       asyncCreationFunction: factoryFuncAsync,
       instance: instance,
       isAsync: isAsync,
@@ -619,7 +619,7 @@ class _GetItImplementation implements GetIt {
         if (!isAsync) {
           /// SingletonWithDepencencies
           serviceFactory.instance = factoryFunc();
-          isReadyFuture = Future.value(serviceFactory.instance);
+          isReadyFuture = Future<T>.value(serviceFactory.instance as T);
           if (!serviceFactory.shouldSignalReady) {
             /// As this isn't an asnc function we declare it as ready here
             /// if is wasn't marked that it will signalReady
@@ -647,7 +647,7 @@ class _GetItImplementation implements GetIt {
       /// we just use that one
       serviceFactory.pendingResult =
           outerFutureGroup.future.then((completedFutures) {
-        return completedFutures.last;
+        return completedFutures.last as Future<T>;
       });
     }
   }
@@ -698,7 +698,7 @@ class _GetItImplementation implements GetIt {
     }
 
     if (factoryToRemove.instance != null) {
-      disposingFunction?.call(factoryToRemove.instance);
+      disposingFunction?.call(factoryToRemove.instance as T);
     }
   }
 
@@ -730,7 +730,7 @@ class _GetItImplementation implements GetIt {
     instanceFactory._readyCompleter = Completer();
 
     if (instanceFactory.instance != null) {
-      disposingFunction?.call(instanceFactory.instance);
+      disposingFunction?.call(instanceFactory.instance as T);
     }
   }
 
@@ -827,7 +827,7 @@ class _GetItImplementation implements GetIt {
   /// were ready in the given time. The Exception contains details on which Singletons are not ready yet.
   @override
   Future<void> allReady(
-      {Duration timeout, ignorePendingAsyncCreation = false}) {
+      {Duration timeout, bool ignorePendingAsyncCreation = false}) {
     FutureGroup futures = FutureGroup();
     _factories.values
         .followedBy(_factoriesByName.values)
@@ -852,7 +852,7 @@ class _GetItImplementation implements GetIt {
   /// if [allReady] should not wait for the completion of async Signletons set
   /// [ignorePendingAsyncCreation==true]
   @override
-  bool allReadySync([ignorePendingAsyncCreation = false]) {
+  bool allReadySync([bool ignorePendingAsyncCreation = false]) {
     final notReadyTypes = _factories.values
         .followedBy(_factoriesByName.values)
         .where((x) => ((x.isAsync && !ignorePendingAsyncCreation ||

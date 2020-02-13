@@ -207,7 +207,7 @@ void main() {
 
     expect(instance1 is TestClass, true);
 
-    TestClass instance2 = getIt(instanceName:'ConstantByName');
+    TestClass instance2 = getIt(instanceName:'ConstantByName') as TestClass;
 
     expect(instance1, instance2);
 

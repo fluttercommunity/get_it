@@ -215,7 +215,7 @@ void main() {
     // this are async calls fire and forget
     getIt<TestClass>().initWithSignal();
     getIt<TestClass2>().initWithSignal();
-    TestClass2 instance = getIt(instanceName:'Second Instance');
+    TestClass2 instance = getIt<TestClass2>(instanceName:'Second Instance');
     instance.initWithSignal();
 
     expect(getIt.allReady(), completes);

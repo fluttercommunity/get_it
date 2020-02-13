@@ -275,7 +275,7 @@ abstract class GetIt {
   /// were ready in the given time. The Exception contains details on which Singletons are not ready yet.
   /// if [allReady] should not wait for the completion of async Signletons set
   /// [ignorePendingAsyncCreation==true]
-  Future<void> allReady({Duration timeout, ignorePendingAsyncCreation = false});
+  Future<void> allReady({Duration timeout, bool ignorePendingAsyncCreation = false});
 
   /// Returns a Future that completes if the instance of an Singleton, defined by Type [T] or 
   /// by name [instanceName] or by passing the an existing [instance],  is ready
@@ -297,7 +297,7 @@ abstract class GetIt {
   /// Returns if all async Singletons are ready without waiting
   /// if [allReady] should not wait for the completion of async Signletons set
   /// [ignorePendingAsyncCreation==true]
-  bool allReadySync([ignorePendingAsyncCreation = false]);
+  bool allReadySync([bool ignorePendingAsyncCreation = false]);
 
   /// Used to manually signal the ready state of a Singleton.
   /// If you want to use this mechanism you have to pass [signalsReady==true] when registering
