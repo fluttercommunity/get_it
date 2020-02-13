@@ -160,9 +160,9 @@ class _ServiceFactory<T, P1, P2> {
                 param2 == null || param2.runtimeType == param2Type,
                 'Incompatible Type passed a param2\n'
                 'expected: $param2Type actual: ${param2.runtimeType}');
-            return asyncCreationFunctionParam(param1 as P1, param2 as P2) as R;
+            return asyncCreationFunctionParam(param1 as P1, param2 as P2) as Future<R>;
           } else {
-            return asyncCreationFunction() as R;
+            return asyncCreationFunction() as Future<R>;
           }
           break;
         case _ServiceFactoryType.constant:
@@ -647,7 +647,7 @@ class _GetItImplementation implements GetIt {
       /// we just use that one
       serviceFactory.pendingResult =
           outerFutureGroup.future.then((completedFutures) {
-        return completedFutures.last as Future<T>;
+        return completedFutures.last as T;
       });
     }
   }
