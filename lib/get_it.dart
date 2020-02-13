@@ -104,11 +104,11 @@ abstract class GetIt {
 
   /// registers a type so that a new instance will be created on each call of [get] on that type
   /// [T] type to register
-  /// [func] factory function for this type
+  /// [factoryfunc] factory function for this type
   /// [instanceName] if you provide a value here your factory gets registered with that
   /// name instead of a type. This should only be necessary if you need to register more
   /// than one instance of one type. Its highly not recommended
-  void registerFactory<T>(FactoryFunc<T> func, {String instanceName});
+  void registerFactory<T>(FactoryFunc<T> factoryfunc, {String instanceName});
     
   /// registers a type so that a new instance will be created on each call of [get] on that type based on
   /// up to two parameters provided to [get()]
@@ -116,7 +116,7 @@ abstract class GetIt {
   /// [P1] type of  param1
   /// [P2] type of  param2
   /// if you use only one parameter pass void here
-  /// [func] factory function for this type that accepts two parameters
+  /// [factoryfunc] factory function for this type that accepts two parameters
   /// [instanceName] if you provide a value here your factory gets registered with that
   /// name instead of a type. This should only be necessary if you need to register more
   /// than one instance of one type. Its highly not recommended
@@ -129,16 +129,16 @@ abstract class GetIt {
   /// 
   ///    getIt.registerFactoryParam<TestClassParam,String,void>((s,_) 
   ///        => TestClassParam(param1:s);
-  void registerFactoryParam<T,P1,P2>(FactoryFuncParam<T,P1,P2> func, {String instanceName});
+  void registerFactoryParam<T,P1,P2>(FactoryFuncParam<T,P1,P2> factoryfunc, {String instanceName});
 
   /// registers a type so that a new instance will be created on each call of [getAsync] on that type
   /// the creation function is executed asynchronously and has to be accessed  with [getAsync]
   /// [T] type to register
-  /// [func] async factory function for this type
+  /// [factoryfunc] async factory function for this type
   /// [instanceName] if you provide a value here your factory gets registered with that
   /// name instead of a type. This should only be necessary if you need to register more
   /// than one instance of one type. Its highly not recommended
-  void registerFactoryAsync<T>(FactoryFuncAsync<T> func, {String instanceName});
+  void registerFactoryAsync<T>(FactoryFuncAsync<T> factoryfunc, {String instanceName});
   
   /// registers a type so that a new instance will be created on each call of [getAsync] 
   /// on that type based on up to two parameters provided to [getAsync()]
@@ -147,7 +147,7 @@ abstract class GetIt {
   /// [P1] type of  param1
   /// [P2] type of  param2
   /// if you use only one parameter pass void here
-  /// [func] factory function for this type that accepts two parameters
+  /// [factoryfunc] factory function for this type that accepts two parameters
   /// [instanceName] if you provide a value here your factory gets registered with that
   /// name instead of a type. This should only be necessary if you need to register more
   /// than one instance of one type. Its highly not recommended
@@ -160,7 +160,7 @@ abstract class GetIt {
   /// 
   ///    getIt.registerFactoryParam<TestClassParam,String,void>((s,_) async 
   ///        => TestClassParam(param1:s);  
-  void registerFactoryParamAsync<T,P1,P2>(FactoryFuncParamAsync<T,P1,P2> func, {String instanceName});
+  void registerFactoryParamAsync<T,P1,P2>(FactoryFuncParamAsync<T,P1,P2> factoryfunc, {String instanceName});
 
   /// registers a type as Singleton by passing an [instance] of that type
   /// that will be returned on each call of [get] on that type
@@ -214,20 +214,20 @@ abstract class GetIt {
   /// registers a type as Singleton by passing a factory function that will be called
   /// on the first call of [get] on that type
   /// [T] type to register
-  /// [func] factory function for this type
+  /// [factoryfunc] factory function for this type
   /// [instanceName] if you provide a value here your factory gets registered with that
   /// name instead of a type. This should only be necessary if you need to register more
   /// than one instance of one type. Its highly not recommended
   /// [registerLazySingleton] does not influence [allReady] however you can wait 
   /// for and be dependent on a LazySingleton.
-  void registerLazySingleton<T>(FactoryFunc<T> func, {String instanceName});
+  void registerLazySingleton<T>(FactoryFunc<T> factoryfunc, {String instanceName});
 
   /// registers a type as Singleton by passing a async factory function that will be called
   /// on the first call of [getAsnc] on that type
   /// This is a rather esoteric requirement so you should seldom have the need to use it.
-  /// This factory function [providerFunc] isn't called immediately but wait till the first call by
+  /// This factory function [factoryFunc] isn't called immediately but wait till the first call by
   /// [getAsync()] or [isReady()] is made
-  /// To control if an async Singleton has completed its [providerFunc] gets a `Completer` passed
+  /// To control if an async Singleton has completed its [factoryFunc] gets a `Completer` passed
   /// as parameter that has to be completed to signal that this instance is ready.
   /// Therefore you have to ensure that the instance is ready before you use [get] on it or use [getAsync()] to
   /// wait for the completion.
@@ -237,7 +237,7 @@ abstract class GetIt {
   /// than one instance of one type. Its highly not recommended.
   /// [registerLazySingletonAsync] does not influence [allReady] however you can wait 
   /// for and be dependent on a LazySingleton.
-  void registerLazySingletonAsync<T>(FactoryFuncAsync<T> providerFunc,
+  void registerLazySingletonAsync<T>(FactoryFuncAsync<T> factoryFunc,
       {String instanceName});
 
  /// Tests if an [instance] of an object or aType [T] or a name [instanceName]

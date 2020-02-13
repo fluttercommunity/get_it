@@ -6,16 +6,14 @@ This is a simple **Service Locator** for Dart and Flutter projects with some add
 
 
 >**Breaking Change with V4.0.0** 
-Principle on how to synchronize your registered instances creation has been rethought and completely change :-)
-I hope for the better. Please see [Asynchronous Singletons](#asynchronous-singletons).
+Principle on how to synchronize your registered instances creation has been rethought and improved :-)
+Please see [Asynchronous Singletons](#asynchronous-singletons).
 
 Synchronising asynchronous creation of instances
 
 >**Breaking Change with V2.0.0** 
 you no longer can directly create instances of the type `GetIt` because `GetIt` is now a singleton please see [Getting Started](#getting-started).
 
-
-### **IMPORTANT: You have to use Dart2 to use this component**
 
 You can find here a [detailed blog post on how to use GetIt](https://www.burkharts.net/apps/blog/one-to-find-them-all-how-to-use-service-locators-with-flutter/)
 
@@ -103,7 +101,7 @@ var myAppModel = GetIt.I<AppModel>();
 void registerFactory<T>(FactoryFunc<T> func)
 ```
 
-You have to pass a factory function `func` that returns an instance of an implementation of `T`. Each time you call `get<T>()` you will get a new instance returned.
+You have to pass a factory function `func` that returns an NEW instance of an implementation of `T`. Each time you call `get<T>()` you will get a new instance returned.
 
 ### Singleton && LazySingleton
 
@@ -123,8 +121,16 @@ You have to pass a factory function `func` that returns an instance of an implem
 
 ### Overwriting registrations
 If you try to register a type more than once you will get an assertion in debug mode because normally this is not needed and not advised and probably a bug.
-If you really have to overwrite a registration, then you can by setting the property `allowReassignment==true``. 
+If you really have to overwrite a registration, then you can by setting the property `allowReassignment==true`. 
 
+### Testing if a Singleton is already registered
+You can check if a certain Type or instance is already registered in GetIt with:
+
+```Dart
+ /// Tests if an [instance] of an object or aType [T] or a name [instanceName]
+ /// is registered inside GetIt
+ bool isRegistered<T>({Object instance, String instanceName});
+```
 
 ### Unregistering Singletons or Factories
 If you need to you can also unregister your registered singletons and factories and pass a optional `disposingFunction` for clean-up.
@@ -171,7 +177,7 @@ If a factory needs to call an async function you can use `registerFactoryAsync()
 void registerFactoryAsync<T>(FactoryFuncAsync<T> func, {String instanceName});
 ```
 
-To access instances created by such a factory you can't use `get()` but you have to use `getAsync()` ao that
+To access instances created by such a factory you can't use `get()` but you have to use `getAsync()` so that
 you can await the creation of the requested new instance.
 
 ```Dart
@@ -182,19 +188,70 @@ Future<T> getAsync<T>([String instanceName]);
 
 Additionally you can register asynchronous Singletons which means Singletons that have an initialisation that requires async function calls. To be able to control such asynchronous start-up behaviour GetIt supports mechanisms to ensure the correct initialization sequence. 
 
-### Asynchronous Singletons 
+## Asynchronous Singletons 
 
-You create an Singleton with an asynchronous initialisation by calling 
+You create an Singleton with an asynchronous creation function 
 
 ```Dart
- void registerSingletonAsync<T>(SingletonProviderFunc<T> providerFunc,
-      {String instanceName, Iterable<Type> dependsOn});
+  void registerSingletonAsync<T>(FactoryFuncAsync<T> factoryfunc,
+      {String instanceName,
+      Iterable<Type> dependsOn,
+      bool signalsReady = false});
 ```
 
 The difference to a normal Singleton is that you don't pass an existing instance but provide an factory function
-that can return a `Future` that completes when the initialisation is finished in other words the instance is ready. To synchronize with other "async Singletons" you can pass as list of `Type`s in `dependsOn` that have to be ready before the passed factory is executed.
+that returns a `Future` that completes at the end of `factoryFunc` and signals that the Singleton is ready to use unless `true` is passed for `signalsReady`. (see next chapter) 
+To synchronize with other "async Singletons" you can pass a list of `Type`s in `dependsOn` that have to be ready before the passed factory is executed.
 
 There are two possible ways to signal the system that an instance is ready.
+
+## Synchronizing asynchronous initialisations of Singletons
+
+Often your registered services need to do asynchronous initialization work before they can be used from the rest of the app. As this is such a common task and its closely related to registration/initialization GetIt supports you here too.
+
+`GetIt` has the function `allReady` which returns `Future<void>` that can be used e.g. with a Flutter FutureBuilder to await that all asynchronous initialization is finished.
+
+```Dart
+  Future<void> allReady({Duration timeout, bool ignorePendingAsyncCreation = false});
+```
+There are different approaches how the returned Future can be completed:
+
+### Using async Singletons
+
+If you register any async Singletons `allReady` will complete only after all of them have completed their factory function. Like:
+
+
+
+
+### Manual triggering **allReady**
+
+By calling `signalReady(null)` on your `GetIt` instance the `Future` you can get from `allReady` will be completed.
+This is the most basic way to synchronize your start-up. I recommend using one of the other ways as they are more flexible and express your intention more clear.
+
+
+### Automatic ready signal
+In the previous method where you have to call `signalReady` manually  to trigger the *ready* event. Additionally all your registrations have an internal *ready* state if you pass `signalsReady=true` as optional parameter on registration.
+
+The full function definition of `signalReady` looks like this:
+
+```Dart
+void signalReady(Object instance) {
+```
+
+By calling it with an registered instance you mark its registration as **ready**.
+When all registrations are signalled, `ready` automatically emits an items and `readyFuture`is signalled.
+
+Typically the registered service will do that on its own like:
+
+```Dart
+`GetIt.instance.signalReady(this)`
+```
+As GetIt is a singleton this can also be done from external packages if they use GetIt.
+
+**If you have marked any registrations with `signalsReady` and you call `signalReady()` while not all of them are ready, an Exception is thrown.** 
+So either you use manual **OR** automatic signalling. You can not mix them because in most cases this would lead to state errors
+
+
 
 #### Implicit
 Which means `providerFunc` has to return a `Future` and contains the instance creation as well as the initialization. 
