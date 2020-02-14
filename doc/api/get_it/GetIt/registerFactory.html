@@ -61,7 +61,6 @@
             <a href="get_it/GetIt-class.html#instance-properties">Properties</a>
         </li>
         <li><a href="get_it/GetIt/allowReassignment.html">allowReassignment</a></li>
-        <li><a class="deprecated" href="get_it/GetIt/manualReady.html">manualReady</a></li>
         <li class="inherited"><a href="get_it/GetIt/hashCode.html">hashCode</a></li>
         <li class="inherited"><a href="get_it/GetIt/runtimeType.html">runtimeType</a></li>
     
@@ -73,15 +72,19 @@
         <li><a href="get_it/GetIt/getAsync.html">getAsync</a></li>
         <li><a href="get_it/GetIt/isReady.html">isReady</a></li>
         <li><a href="get_it/GetIt/isReadySync.html">isReadySync</a></li>
+        <li><a href="get_it/GetIt/isRegistered.html">isRegistered</a></li>
         <li><a href="get_it/GetIt/registerFactory.html">registerFactory</a></li>
         <li><a href="get_it/GetIt/registerFactoryAsync.html">registerFactoryAsync</a></li>
+        <li><a href="get_it/GetIt/registerFactoryParam.html">registerFactoryParam</a></li>
+        <li><a href="get_it/GetIt/registerFactoryParamAsync.html">registerFactoryParamAsync</a></li>
         <li><a href="get_it/GetIt/registerLazySingleton.html">registerLazySingleton</a></li>
         <li><a href="get_it/GetIt/registerLazySingletonAsync.html">registerLazySingletonAsync</a></li>
         <li><a href="get_it/GetIt/registerSingleton.html">registerSingleton</a></li>
         <li><a href="get_it/GetIt/registerSingletonAsync.html">registerSingletonAsync</a></li>
+        <li><a href="get_it/GetIt/registerSingletonWithDependencies.html">registerSingletonWithDependencies</a></li>
         <li><a href="get_it/GetIt/reset.html">reset</a></li>
         <li><a href="get_it/GetIt/resetLazySingleton.html">resetLazySingleton</a></li>
-        <li><a class="deprecated" href="get_it/GetIt/signalReady.html">signalReady</a></li>
+        <li><a href="get_it/GetIt/signalReady.html">signalReady</a></li>
         <li><a href="get_it/GetIt/unregister.html">unregister</a></li>
         <li class="inherited"><a href="get_it/GetIt/noSuchMethod.html">noSuchMethod</a></li>
         <li class="inherited"><a href="get_it/GetIt/toString.html">toString</a></li>
@@ -105,15 +108,13 @@
     <section class="multi-line-signature">
       <span class="returntype">void</span>
             <span class="name ">registerFactory</span>
-&lt;<wbr><span class="type-parameter">T</span>&gt;(<wbr><ol class="parameter-list"><li><span class="parameter" id="registerFactory-param-func"><span class="type-annotation"><a href="get_it/FactoryFunc.html">FactoryFunc</a><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span></span> <span class="parameter-name">func</span>, </span></li>
-<li><span class="parameter" id="registerFactory-param-instanceName">{<span class="type-annotation">String</span> <span class="parameter-name">instanceName</span>}</span></li>
-</ol>)
+&lt;<wbr><span class="type-parameter">T</span>&gt;(<wbr><span class="parameter" id="registerFactory-param-factoryfunc"><span class="type-annotation"><a href="get_it/FactoryFunc.html">FactoryFunc</a><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span></span> <span class="parameter-name">factoryfunc</span>, {</span> <span class="parameter" id="registerFactory-param-instanceName"><span class="type-annotation">String</span> <span class="parameter-name">instanceName</span></span> })
       
     </section>
     <section class="desc markdown">
       <p>registers a type so that a new instance will be created on each call of <a href="get_it/GetIt/get.html">get</a> on that type
 <code>T</code> type to register
-<code>func</code> factory function for this type
+<code>factoryfunc</code> factory function for this type
 <code>instanceName</code> if you provide a value here your factory gets registered with that
 name instead of a type. This should only be necessary if you need to register more
 than one instance of one type. Its highly not recommended</p>
@@ -121,7 +122,7 @@ than one instance of one type. Its highly not recommended</p>
     
     <section class="summary source-code" id="source">
       <h2><span>Implementation</span></h2>
-      <pre class="language-dart"><code class="language-dart">void registerFactory&lt;T&gt;(FactoryFunc&lt;T&gt; func, {String instanceName});</code></pre>
+      <pre class="language-dart"><code class="language-dart">void registerFactory&lt;T&gt;(FactoryFunc&lt;T&gt; factoryfunc, {String instanceName});</code></pre>
     </section>
 
   </div> <!-- /.main-content -->
@@ -134,7 +135,7 @@ than one instance of one type. Its highly not recommended</p>
 <footer>
   <span class="no-break">
     get_it
-      4.0.0-beta
+      4.0.0-release-candidate
   </span>
 
   <!-- footer-text placeholder -->

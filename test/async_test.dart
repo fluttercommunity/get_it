@@ -11,7 +11,8 @@ int disposeCounter = 0;
 int errorCounter = 0;
 
 abstract class TestBaseClass {}
-class TestClassParam{
+
+class TestClassParam {
   final String param1;
   final int param2;
 
@@ -161,8 +162,8 @@ void main() {
     getIt.reset();
 
     getIt.registerSingletonAsync<TestClass>(
-        () => Future.delayed(Duration(milliseconds: 100))
-            .then((_) => TestClass(internalCompletion: false, getIt: getIt)),
+      () => Future.delayed(Duration(milliseconds: 100))
+          .then((_) => TestClass(internalCompletion: false, getIt: getIt)),
     );
     getIt.registerSingletonAsync<TestClass2>(
       () => Future.delayed(Duration(milliseconds: 100))
@@ -175,10 +176,13 @@ void main() {
 
     await Future.delayed(Duration(milliseconds: 15));
 
-    expect( getIt.allReady(timeout: Duration(milliseconds: 2),ignorePendingAsyncCreation: true), completes);
+    expect(
+        getIt.allReady(
+            timeout: Duration(milliseconds: 2),
+            ignorePendingAsyncCreation: true),
+        completes);
 
     await Future.delayed(Duration(milliseconds: 15));
-
   });
 
   test('Normal Singletons,ready with internal signalling', () async {
@@ -215,7 +219,7 @@ void main() {
     // this are async calls fire and forget
     getIt<TestClass>().initWithSignal();
     getIt<TestClass2>().initWithSignal();
-    TestClass2 instance = getIt<TestClass2>(instanceName:'Second Instance');
+    TestClass2 instance = getIt<TestClass2>(instanceName: 'Second Instance');
     instance.initWithSignal();
 
     expect(getIt.allReady(), completes);
@@ -454,15 +458,14 @@ void main() {
     expect(instance, TypeMatcher<TestClass>());
   });
 
-
   test('register factory with one Param', () async {
     var getIt = GetIt.instance;
     getIt.reset();
 
     constructorCounter = 0;
-    getIt.registerFactoryParamAsync<TestClassParam,String,void>((s,_) async {
+    getIt.registerFactoryParamAsync<TestClassParam, String, void>((s, _) async {
       await Future.delayed(Duration(milliseconds: 1));
-      return TestClassParam(param1:s);
+      return TestClassParam(param1: s);
     });
 
     //var instance1 = getIt.get<TestBaseClass>();
@@ -471,32 +474,34 @@ void main() {
     var instance2 = await getIt.getAsync<TestClassParam>(param1: '123');
 
     expect(instance1 is TestClassParam, true);
-    expect(instance1.param1 , 'abc');
+    expect(instance1.param1, 'abc');
     expect(instance2 is TestClassParam, true);
-    expect(instance2.param1 , '123');
+    expect(instance2.param1, '123');
   });
 
-  test('register factory with two Params', ()async {
+  test('register factory with two Params', () async {
     var getIt = GetIt.instance;
     getIt.reset();
 
     constructorCounter = 0;
-    getIt.registerFactoryParamAsync<TestClassParam,String,int>((s,i) async {
+    getIt.registerFactoryParamAsync<TestClassParam, String, int>((s, i) async {
       await Future.delayed(Duration(milliseconds: 1));
-      return TestClassParam(param1:s, param2: i);
+      return TestClassParam(param1: s, param2: i);
     });
 
     //var instance1 = getIt.get<TestBaseClass>();
 
-    var instance1 = await getIt.getAsync<TestClassParam>(param1: 'abc',param2:3);
-    var instance2 = await getIt.getAsync<TestClassParam>(param1: '123',param2: 5);
+    var instance1 =
+        await getIt.getAsync<TestClassParam>(param1: 'abc', param2: 3);
+    var instance2 =
+        await getIt.getAsync<TestClassParam>(param1: '123', param2: 5);
 
     expect(instance1 is TestClassParam, true);
-    expect(instance1.param1 , 'abc');
-    expect(instance1.param2 , 3);
+    expect(instance1.param1, 'abc');
+    expect(instance1.param2, 3);
     expect(instance2 is TestClassParam, true);
-    expect(instance2.param1 , '123');
-    expect(instance2.param2 , 5);
+    expect(instance2.param1, '123');
+    expect(instance2.param2, 5);
   });
 
   test('register factory with Params with wrong type', () {
@@ -504,15 +509,14 @@ void main() {
     getIt.reset();
 
     constructorCounter = 0;
-    getIt.registerFactoryParamAsync<TestClassParam,String,int>((s,i) async => TestClassParam(param1:s, param2: i));
+    getIt.registerFactoryParamAsync<TestClassParam, String, int>(
+        (s, i) async => TestClassParam(param1: s, param2: i));
 
     //var instance1 = getIt.get<TestBaseClass>();
 
-    expect(() =>getIt.getAsync<TestClassParam>(param1: 'abc',param2:'3'), throwsA(const TypeMatcher<AssertionError>()));
-
+    expect(() => getIt.getAsync<TestClassParam>(param1: 'abc', param2: '3'),
+        throwsA(const TypeMatcher<AssertionError>()));
   });
-
-
 
   test('asyncFactory called with get instead of getAsync', () async {
     var getIt = GetIt.instance;
@@ -580,8 +584,6 @@ void main() {
     final instance = getIt.get<TestClass>();
     expect(instance, TypeMatcher<TestClass>());
   });
-
-
 
   test('Code for ReadMe', () async {
     var sl = GetIt.instance;

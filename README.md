@@ -7,7 +7,7 @@ This is a simple **Service Locator** for Dart and Flutter projects with some add
 
 >**Breaking Change with V4.0.0** 
 Principle on how to synchronize your registered instances creation has been rethought and improved :-)
-Please see [Asynchronous Singletons](#asynchronous-singletons).
+Please see [Synchronizing asynchronous initialisations of Singletons](#synchronizing_asynchronous_initialisations_of_Singletons).
 
 Synchronising asynchronous creation of instances
 
@@ -21,7 +21,7 @@ You can find here a [detailed blog post on how to use GetIt](https://www.burkhar
 >If you are not familiar with the concept of Service Locators, its a way to decouple the interface (abstract base class) from a concrete implementation and at the same time allows to access the concrete implementation from everywhere in your App over the interface.
 > I can only highly recommend to read this classic article by from Martin Fowler [Inversion of Control Containers and the Dependency Injection  pattern](https://martinfowler.com/articles/injection.html)
 
-Accessing an object from anywhere in an App especially can be done by other ways too but:
+Accessing an object from anywhere in an App can be done by other ways too but:
 
 * If you use a Singleton you cannot easily switch the implementation to another like a mock version for unit tests
 * IoC containers for Dependency Injections offer a similar functionality but with the cost of slow start-up time and less readability because you don't know where the magically injected object come from. As most IoC libs rely on reflection they cannot be used with Flutter. 
@@ -218,137 +218,194 @@ There are different approaches how the returned Future can be completed:
 
 ### Using async Singletons
 
-If you register any async Singletons `allReady` will complete only after all of them have completed their factory function. Like:
+If you register any async Singletons `allReady` will complete only after all of them have completed their factory functions. Like:
+
+```Dart
+  /// in your setup function:
+  final getIt = GetIt.instance;
+
+  getIt.registerSingletonAsync<ConfigService>(() async {
+    final configService = ConfigService();
+    await configService.init();
+    return configService;
+  });
+
+  getIt.registerSingletonAsync<RestService>(() async => RestService()..init());
+
+  getIt.registerSingletonAsync<DbService>(createDbServiceAsync);
 
 
+  /// ... in your startup page:
+  return FutureBuilder(
+      future: getIt.allReady(),
+      builder: (BuildContext context, AsyncSnapshot snapshot) {
+        if (snapshot.hasData) {
+          return Scaffold(
+            body: Center(
+              child: Text('The first real Page of your App'),
+            ),
+          );
+        } else {
+          return CircularProgressIndicator();
+        }
+      });
+```
+
+The above example shows you different ways to register async Singltons. The start-up page will display a `CircularProgressIndicator` until all services have been created.
+
+### Solving dependencies
+
+### Automatic using `dependsOn`
+In case that this services have to be initialized in a certain order because they depend on that other services are already ready to be used you can use the `dependsOn` parameter of `registerFactoryAsync`. If you have a non async Singleton that depends on other Singletons we have added the `registerSingletonWithDependencies`. In the following example depends `DbService` on `ConfigService` and `AppModel` on `ConfigService` and `RestService`
 
 
-### Manual triggering **allReady**
+```Dart
+  getIt.registerSingletonAsync<ConfigService>(() async {
+    final configService = ConfigService();
+    await configService.init();
+    return configService;
+  });
+
+  getIt.registerSingletonAsync<RestService>(() async => RestService()..init());
+
+  getIt.registerSingletonAsync<DbService>(createDbServiceAsync,
+      dependsOn: [ConfigService]);
+
+  getIt.registerSingletonWithDependencies<AppModel>(
+      () => AppModelImplmentation(),
+      dependsOn: [ConfigService, DbService, RestService]);
+```
+
+When using `dependsOn` you ensure that the registration waits with creating its singleton on the completion of the type defined in `dependsOn`.  
+
+
+### Manually signalling the ready state of a Singleton
+Sometimes the mechanism of `dependsOn` might not give you enough control. For this case you can use `isReady` to wait for a certain singelton:
+
+```Dart
+  /// Returns a Future that completes if the instance of an Singleton, defined by Type [T] or 
+  /// by name [instanceName] or by passing the an existing [instance], is ready
+  /// If you pass a [timeout], an [WaitingTimeOutException] will be thrown if the instance
+  /// is not ready in the given time. The Exception contains details on which Singletons are 
+  /// not ready at that time.
+  /// [callee] optional parameter which makes debugging easier. Pass `this` in here.
+  Future<void> isReady<T>({
+    Object instance,
+    String instanceName,
+    Duration timeout,
+    Object callee,
+  });
+```
+
+To signal that it is ready a singleton can use `signalReady` to be able to use that youo have to set the optional `signalsReady` parameter when registering it. As soon as you pass that parameter `allReady` will wait on a call to signalsReady. No automatic signalling will happen in that case.
+
+```Dart
+/// Typically this is used in this way inside the registered objects init 
+/// method `GetIt.instance.signalReady(this);`
+void signalReady(Object instance);
+```
+
+For instance you can use this to initialize your Singletons without async registration by using a fire and forget async function from your constructors like
+
+```Dart
+class ConfigService {
+  ConfigService()
+  {
+    init();
+  }
+  Future init() async {
+    // do your async initialisation...
+
+    GetIt.instance.signalReady(this);
+  }
+}
+```
+
+
+### Manual triggering **allReady** (almost deprecated)
 
 By calling `signalReady(null)` on your `GetIt` instance the `Future` you can get from `allReady` will be completed.
-This is the most basic way to synchronize your start-up. I recommend using one of the other ways as they are more flexible and express your intention more clear.
+This is the most basic way to synchronize your start-up. If you want to do that **don't use `signalsReady` or async Singeltons**!!!
+I recommend using one of the other ways because they are more flexible and express your intention more clear.
 
 
-### Automatic ready signal
-In the previous method where you have to call `signalReady` manually  to trigger the *ready* event. Additionally all your registrations have an internal *ready* state if you pass `signalsReady=true` as optional parameter on registration.
+## Passing Parameters to factories
 
-The full function definition of `signalReady` looks like this:
+In some cases its handy if you could pass changing values to factories when calling `get()`. For that there wrae two variants for registering factories:
 
 ```Dart
-void signalReady(Object instance) {
+  /// registers a type so that a new instance will be created on each call of [get] on that type based on
+  /// up to two parameters provided to [get()]
+  /// [T] type to register
+  /// [P1] type of  param1
+  /// [P2] type of  param2
+  /// if you use only one parameter pass void here
+  /// [factoryfunc] factory function for this type that accepts two parameters
+  /// [instanceName] if you provide a value here your factory gets registered with that
+  /// name instead of a type. This should only be necessary if you need to register more
+  /// than one instance of one type. Its highly not recommended
+  /// 
+  /// example:
+  ///    getIt.registerFactoryParam<TestClassParam,String,int>((s,i) 
+  ///        => TestClassParam(param1:s, param2: i));
+  /// 
+  /// if you only use one parameter:
+  /// 
+  ///    getIt.registerFactoryParam<TestClassParam,String,void>((s,_) 
+  ///        => TestClassParam(param1:s);
+  void registerFactoryParam<T,P1,P2>(FactoryFuncParam<T,P1,P2> factoryfunc, {String instanceName});
 ```
 
-By calling it with an registered instance you mark its registration as **ready**.
-When all registrations are signalled, `ready` automatically emits an items and `readyFuture`is signalled.
-
-Typically the registered service will do that on its own like:
+and 
 
 ```Dart
-`GetIt.instance.signalReady(this)`
+  void registerFactoryParamAsync<T,P1,P2>(FactoryFuncParamAsync<T,P1,P2> factoryfunc, {String instanceName});
 ```
-As GetIt is a singleton this can also be done from external packages if they use GetIt.
 
-**If you have marked any registrations with `signalsReady` and you call `signalReady()` while not all of them are ready, an Exception is thrown.** 
-So either you use manual **OR** automatic signalling. You can not mix them because in most cases this would lead to state errors
+The reason why I settled to use two parameters is that I can imagine some scenarios where you might want to register a builder function for Flutter Widgets that need to get passed a `BuildContext` and some data object. 
 
-
-
-#### Implicit
-Which means `providerFunc` has to return a `Future` and contains the instance creation as well as the initialization. 
-
-A typical pattern would look like this:
+When accessing these factories you pass the parameters a optional arguments to `get()`:
 
 ```Dart
-abstract class Service1{}
+  var instance = getIt<TestClassParam>(param1: 'abc',param2:3);
+```
 
-class Service1Implementation implements Service1
-{
-  Future init(){
-    // dummy async call
-    return Future.delayed(Duration(microseconds: 1));
+These parameters are passed as `dynamics` (otherwise I would have had add more generic parameters to `get`()), but they are checked at runtime to be the correct types.
+
+## Testing with GetIt
+
+### Unit Tests
+When you are writing unit tests with GetIt in your App you have two possibilities:
+
+* register all the Objects you need inside your unit Tests so that GetIt can provide its objects to the objects tat you are testing
+* pass your dependend objects into the constructor of you test objects like:
+
+```Dart
+GetIt getIt = GetIt.instance;
+
+class UserManager {
+  AppModel appModel;
+  DbService dbService;
+
+  UserManager({AppModel appModel, DbService dbService}) {
+    this.appModel = appModel ?? getIt.get<AppModel>();
+    this.dbService = dbService ?? getIt.get<DbService>();
   }
 }
-
-...
-
-var sl = GetIt.instance;
-
-sl.registerSingletonAsync<Service1>((_) async {
-  var instance = Service1Implementation();
-  await instance.init();
-  return instance;
-});
 ```
 
-or a bit shorter and nicer ;-)
+This way you don't need to pass them in the `AppModel` and `dbService` inside your App but you can pass them(or a mocked version) in your Unit tests
+
+### Integration Tests
+If you have a mocked version of a Service you can easily switch between that and the real one based on a some flag:
 
 ```Dart
-sl.registerSingletonAsync<Service1>((_) => Service1Implementation()..init());
-```
-
-This will automatically complete the internally used `Completer` and mark this Singleton as ready.
-
-#### Manually
-In the previous example we ignored the the parameter that the factory function gets passed in when called by GetIt. It is actually the internally used completer, so you can use it to signal manually at any place you want that the instance is ready like in this example:
-
-```Dart
-class Service2Implementation implements Service2
-{
-  Service2(Completer completer)
-  {
-    _init(completer); // we call _init here without awaiting it.
+  if (testing) {
+    sl.registerSingleton<AppModel>(AppModelMock());
+  } else {
+    sl.registerSingleton<AppModel>(AppModelImplmentation());
   }
-
-  Future _init(Completer completer) async
-  {
-    // dummy async call
-    await Future.delayed(Duration(microseconds: 1));
-    // From here on we are ready
-    completer.complete();  }
-}
-
-...
-var sl = GetIt.instance;
-
-sl.registerSingletonAsync<Service2>((completer) => Service2Implementation(completer));
 ```
-
-### Manually Synchronizing of async Singletons
-Besides the possibility to provide a list of `Type`s that a Singleton depends on there are additional functions to check the current state of the initialisation to manually synchronize the different instances and the rest of the App. **You only can access such a Singleton with `get()` if it has signalled that it is ready.**
-
-With `isReady` you can wait for the completion of an instance.
-
-```Dart
-/// [T] Type of the factory/Singleton to be waited for
-/// [instance] registered instance to be waited for
-/// [instanceName] factory/Singleton to be waited for that was registered by name instead of a type.
-/// You should only use one of the
-/// If you pass a [timeout], an [WaitingTimeOutException] will be thrown if not all Singletons
-/// were ready in the given time. The Exception contains details on which Singletons are not ready yet.
-Future<void> isReady<T>(
-    {Object instance, String instanceName, Duration timeout});
-```
-
-If you want to wait that all async Singeltons are ready for instance by using a `FutureBuilder` you can use `allReady`:
-
-```Dart
-Future<void> allReady({Duration timeout});
-```
-
-Additionally GetIt has two complementary functions `isReadySync` and `isAllReadySync` that allows to check the state synchronously without awaiting. 
-
-You also can use `getAsync` to wait and directly access an async Singleton.
-
-### How to make a non async Singleton wait
-In some case you might have a normal Singleton that doesn't have an async initialisation function but that depends on other async Singletons. In this case you still use `registerSingletonAsync` in the following way:
-
-```Dart
-sl.registerSingletonAsync<Service1>((_) => Future.value(NonAsyncService()), dependsOn: [Service1,Service2]);
-```
-
-
-
-**You only can synchronize async instances with each other! Not normal Singletons**
 
 ## Experts region
 

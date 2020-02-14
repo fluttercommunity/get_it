@@ -71,8 +71,8 @@ You register your object creation factory or an instance of an object with <a hr
 <a href="get_it/GetIt/registerSingleton.html">registerSingleton</a> or <a href="get_it/GetIt/registerLazySingleton.html">registerLazySingleton</a>
 And retrieve the desired object using <a href="get_it/GetIt/get.html">get</a> or call your locator das as function as its a
 callable class
-Additionally GetIt offers asynchronous creation function as well as functions to synchronize
-the async initialization of multiple Singletons 
+Additionally GetIt offers asynchronous creation functions as well as functions to synchronize
+the async initialization of multiple Singletons
         </dd>
       </dl>
     </section>
@@ -86,22 +86,22 @@ the async initialization of multiple Singletons
 
       <dl class="callables">
         <dt id="throwIf" class="callable">
-          <span class="name"><a href="get_it/throwIf.html">throwIf</a></span><span class="signature">(<wbr><span class="parameter" id="throwIf-param-condition"><span class="type-annotation">bool</span> <span class="parameter-name">condition</span>, </span><wbr><span class="parameter" id="throwIf-param-error"><span class="type-annotation">Object</span> <span class="parameter-name">error</span></span><wbr>)
+          <span class="name"><a href="get_it/throwIf.html">throwIf</a></span><span class="signature">(<wbr><span class="parameter" id="throwIf-param-condition"><span class="type-annotation">bool</span> <span class="parameter-name">condition</span>, </span> <span class="parameter" id="throwIf-param-error"><span class="type-annotation">Object</span> <span class="parameter-name">error</span></span>)
             <span class="returntype parameter">&#8594; void</span>
           </span>
                   </dt>
         <dd>
           Two handy function that helps me to express my intention clearer and shorter to check for runtime
-errors 
+errors
                   
 </dd>
         <dt id="throwIfNot" class="callable">
-          <span class="name"><a href="get_it/throwIfNot.html">throwIfNot</a></span><span class="signature">(<wbr><span class="parameter" id="throwIfNot-param-condition"><span class="type-annotation">bool</span> <span class="parameter-name">condition</span>, </span><wbr><span class="parameter" id="throwIfNot-param-error"><span class="type-annotation">Object</span> <span class="parameter-name">error</span></span><wbr>)
+          <span class="name"><a href="get_it/throwIfNot.html">throwIfNot</a></span><span class="signature">(<wbr><span class="parameter" id="throwIfNot-param-condition"><span class="type-annotation">bool</span> <span class="parameter-name">condition</span>, </span> <span class="parameter" id="throwIfNot-param-error"><span class="type-annotation">Object</span> <span class="parameter-name">error</span></span>)
             <span class="returntype parameter">&#8594; void</span>
           </span>
                   </dt>
         <dd>
-           
+          
                   
 </dd>
       </dl>
@@ -118,7 +118,7 @@ errors
           </span>
                   </dt>
         <dd>
-          Signature of the factory function used by normal factories 
+          Signature of the factory function used by non async factories
                   
 </dd>
         <dt id="FactoryFuncAsync" class="callable">
@@ -127,16 +127,27 @@ errors
           </span>
                   </dt>
         <dd>
-          Signature of the factory function used by async factories 
+          Signature of the factory function used by async factories
                   
 </dd>
-        <dt id="SingletonProviderFunc" class="callable">
-          <span class="name"><a href="get_it/SingletonProviderFunc.html">SingletonProviderFunc</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="SingletonProviderFunc-param-initCompleter"><span class="type-annotation">Completer</span> <span class="parameter-name">initCompleter</span></span><wbr>)
-            <span class="returntype parameter">&#8594; FutureOr<span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span></span>
+        <dt id="FactoryFuncParam" class="callable">
+          <span class="name"><a href="get_it/FactoryFuncParam.html">FactoryFuncParam</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>, <span class="type-parameter">P1</span>, <span class="type-parameter">P2</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="FactoryFuncParam-param-param1"><span class="type-annotation">P1</span> <span class="parameter-name">param1</span>, </span> <span class="parameter" id="FactoryFuncParam-param-param2"><span class="type-annotation">P2</span> <span class="parameter-name">param2</span></span>)
+            <span class="returntype parameter">&#8594; T</span>
           </span>
                   </dt>
         <dd>
-          Signature of the factory function used by async Signletons 
+          For Factories that expect up to two parameters if you need only one use <code>void</code> for the one 
+you don't use
+                  
+</dd>
+        <dt id="FactoryFuncParamAsync" class="callable">
+          <span class="name"><a href="get_it/FactoryFuncParamAsync.html">FactoryFuncParamAsync</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>, <span class="type-parameter">P1</span>, <span class="type-parameter">P2</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="FactoryFuncParamAsync-param-param1"><span class="type-annotation">P1</span> <span class="parameter-name">param1</span>, </span> <span class="parameter" id="FactoryFuncParamAsync-param-param2"><span class="type-annotation">P2</span> <span class="parameter-name">param2</span></span>)
+            <span class="returntype parameter">&#8594; Future<span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span></span>
+          </span>
+                  </dt>
+        <dd>
+          For async Factories that expect up to two parameters if you need only one use <code>void</code> for the one 
+you don't use
                   
 </dd>
       </dl>
@@ -150,8 +161,7 @@ errors
           <span class="name "><a href="get_it/WaitingTimeOutException-class.html">WaitingTimeOutException</a></span>         
         </dt>
         <dd>
-          In case of an timeout while waiting for an instance to get ready
-This exception is thrown whith information about who is still waiting 
+          
         </dd>
       </dl>
     </section>
@@ -176,7 +186,8 @@ This exception is thrown whith information about who is still waiting
       <li class="section-title"><a href="get_it/get_it-library.html#typedefs">Typedefs</a></li>
       <li><a href="get_it/FactoryFunc.html">FactoryFunc</a></li>
       <li><a href="get_it/FactoryFuncAsync.html">FactoryFuncAsync</a></li>
-      <li><a href="get_it/SingletonProviderFunc.html">SingletonProviderFunc</a></li>
+      <li><a href="get_it/FactoryFuncParam.html">FactoryFuncParam</a></li>
+      <li><a href="get_it/FactoryFuncParamAsync.html">FactoryFuncParamAsync</a></li>
     
       <li class="section-title"><a href="get_it/get_it-library.html#exceptions">Exceptions</a></li>
       <li><a href="get_it/WaitingTimeOutException-class.html">WaitingTimeOutException</a></li>
@@ -188,7 +199,7 @@ This exception is thrown whith information about who is still waiting
 <footer>
   <span class="no-break">
     get_it
-      4.0.0-beta
+      4.0.0-release-candidate
   </span>
 
   <!-- footer-text placeholder -->

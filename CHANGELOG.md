@@ -1,3 +1,11 @@
+## [4.0.0-release-candidate] - 14.02.2020
+
+* Breaking changes in API!!!
+* Release candidate
+* New Async functions
+* Factories with parameters
+* Improved startup synchronisation
+
 ## [3.0.2] - 23.10.2019
 
 * Bugfix when using named instances

@@ -160,7 +160,8 @@ class _ServiceFactory<T, P1, P2> {
                 param2 == null || param2.runtimeType == param2Type,
                 'Incompatible Type passed a param2\n'
                 'expected: $param2Type actual: ${param2.runtimeType}');
-            return asyncCreationFunctionParam(param1 as P1, param2 as P2) as Future<R>;
+            return asyncCreationFunctionParam(param1 as P1, param2 as P2)
+                as Future<R>;
           } else {
             return asyncCreationFunction() as Future<R>;
           }
@@ -238,7 +239,8 @@ class _GetItImplementation implements GetIt {
 
     _ServiceFactory<T, dynamic, dynamic> instanceFactory;
     if (instanceName != null) {
-      instanceFactory = _factoriesByName[instanceName] as _ServiceFactory<T, dynamic, dynamic>;
+      instanceFactory = _factoriesByName[instanceName]
+          as _ServiceFactory<T, dynamic, dynamic>;
       assert(instanceFactory != null,
           "Object/factory with name $instanceName is not registered inside GetIt");
     } else {
@@ -549,8 +551,8 @@ class _GetItImplementation implements GetIt {
     final serviceFactory = _ServiceFactory<T, P1, P2>(
       type,
       creationFunction: factoryFunc,
-      creationFunctionParam: factoryFuncParam as FactoryFuncParam<T, P1, P2>,
-      asyncCreationFunctionParam: factoryFuncParamAsync ,
+      creationFunctionParam: factoryFuncParam,
+      asyncCreationFunctionParam: factoryFuncParamAsync,
       asyncCreationFunction: factoryFuncAsync,
       instance: instance,
       isAsync: isAsync,
@@ -754,22 +756,22 @@ class _GetItImplementation implements GetIt {
   /// Used to manually signal the ready state of a Singleton.
   /// If you want to use this mechanism you have to pass [signalsReady==true] when registering
   /// the Singleton.
-  /// If [instance] has a value GetIt will search for the responsible Singleton 
+  /// If [instance] has a value GetIt will search for the responsible Singleton
   /// and completes all futures that might be waited for by [isReady]
-  /// If all waiting singletons have signalled ready the future you can get 
+  /// If all waiting singletons have signalled ready the future you can get
   /// from [allReady] is automatically completed
-  /// 
-  /// Typically this is used in this way inside the registered objects init 
+  ///
+  /// Typically this is used in this way inside the registered objects init
   /// method `GetIt.instance.signalReady(this);`
   ///
-  /// if [instance] is `null` and no factory/singleton is waiting to be signalled this 
-  /// will complete the future you got from [allReady], so it can be used to globally 
+  /// if [instance] is `null` and no factory/singleton is waiting to be signalled this
+  /// will complete the future you got from [allReady], so it can be used to globally
   /// giving a ready Signal
   ///
   /// Both ways are mutual exclusive, meaning either only use the global `signalReady()` and
   /// don't register a singleton to signal ready or use any async registrations
-  /// 
-  /// Or use async registrations methods or let individual instances signal their ready 
+  ///
+  /// Or use async registrations methods or let individual instances signal their ready
   /// state on their own.
   @override
   void signalReady(Object instance) {
@@ -916,10 +918,10 @@ class _GetItImplementation implements GetIt {
     throw WaitingTimeOutException(waitedBy, notReady, areReady);
   }
 
-  /// Returns a Future that completes if the instance of an Singleton, defined by Type [T] or 
+  /// Returns a Future that completes if the instance of an Singleton, defined by Type [T] or
   /// by name [instanceName] or by passing the an existing [instance],  is ready
   /// If you pass a [timeout], an [WaitingTimeOutException] will be thrown if the instance
-  /// is not ready in the given time. The Exception contains details on which Singletons are 
+  /// is not ready in the given time. The Exception contains details on which Singletons are
   /// not ready at that time.
   /// [callee] optional parameter which makes debugging easier. Pass `this` in here.
   @override
