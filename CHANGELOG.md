@@ -1,11 +1,10 @@
-## [3.1.0] - 21.12.2019
+## [4.0.0-release-candidate] - 14.02.2020
 
-* New feature to reset lazySingletons
-
-* Bug fixes:
-    - When using named instances & generic type (you should not do that)
-      https://github.com/fluttercommunity/get_it/pull/32
-
+* Breaking changes in API!!!
+* Release candidate
+* New Async functions
+* Factories with parameters
+* Improved startup synchronisation
 
 ## [3.0.2] - 23.10.2019
 

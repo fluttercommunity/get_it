@@ -67,10 +67,12 @@
         </dt>
         <dd>
           Very simple and easy to use service locator
-You register your object creation or an instance of an object with <a href="get_it/GetIt/registerFactory.html">registerFactory</a>,
+You register your object creation factory or an instance of an object with <a href="get_it/GetIt/registerFactory.html">registerFactory</a>,
 <a href="get_it/GetIt/registerSingleton.html">registerSingleton</a> or <a href="get_it/GetIt/registerLazySingleton.html">registerLazySingleton</a>
 And retrieve the desired object using <a href="get_it/GetIt/get.html">get</a> or call your locator das as function as its a
 callable class
+Additionally GetIt offers asynchronous creation functions as well as functions to synchronize
+the async initialization of multiple Singletons
         </dd>
       </dl>
     </section>
@@ -84,16 +86,17 @@ callable class
 
       <dl class="callables">
         <dt id="throwIf" class="callable">
-          <span class="name"><a href="get_it/throwIf.html">throwIf</a></span><span class="signature">(<wbr><span class="parameter" id="throwIf-param-condition"><span class="type-annotation">bool</span> <span class="parameter-name">condition</span>, </span><wbr><span class="parameter" id="throwIf-param-error"><span class="type-annotation">Object</span> <span class="parameter-name">error</span></span><wbr>)
+          <span class="name"><a href="get_it/throwIf.html">throwIf</a></span><span class="signature">(<wbr><span class="parameter" id="throwIf-param-condition"><span class="type-annotation">bool</span> <span class="parameter-name">condition</span>, </span> <span class="parameter" id="throwIf-param-error"><span class="type-annotation">Object</span> <span class="parameter-name">error</span></span>)
             <span class="returntype parameter">&#8594; void</span>
           </span>
                   </dt>
         <dd>
-          
+          Two handy function that helps me to express my intention clearer and shorter to check for runtime
+errors
                   
 </dd>
         <dt id="throwIfNot" class="callable">
-          <span class="name"><a href="get_it/throwIfNot.html">throwIfNot</a></span><span class="signature">(<wbr><span class="parameter" id="throwIfNot-param-condition"><span class="type-annotation">bool</span> <span class="parameter-name">condition</span>, </span><wbr><span class="parameter" id="throwIfNot-param-error"><span class="type-annotation">Object</span> <span class="parameter-name">error</span></span><wbr>)
+          <span class="name"><a href="get_it/throwIfNot.html">throwIfNot</a></span><span class="signature">(<wbr><span class="parameter" id="throwIfNot-param-condition"><span class="type-annotation">bool</span> <span class="parameter-name">condition</span>, </span> <span class="parameter" id="throwIfNot-param-error"><span class="type-annotation">Object</span> <span class="parameter-name">error</span></span>)
             <span class="returntype parameter">&#8594; void</span>
           </span>
                   </dt>
@@ -115,12 +118,53 @@ callable class
           </span>
                   </dt>
         <dd>
-          
+          Signature of the factory function used by non async factories
+                  
+</dd>
+        <dt id="FactoryFuncAsync" class="callable">
+          <span class="name"><a href="get_it/FactoryFuncAsync.html">FactoryFuncAsync</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr>)
+            <span class="returntype parameter">&#8594; Future<span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span></span>
+          </span>
+                  </dt>
+        <dd>
+          Signature of the factory function used by async factories
+                  
+</dd>
+        <dt id="FactoryFuncParam" class="callable">
+          <span class="name"><a href="get_it/FactoryFuncParam.html">FactoryFuncParam</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>, <span class="type-parameter">P1</span>, <span class="type-parameter">P2</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="FactoryFuncParam-param-param1"><span class="type-annotation">P1</span> <span class="parameter-name">param1</span>, </span> <span class="parameter" id="FactoryFuncParam-param-param2"><span class="type-annotation">P2</span> <span class="parameter-name">param2</span></span>)
+            <span class="returntype parameter">&#8594; T</span>
+          </span>
+                  </dt>
+        <dd>
+          For Factories that expect up to two parameters if you need only one use <code>void</code> for the one 
+you don't use
+                  
+</dd>
+        <dt id="FactoryFuncParamAsync" class="callable">
+          <span class="name"><a href="get_it/FactoryFuncParamAsync.html">FactoryFuncParamAsync</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>, <span class="type-parameter">P1</span>, <span class="type-parameter">P2</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="FactoryFuncParamAsync-param-param1"><span class="type-annotation">P1</span> <span class="parameter-name">param1</span>, </span> <span class="parameter" id="FactoryFuncParamAsync-param-param2"><span class="type-annotation">P2</span> <span class="parameter-name">param2</span></span>)
+            <span class="returntype parameter">&#8594; Future<span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span></span>
+          </span>
+                  </dt>
+        <dd>
+          For async Factories that expect up to two parameters if you need only one use <code>void</code> for the one 
+you don't use
                   
 </dd>
       </dl>
     </section>
 
+    <section class="summary offset-anchor" id="exceptions">
+      <h2>Exceptions / Errors</h2>
+
+      <dl>
+        <dt id="WaitingTimeOutException">
+          <span class="name "><a href="get_it/WaitingTimeOutException-class.html">WaitingTimeOutException</a></span>         
+        </dt>
+        <dd>
+          
+        </dd>
+      </dl>
+    </section>
 
   </div> <!-- /.main-content -->
 
@@ -141,7 +185,12 @@ callable class
     
       <li class="section-title"><a href="get_it/get_it-library.html#typedefs">Typedefs</a></li>
       <li><a href="get_it/FactoryFunc.html">FactoryFunc</a></li>
+      <li><a href="get_it/FactoryFuncAsync.html">FactoryFuncAsync</a></li>
+      <li><a href="get_it/FactoryFuncParam.html">FactoryFuncParam</a></li>
+      <li><a href="get_it/FactoryFuncParamAsync.html">FactoryFuncParamAsync</a></li>
     
+      <li class="section-title"><a href="get_it/get_it-library.html#exceptions">Exceptions</a></li>
+      <li><a href="get_it/WaitingTimeOutException-class.html">WaitingTimeOutException</a></li>
     </ol>
   </div><!--/sidebar-offcanvas-right-->
 
@@ -150,7 +199,7 @@ callable class
 <footer>
   <span class="no-break">
     get_it
-      3.1.0
+      4.0.0-release-candidate
   </span>
 
   <!-- footer-text placeholder -->

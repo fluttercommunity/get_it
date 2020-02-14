@@ -39,7 +39,7 @@ out/
 
 
 # Flutter/Dart/Pub related
-**/doc/api/
+#**/doc/api/
 .dart_tool/
 .flutter-plugins
 .packages
@@ -164,7 +164,7 @@ fabric.properties
 
 ### Flutter ###
 # Flutter/Dart/Pub related
-**/doc/api/
+#**/doc/api/
 .dart_tool/
 .flutter-plugins
 .packages

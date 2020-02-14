@@ -1,6 +1,3 @@
-import 'dart:async';
-
-import 'package:meta/meta.dart';
 import 'package:test/test.dart';
 
 import 'package:get_it/get_it.dart';
@@ -26,15 +23,22 @@ class TestClass3 {}
 
 class TestClass4 {}
 
-void main() {
+class TestClassParam {
+  final String param1;
+  final int param2;
 
-  setUp((){
+  TestClassParam({this.param1, this.param2});
+}
+
+void main() {
+  setUp(() {
     //make sure the instance is cleared before each test
     GetIt.I.reset();
   });
 
   test('register factory', () {
     var getIt = GetIt.instance;
+    getIt.reset();
 
     constructorCounter = 0;
     getIt.registerFactory<TestBaseClass>(() => TestClass());
@@ -47,11 +51,63 @@ void main() {
 
     var instance2 = getIt.get<TestBaseClass>();
 
+    expect(getIt.isRegistered<TestBaseClass>(), true);
+    expect(getIt.isRegistered<TestClass2>(), false);
     expect(instance1, isNot(instance2));
 
     expect(constructorCounter, 2);
+  });
 
-    GetIt.I.reset();
+  test('register factory with one Param', () {
+    var getIt = GetIt.instance;
+    getIt.reset();
+
+    constructorCounter = 0;
+    getIt.registerFactoryParam<TestClassParam, String, void>(
+        (s, _) => TestClassParam(param1: s));
+
+    //var instance1 = getIt.get<TestBaseClass>();
+
+    var instance1 = getIt<TestClassParam>(param1: 'abc');
+    var instance2 = getIt<TestClassParam>(param1: '123');
+
+    expect(instance1 is TestClassParam, true);
+    expect(instance1.param1, 'abc');
+    expect(instance2 is TestClassParam, true);
+    expect(instance2.param1, '123');
+  });
+
+  test('register factory with two Params', () {
+    var getIt = GetIt.instance;
+    getIt.reset();
+
+    constructorCounter = 0;
+    getIt.registerFactoryParam<TestClassParam, String, int>(
+        (s, i) => TestClassParam(param1: s, param2: i));
+
+    //var instance1 = getIt.get<TestBaseClass>();
+
+    var instance1 = getIt<TestClassParam>(param1: 'abc', param2: 3);
+    var instance2 = getIt<TestClassParam>(param1: '123', param2: 5);
+
+    expect(instance1 is TestClassParam, true);
+    expect(instance1.param1, 'abc');
+    expect(instance1.param2, 3);
+    expect(instance2 is TestClassParam, true);
+    expect(instance2.param1, '123');
+    expect(instance2.param2, 5);
+  });
+
+  test('register factory with Params with wrong type', () {
+    var getIt = GetIt.instance;
+    getIt.reset();
+
+    constructorCounter = 0;
+    getIt.registerFactoryParam<TestClassParam, String, int>(
+        (s, i) => TestClassParam(param1: s, param2: i));
+
+    expect(() => getIt.get<TestClassParam>(param1: 'abc', param2: '3'),
+        throwsA(const TypeMatcher<AssertionError>()));
   });
 
   test('register factory with access as singleton', () {
@@ -114,7 +170,7 @@ void main() {
   test('trying to access not registered type', () {
     var getIt = GetIt.instance;
 
-    expect(() => getIt.get<int>(), throwsA(TypeMatcher<ArgumentError>()));
+    expect(() => getIt.get<int>(), throwsA(TypeMatcher<AssertionError>()));
 
     GetIt.I.reset();
   });
@@ -125,11 +181,11 @@ void main() {
     constructorCounter = 0;
     getIt.registerFactory(() => TestClass(), instanceName: 'FactoryByName');
 
-    var instance1 = getIt('FactoryByName');
+    var instance1 = getIt(instanceName: 'FactoryByName');
 
     expect(instance1 is TestClass, true);
 
-    var instance2 = getIt('FactoryByName');
+    var instance2 = getIt(instanceName: 'FactoryByName');
     ;
 
     expect(instance1, isNot(instance2));
@@ -145,11 +201,11 @@ void main() {
 
     getIt.registerSingleton(TestClass(), instanceName: 'ConstantByName');
 
-    var instance1 = getIt('ConstantByName');
+    var instance1 = getIt(instanceName: 'ConstantByName');
 
     expect(instance1 is TestClass, true);
 
-    TestClass instance2 = getIt('ConstantByName');
+    TestClass instance2 = getIt(instanceName: 'ConstantByName') as TestClass;
 
     expect(instance1, instance2);
 
@@ -164,12 +220,12 @@ void main() {
 
     expect(constructorCounter, 0);
 
-    var instance1 = getIt('LazyByName');
+    var instance1 = getIt(instanceName: 'LazyByName');
 
     expect(instance1 is TestClass, true);
     expect(constructorCounter, 1);
 
-    var instance2 = getIt('LazyByName');
+    var instance2 = getIt(instanceName: 'LazyByName');
 
     expect(instance1, instance2);
 
@@ -201,11 +257,11 @@ void main() {
     GetIt.I.reset();
   });
 
-
   test('trying to access not registered type by name', () {
     var getIt = GetIt.instance;
 
-    expect(() => getIt('not there'), throwsA(TypeMatcher<ArgumentError>()));
+    expect(() => getIt(instanceName: 'not there'),
+        throwsA(TypeMatcher<AssertionError>()));
     GetIt.I.reset();
   });
 
@@ -265,7 +321,8 @@ void main() {
 
     expect(disposeCounter, 1);
 
-    expect(() => getIt.get<TestClass>(), throwsA(TypeMatcher<ArgumentError>()));
+    expect(
+        () => getIt.get<TestClass>(), throwsA(TypeMatcher<AssertionError>()));
   });
 
   test('unregister by type', () {
@@ -291,7 +348,8 @@ void main() {
 
     expect(disposeCounter, 1);
 
-    expect(() => getIt.get<TestClass>(), throwsA(TypeMatcher<ArgumentError>()));
+    expect(
+        () => getIt.get<TestClass>(), throwsA(TypeMatcher<AssertionError>()));
   });
 
   test('unregister by name', () {
@@ -301,7 +359,7 @@ void main() {
 
     getIt.registerSingleton(TestClass(), instanceName: 'instanceName');
 
-    var instance1 = getIt.get('instanceName');
+    var instance1 = getIt.get(instanceName: 'instanceName');
 
     expect(instance1 is TestClass, true);
 
@@ -313,9 +371,10 @@ void main() {
 
     expect(disposeCounter, 1);
 
-    expect(() => getIt('instanceName'), throwsA(TypeMatcher<ArgumentError>()));
+    expect(() => getIt(instanceName: 'instanceName'),
+        throwsA(TypeMatcher<AssertionError>()));
   });
-  
+
   test('unregister by instance without disposing function', () {
     var getIt = GetIt.instance;
     disposeCounter = 0;
@@ -337,9 +396,10 @@ void main() {
 
     expect(disposeCounter, 0);
 
-    expect(() => getIt.get<TestClass>(), throwsA(TypeMatcher<ArgumentError>()));
+    expect(
+        () => getIt.get<TestClass>(), throwsA(TypeMatcher<AssertionError>()));
   });
-  
+
   test('unregister by type without disposing function', () {
     var getIt = GetIt.instance;
     disposeCounter = 0;
@@ -361,7 +421,8 @@ void main() {
 
     expect(disposeCounter, 0);
 
-    expect(() => getIt.get<TestClass>(), throwsA(TypeMatcher<ArgumentError>()));
+    expect(
+        () => getIt.get<TestClass>(), throwsA(TypeMatcher<AssertionError>()));
   });
 
   test('unregister by name without disposing function', () {
@@ -371,7 +432,7 @@ void main() {
 
     getIt.registerSingleton(TestClass(), instanceName: 'instanceName');
 
-    var instance1 = getIt.get('instanceName');
+    var instance1 = getIt.get(instanceName: 'instanceName');
 
     expect(instance1 is TestClass, true);
 
@@ -379,18 +440,19 @@ void main() {
 
     expect(disposeCounter, 0);
 
-    expect(() => getIt('instanceName'), throwsA(TypeMatcher<ArgumentError>()));
+    expect(() => getIt(instanceName: 'instanceName'),
+        throwsA(TypeMatcher<AssertionError>()));
   });
 
   test(
-      'can register a singleton with instanceName and retrieve it with generic parameters and instanceName', () {
+      'can register a singleton with instanceName and retrieve it with generic parameters and instanceName',
+      () {
     final getIt = GetIt.instance;
 
     getIt.registerSingleton(TestClass(), instanceName: 'instanceName');
 
-    var instance1 = getIt.get<TestClass>('instanceName');
+    var instance1 = getIt.get<TestClass>(instanceName: 'instanceName');
 
     expect(instance1 is TestClass, true);
   });
-
 }

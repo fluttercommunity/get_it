@@ -483,3 +483,4 @@ DerivedData/
 .flutter-plugins
 .packages
 android/local.properties
+.vscode/settings.json

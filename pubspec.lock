@@ -16,12 +16,12 @@ packages:
     source: hosted
     version: "1.5.1"
   async:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: async
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.0.8"
+    version: "2.4.0"
   boolean_selector:
     dependency: transitive
     description:
@@ -134,6 +134,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.3.13"
+  lint:
+    dependency: "direct dev"
+    description:
+      name: lint
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.1.1"
   logging:
     dependency: transitive
     description:
@@ -366,4 +373,4 @@ packages:
     source: hosted
     version: "2.1.15"
 sdks:
-  dart: ">=2.1.1-dev.0.0 <3.0.0"
+  dart: ">=2.7.0 <3.0.0"

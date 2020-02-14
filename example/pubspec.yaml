@@ -16,7 +16,7 @@ dependencies:
 dev_dependencies:
   test: any
   flutter_test:
-    sdk: flutter
+    sdk: flutter 
 
 
 # For information on the generic Dart part of this file, see the

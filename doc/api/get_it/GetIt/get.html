@@ -27,7 +27,7 @@
     <li><a href="index.html">get_it</a></li>
     <li><a href="get_it/get_it-library.html">get_it</a></li>
     <li><a href="get_it/GetIt-class.html">GetIt</a></li>
-    <li class="self-crumb">get&lt;<wbr><span class="type-parameter">T</span>&gt; method</li>
+    <li class="self-crumb">get&lt;<wbr><span class="type-parameter">T</span>&gt; abstract method</li>
   </ol>
   <div class="self-name">get</div>
   <form class="search navbar-right" role="search">
@@ -48,7 +48,7 @@
       <li><a href="index.html">get_it</a></li>
       <li><a href="get_it/get_it-library.html">get_it</a></li>
       <li><a href="get_it/GetIt-class.html">GetIt</a></li>
-      <li class="self-crumb">get&lt;<wbr><span class="type-parameter">T</span>&gt; method</li>
+      <li class="self-crumb">get&lt;<wbr><span class="type-parameter">T</span>&gt; abstract method</li>
     </ol>
     
     <h5>GetIt class</h5>
@@ -61,17 +61,27 @@
             <a href="get_it/GetIt-class.html#instance-properties">Properties</a>
         </li>
         <li><a href="get_it/GetIt/allowReassignment.html">allowReassignment</a></li>
-        <li><a href="get_it/GetIt/ready.html">ready</a></li>
-        <li><a href="get_it/GetIt/readyFuture.html">readyFuture</a></li>
         <li class="inherited"><a href="get_it/GetIt/hashCode.html">hashCode</a></li>
         <li class="inherited"><a href="get_it/GetIt/runtimeType.html">runtimeType</a></li>
     
         <li class="section-title"><a href="get_it/GetIt-class.html#instance-methods">Methods</a></li>
+        <li><a href="get_it/GetIt/allReady.html">allReady</a></li>
+        <li><a href="get_it/GetIt/allReadySync.html">allReadySync</a></li>
         <li><a href="get_it/GetIt/call.html">call</a></li>
         <li><a href="get_it/GetIt/get.html">get</a></li>
+        <li><a href="get_it/GetIt/getAsync.html">getAsync</a></li>
+        <li><a href="get_it/GetIt/isReady.html">isReady</a></li>
+        <li><a href="get_it/GetIt/isReadySync.html">isReadySync</a></li>
+        <li><a href="get_it/GetIt/isRegistered.html">isRegistered</a></li>
         <li><a href="get_it/GetIt/registerFactory.html">registerFactory</a></li>
+        <li><a href="get_it/GetIt/registerFactoryAsync.html">registerFactoryAsync</a></li>
+        <li><a href="get_it/GetIt/registerFactoryParam.html">registerFactoryParam</a></li>
+        <li><a href="get_it/GetIt/registerFactoryParamAsync.html">registerFactoryParamAsync</a></li>
         <li><a href="get_it/GetIt/registerLazySingleton.html">registerLazySingleton</a></li>
+        <li><a href="get_it/GetIt/registerLazySingletonAsync.html">registerLazySingletonAsync</a></li>
         <li><a href="get_it/GetIt/registerSingleton.html">registerSingleton</a></li>
+        <li><a href="get_it/GetIt/registerSingletonAsync.html">registerSingletonAsync</a></li>
+        <li><a href="get_it/GetIt/registerSingletonWithDependencies.html">registerSingletonWithDependencies</a></li>
         <li><a href="get_it/GetIt/reset.html">reset</a></li>
         <li><a href="get_it/GetIt/resetLazySingleton.html">resetLazySingleton</a></li>
         <li><a href="get_it/GetIt/signalReady.html">signalReady</a></li>
@@ -98,48 +108,19 @@
     <section class="multi-line-signature">
       <span class="returntype">T</span>
             <span class="name ">get</span>
-&lt;<wbr><span class="type-parameter">T</span>&gt;(<wbr><ol class="parameter-list"><li><span class="parameter" id="get-param-instanceName">[<span class="type-annotation">String</span> <span class="parameter-name">instanceName</span>]</span></li>
-</ol>)
+&lt;<wbr><span class="type-parameter">T</span>&gt;(<wbr>{<span class="parameter" id="get-param-instanceName"><span class="type-annotation">String</span> <span class="parameter-name">instanceName</span>, </span> <span class="parameter" id="get-param-param1"><span class="type-annotation">dynamic</span> <span class="parameter-name">param1</span></span> <span class="parameter" id="get-param-param2"><span class="type-annotation">dynamic</span> <span class="parameter-name">param2</span></span> })
       
     </section>
     <section class="desc markdown">
-      <p>retrieves or creates an instance of a registered type <code>T</code> depending on the registration function used for this type or based on a name.</p>
+      <p>retrieves or creates an instance of a registered type <code>T</code> depending on the registration
+function used for this type or based on a name.
+for factories you can pass up to 2 parameters <code>param1,param2</code> they have to match the types
+given at registration with <a href="get_it/GetIt/registerFactoryParam.html">registerFactoryParam()</a></p>
     </section>
     
     <section class="summary source-code" id="source">
       <h2><span>Implementation</span></h2>
-      <pre class="language-dart"><code class="language-dart">T get&lt;T&gt;([String instanceName]) {
-  throwIf(
-    (!(const Object() is! T) &amp;&amp; instanceName == null),
-    ArgumentError(
-        &#39;GetIt: You have to provide either a type or a name. Did you accidentally do  `var sl=GetIt.instance();` instead of var sl=GetIt.instance;&#39;),
-  );
-
-  _ServiceFactory&lt;T&gt; object;
-  if (instanceName == null) {
-    object = _factories[T];
-  } else {
-    final registeredObject = _factoriesByName[instanceName];
-    if (registeredObject != null) {
-      if (registeredObject.instance != null &amp;&amp;
-          registeredObject.instance is! T) {
-        print(T.toString());
-        throw ArgumentError(
-            &quot;Object with name $instanceName has a different type (${registeredObject.registrationType.toString()}) than the one that is inferred (${T.toString()}) where you call it&quot;);
-      }
-    }
-    object = registeredObject;
-  }
-  if (object == null &amp;&amp; instanceName == null) {
-    throw ArgumentError.value(T,
-        &quot;Object of type ${T.toString()} is not registered inside GetIt.\n Did you forget to pass an instance name? \n(Did you accidentally do  GetIt sl=GetIt.instance(); instead of GetIt sl=GetIt.instance;)&quot;);
-  }
-  if (object == null &amp;&amp; instanceName != null) {
-    throw ArgumentError.value(instanceName,
-        &quot;Object with name $instanceName is not registered inside GetIt&quot;);
-  }
-  return object.getObject();
-}</code></pre>
+      <pre class="language-dart"><code class="language-dart">T get&lt;T&gt;({String instanceName,dynamic param1, dynamic param2});</code></pre>
     </section>
 
   </div> <!-- /.main-content -->
@@ -152,7 +133,7 @@
 <footer>
   <span class="no-break">
     get_it
-      3.1.0
+      4.0.0-release-candidate
   </span>
 
   <!-- footer-text placeholder -->
