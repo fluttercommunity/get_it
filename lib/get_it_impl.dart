@@ -417,14 +417,14 @@ class _GetItImplementation implements GetIt {
   void registerSingleton<T>(
     T instance, {
     String instanceName,
-    bool signalsReady = false,
+    bool signalsReady,
   }) {
     _register<T, void, void>(
         type: _ServiceFactoryType.constant,
         instanceName: instanceName,
         instance: instance,
         isAsync: false,
-        shouldSignalReady: signalsReady);
+        shouldSignalReady: signalsReady ?? T is WillSignalReady);
   }
 
   /// registers a type as Singleton by passing an factory function of that type
@@ -444,7 +444,7 @@ class _GetItImplementation implements GetIt {
     FactoryFunc<T> providerFunc, {
     String instanceName,
     Iterable<Type> dependsOn,
-    bool signalsReady = false,
+    bool signalsReady,
   }) {
     _register<T, void, void>(
         type: _ServiceFactoryType.constant,
@@ -452,7 +452,7 @@ class _GetItImplementation implements GetIt {
         isAsync: false,
         factoryFunc: providerFunc,
         dependsOn: dependsOn,
-        shouldSignalReady: signalsReady);
+        shouldSignalReady: signalsReady ?? T is WillSignalReady);
   }
 
   /// registers a type as Singleton by passing an asynchronous factory function which has to return the instance
@@ -475,14 +475,14 @@ class _GetItImplementation implements GetIt {
   void registerSingletonAsync<T>(FactoryFuncAsync<T> providerFunc,
       {String instanceName,
       Iterable<Type> dependsOn,
-      bool signalsReady = false}) {
+      bool signalsReady}) {
     _register<T, void, void>(
         type: _ServiceFactoryType.constant,
         instanceName: instanceName,
         isAsync: true,
         factoryFuncAsync: providerFunc,
         dependsOn: dependsOn,
-        shouldSignalReady: signalsReady);
+        shouldSignalReady: signalsReady ?? T is WillSignalReady);
   }
 
   /// registers a type as Singleton by passing a async factory function that will be called

@@ -7,6 +7,12 @@ import 'package:meta/meta.dart';
 
 part 'get_it_impl.dart';
 
+
+/// If your type that you register wants to use the manually signalling
+/// of its ready state just implement this interface class 
+/// (you don't really have to implement much ;-) )
+abstract class WillSignalReady{}
+
 /// Signature of the factory function used by non async factories
 typedef FactoryFunc<T> = T Function();
 
@@ -177,7 +183,7 @@ abstract class GetIt {
   /// If [signalsReady] is set to `true` it means that the future you can get from `allReady()`
   /// cannot complete until this this instance was signalled ready by calling [signalsReady(instance)].
   void registerSingleton<T>(T instance,
-      {String instanceName, bool signalsReady = false});
+      {String instanceName, bool signalsReady});
 
   /// registers a type as Singleton by passing an factory function of that type
   /// that will be called on each call of [get] on that type
@@ -194,7 +200,7 @@ abstract class GetIt {
   void registerSingletonWithDependencies<T>(FactoryFunc<T> factoryFunc,
       {String instanceName,
       Iterable<Type> dependsOn,
-      bool signalsReady = false});
+      bool signalsReady});
 
   /// registers a type as Singleton by passing an asynchronous factory function which has to return the instance
   /// that will be returned on each call of [get] on that type.
@@ -215,7 +221,7 @@ abstract class GetIt {
   void registerSingletonAsync<T>(FactoryFuncAsync<T> factoryfunc,
       {String instanceName,
       Iterable<Type> dependsOn,
-      bool signalsReady = false});
+      bool signalsReady});
 
   /// registers a type as Singleton by passing a factory function that will be called
   /// on the first call of [get] on that type

@@ -101,7 +101,9 @@ class ConfigService {
 
 class RestService {
   Future init() async {
-    return null;
+  // do your async initialisation...
+  // simulating it with a Delay here
+    return Future.delayed(Duration(seconds: 2));
   }
 }
 
@@ -132,3 +134,29 @@ Future<DbService> createDbServiceAsync() async {
 //   child:  Text("Update"),
 //   onPressed: sl.<AppModel>().update
 //   ),
+
+class StartupPage extends StatefulWidget {
+  @override
+  _StartupPageState createState() => _StartupPageState();
+}
+
+class _StartupPageState extends State<StartupPage> {
+  @override
+  void initState() {
+    GetIt.I.allReady().then((_) => Navigator.pushReplacement(
+        context, MaterialPageRoute(builder: (context) => MainPage())));
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container();
+  }
+}
+
+class MainPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container();
+  }
+}

@@ -19,7 +19,7 @@ class TestClassParam {
   TestClassParam({this.param1, this.param2});
 }
 
-class TestClass extends TestBaseClass {
+class TestClass extends TestBaseClass{
   GetIt getIt;
 
   /// if we do the initialisation from inside the constructor the init function has to signal GetIt
@@ -49,7 +49,20 @@ class TestClass extends TestBaseClass {
   }
 }
 
-class TestClass2 extends TestClass {
+class TestClassWillSignalReady extends TestClass implements WillSignalReady{
+  TestClassWillSignalReady({
+    @required bool internalCompletion,
+    GetIt getIt,
+  }) : super(internalCompletion: internalCompletion, getIt: getIt) {}
+}
+class TestClassWillSignalReady2 extends TestClass implements WillSignalReady{
+  TestClassWillSignalReady2({
+    @required bool internalCompletion,
+    GetIt getIt,
+  }) : super(internalCompletion: internalCompletion, getIt: getIt) {}
+}
+
+class TestClass2 extends TestClass{
   TestClass2({
     @required bool internalCompletion,
     GetIt getIt,
@@ -185,7 +198,7 @@ void main() {
     await Future.delayed(Duration(milliseconds: 15));
   });
 
-  test('Normal Singletons,ready with internal signalling', () async {
+  test('Normal Singletons, ready with internal signalling setting signalsReady parameter', () async {
     var getIt = GetIt.instance;
     getIt.reset();
     errorCounter = 0;
@@ -199,8 +212,39 @@ void main() {
     getIt.registerSingleton(TestClass2(internalCompletion: true, getIt: getIt),
         instanceName: 'Second Instance', signalsReady: true);
 
-    expect(getIt.allReady(), completes);
+    expect(getIt.isReadySync<TestClass>(), false);
+    expect(getIt.isReadySync<TestClass2>(), false);
+    expect(getIt.isReadySync(instanceName: 'Second Instance'), false);
+
+    final timer= Stopwatch()..start();
+    await getIt.allReady(timeout: Duration(milliseconds: 20));
+    expect(timer.elapsedMilliseconds, greaterThan(5));
   });
+
+  test('Normal Singletons,ready with internal signalling relying on implementing WillSignalReady interface', () async {
+    final getIt = GetIt.instance;
+    getIt.reset();
+    errorCounter = 0;
+
+    var b = TestClassWillSignalReady is WillSignalReady;
+
+    getIt.registerSingleton<TestClassWillSignalReady>(
+        TestClassWillSignalReady(internalCompletion: true, getIt: getIt),);
+    getIt.registerSingleton<TestClassWillSignalReady2>(
+        TestClassWillSignalReady2(internalCompletion: true, getIt: getIt),);
+    getIt.registerSingleton(TestClass2(internalCompletion: true, getIt: getIt),
+        instanceName: 'Second Instance',);
+
+    expect(getIt.isReadySync<TestClassWillSignalReady>(), false);
+    expect(getIt.isReadySync<TestClassWillSignalReady2>(), false);
+    expect(getIt.isReadySync(instanceName: 'Second Instance'), false);
+
+
+    final timer= Stopwatch()..start();
+    await getIt.allReady(timeout: Duration(milliseconds: 20));
+    expect(timer.elapsedMilliseconds, greaterThan(5));
+  });
+
 
   test('ready external signalling', () async {
     var getIt = GetIt.instance;
