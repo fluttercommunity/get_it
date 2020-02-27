@@ -1,3 +1,7 @@
+## [4.0.0] - 26.02.2020
+
+* Added abstract `WillSignalReady` class
+
 ## [4.0.0-release-candidate] - 14.02.2020
 
 * Breaking changes in API!!!

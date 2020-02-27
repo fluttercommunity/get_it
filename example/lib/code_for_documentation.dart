@@ -66,6 +66,7 @@ Widget init() {
 
   getIt.registerSingletonAsync<RestService>(() async => RestService()..init());
 
+  /// this example uses an async factory function
   getIt.registerSingletonAsync<DbService>(createDbServiceAsync,
       dependsOn: [ConfigService]);
 

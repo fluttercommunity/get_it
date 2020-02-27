@@ -108,7 +108,7 @@
     <section class="multi-line-signature">
       <span class="returntype">void</span>
             <span class="name ">registerSingleton</span>
-&lt;<wbr><span class="type-parameter">T</span>&gt;(<wbr><span class="parameter" id="registerSingleton-param-instance"><span class="type-annotation">T</span> <span class="parameter-name">instance</span>, {</span> <span class="parameter" id="registerSingleton-param-instanceName"><span class="type-annotation">String</span> <span class="parameter-name">instanceName</span>, </span> <span class="parameter" id="registerSingleton-param-signalsReady"><span class="type-annotation">bool</span> <span class="parameter-name">signalsReady</span>: <span class="default-value">false</span></span> })
+&lt;<wbr><span class="type-parameter">T</span>&gt;(<wbr><span class="parameter" id="registerSingleton-param-instance"><span class="type-annotation">T</span> <span class="parameter-name">instance</span>, {</span> <span class="parameter" id="registerSingleton-param-instanceName"><span class="type-annotation">String</span> <span class="parameter-name">instanceName</span>, </span> <span class="parameter" id="registerSingleton-param-signalsReady"><span class="type-annotation">bool</span> <span class="parameter-name">signalsReady</span></span> })
       
     </section>
     <section class="desc markdown">
@@ -118,14 +118,14 @@ that will be returned on each call of <a href="get_it/GetIt/get.html">get</a> on
 <code>instanceName</code> if you provide a value here your instance gets registered with that
 name instead of a type. This should only be necessary if you need to register more
 than one instance of one type. Its highly not recommended
-If <code>signalsReady</code> is set to <code>true</code> it means that the future you can get from <code>allReady()</code><br>
+If <code>signalsReady</code> is set to <code>true</code> it means that the future you can get from <code>allReady()</code>
 cannot complete until this this instance was signalled ready by calling <code>signalsReady(instance)</code>.</p>
     </section>
     
     <section class="summary source-code" id="source">
       <h2><span>Implementation</span></h2>
       <pre class="language-dart"><code class="language-dart">void registerSingleton&lt;T&gt;(T instance,
-    {String instanceName, bool signalsReady = false});</code></pre>
+    {String instanceName, bool signalsReady});</code></pre>
     </section>
 
   </div> <!-- /.main-content -->
@@ -138,7 +138,7 @@ cannot complete until this this instance was signalled ready by calling <code>si
 <footer>
   <span class="no-break">
     get_it
-      4.0.0-release-candidate
+      4.0.0
   </span>
 
   <!-- footer-text placeholder -->

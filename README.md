@@ -15,7 +15,7 @@ Synchronising asynchronous creation of instances
 you no longer can directly create instances of the type `GetIt` because `GetIt` is now a singleton please see [Getting Started](#getting-started).
 
 
-You can find here a [detailed blog post on how to use GetIt](https://www.burkharts.net/apps/blog/one-to-find-them-all-how-to-use-service-locators-with-flutter/)
+You can find here a [detailed blog post on how to use GetIt](https://www.burkharts.net/apps/blog/one-to-find-them-all-how-to-use-service-locators-with-flutter/) and on [app start-up synchronisation](https://www.burkharts.net/apps/blog/?p=447&preview=true)
 
 
 >If you are not familiar with the concept of Service Locators, its a way to decouple the interface (abstract base class) from a concrete implementation and at the same time allows to access the concrete implementation from everywhere in your App over the interface.
@@ -33,6 +33,7 @@ Typical usage:
 * Because interface and implementations are decoupled you could also register Flutter Views with different implementations and decide at start-up which one you want to use e.g. depending on screen resolutions
 
 **Extremely important if you use GetIt: ALWAYS use the same style to import your project files either as relative paths OR as package which I recommend. DON'T mix them because currently Dart treats types imported in different ways as two different types although both reference the same file.**
+>This warning seems no longer be necessary according to an issue in the Dart compiler. I still would decide to use one way consequently.
 
 
 ## Getting Started
@@ -297,7 +298,7 @@ Sometimes the mechanism of `dependsOn` might not give you enough control. For th
   });
 ```
 
-To signal that it is ready a singleton can use `signalReady` to be able to use that youo have to set the optional `signalsReady` parameter when registering it. As soon as you pass that parameter `allReady` will wait on a call to signalsReady. No automatic signalling will happen in that case.
+To signal that it is ready a singleton can use `signalReady` to be able to use that you have to set the optional `signalsReady` parameter when registering it OR make your registration type implement the empty abstract class `WillSignalReady`. In that case `allReady` will wait on a call to signalsReady. No automatic signalling will happen in that case.
 
 ```Dart
 /// Typically this is used in this way inside the registered objects init 
@@ -331,7 +332,7 @@ I recommend using one of the other ways because they are more flexible and expre
 
 ## Passing Parameters to factories
 
-In some cases its handy if you could pass changing values to factories when calling `get()`. For that there wrae two variants for registering factories:
+In some cases its handy if you could pass changing values to factories when calling `get()`. For that there are two variants for registering factories:
 
 ```Dart
   /// registers a type so that a new instance will be created on each call of [get] on that type based on

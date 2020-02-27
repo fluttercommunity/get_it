@@ -8,8 +8,9 @@ import 'package:meta/meta.dart';
 part 'get_it_impl.dart';
 
 
-/// If your type that you register wants to use the manually signalling
-/// of its ready state just implement this interface class 
+/// If your singleton that you register wants to use the manually signalling
+/// of its ready state, it can implement this interface class instead of using 
+/// the [signalsReady] parameter of the registration functions
 /// (you don't really have to implement much ;-) )
 abstract class WillSignalReady{}
 
