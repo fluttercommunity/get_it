@@ -1,5 +1,3 @@
-import 'dart:async';
-import 'dart:math';
 
 import 'package:meta/meta.dart';
 import 'package:test/test.dart';
@@ -226,14 +224,13 @@ void main() {
     getIt.reset();
     errorCounter = 0;
 
-    var b = TestClassWillSignalReady is WillSignalReady;
 
     getIt.registerSingleton<TestClassWillSignalReady>(
         TestClassWillSignalReady(internalCompletion: true, getIt: getIt),);
     getIt.registerSingleton<TestClassWillSignalReady2>(
         TestClassWillSignalReady2(internalCompletion: true, getIt: getIt),);
     getIt.registerSingleton(TestClass2(internalCompletion: true, getIt: getIt),
-        instanceName: 'Second Instance',);
+        instanceName: 'Second Instance',signalsReady: true);
 
     expect(getIt.isReadySync<TestClassWillSignalReady>(), false);
     expect(getIt.isReadySync<TestClassWillSignalReady2>(), false);

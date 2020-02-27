@@ -424,7 +424,7 @@ class _GetItImplementation implements GetIt {
         instanceName: instanceName,
         instance: instance,
         isAsync: false,
-        shouldSignalReady: signalsReady ?? T is WillSignalReady);
+        shouldSignalReady: signalsReady ?? <T>[] is List<WillSignalReady>);
   }
 
   /// registers a type as Singleton by passing an factory function of that type
@@ -452,7 +452,7 @@ class _GetItImplementation implements GetIt {
         isAsync: false,
         factoryFunc: providerFunc,
         dependsOn: dependsOn,
-        shouldSignalReady: signalsReady ?? T is WillSignalReady);
+        shouldSignalReady: signalsReady ?? <T>[] is List<WillSignalReady>);
   }
 
   /// registers a type as Singleton by passing an asynchronous factory function which has to return the instance
@@ -482,7 +482,7 @@ class _GetItImplementation implements GetIt {
         isAsync: true,
         factoryFuncAsync: providerFunc,
         dependsOn: dependsOn,
-        shouldSignalReady: signalsReady ?? T is WillSignalReady);
+        shouldSignalReady: signalsReady ?? <T>[] is List<WillSignalReady>);
   }
 
   /// registers a type as Singleton by passing a async factory function that will be called

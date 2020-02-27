@@ -66,7 +66,7 @@ Please see <a href="#synchronizing_asynchronous_initialisations_of_Singletons">S
 <p><strong>Breaking Change with V2.0.0</strong> 
 you no longer can directly create instances of the type <code>GetIt</code> because <code>GetIt</code> is now a singleton please see <a href="#getting-started">Getting Started</a>.</p>
 </blockquote>
-<p>You can find here a <a href="https://www.burkharts.net/apps/blog/one-to-find-them-all-how-to-use-service-locators-with-flutter/">detailed blog post on how to use GetIt</a></p>
+<p>You can find here a <a href="https://www.burkharts.net/apps/blog/one-to-find-them-all-how-to-use-service-locators-with-flutter/">detailed blog post on how to use GetIt</a> and on <a href="https://www.burkharts.net/apps/blog/?p=447&amp;preview=true">app start-up synchronisation</a></p>
 <blockquote>
 <p>If you are not familiar with the concept of Service Locators, its a way to decouple the interface (abstract base class) from a concrete implementation and at the same time allows to access the concrete implementation from everywhere in your App over the interface.
 I can only highly recommend to read this classic article by from Martin Fowler <a href="https://martinfowler.com/articles/injection.html">Inversion of Control Containers and the Dependency Injection  pattern</a></p>
@@ -83,6 +83,9 @@ I can only highly recommend to read this classic article by from Martin Fowler <
 <li>Because interface and implementations are decoupled you could also register Flutter Views with different implementations and decide at start-up which one you want to use e.g. depending on screen resolutions</li>
 </ul>
 <p><strong>Extremely important if you use GetIt: ALWAYS use the same style to import your project files either as relative paths OR as package which I recommend. DON'T mix them because currently Dart treats types imported in different ways as two different types although both reference the same file.</strong></p>
+<blockquote>
+<p>This warning seems no longer be necessary according to an issue in the Dart compiler. I still would decide to use one way consequently.</p>
+</blockquote>
 <h2 id="getting-started">Getting Started</h2>
 <p><strong>Before V2.0.0</strong>
 As Dart supports global (or euphemistic ambient) variables I decided after some discussions with Simon Lightfoot and Brian Egan to use just a simple class (so that you can if you really need even create more than one Locator although <strong>I would not advise to do that</strong>  in most cases).</p>
@@ -266,7 +269,7 @@ To synchronize with other "async Singletons" you can pass a list of <code>Type</
     Object callee,
   });
 </code></pre>
-<p>To signal that it is ready a singleton can use <code>signalReady</code> to be able to use that youo have to set the optional <code>signalsReady</code> parameter when registering it. As soon as you pass that parameter <code>allReady</code> will wait on a call to signalsReady. No automatic signalling will happen in that case.</p>
+<p>To signal that it is ready a singleton can use <code>signalReady</code> to be able to use that you have to set the optional <code>signalsReady</code> parameter when registering it OR make your registration type implement the empty abstract class <code>WillSignalReady</code>. In that case <code>allReady</code> will wait on a call to signalsReady. No automatic signalling will happen in that case.</p>
 <pre class="language-Dart"><code class="language-Dart">/// Typically this is used in this way inside the registered objects init 
 /// method `GetIt.instance.signalReady(this);`
 void signalReady(Object instance);
@@ -289,7 +292,7 @@ void signalReady(Object instance);
 This is the most basic way to synchronize your start-up. If you want to do that <strong>don't use <code>signalsReady</code> or async Singeltons</strong>!!!
 I recommend using one of the other ways because they are more flexible and express your intention more clear.</p>
 <h2 id="passing-parameters-to-factories">Passing Parameters to factories</h2>
-<p>In some cases its handy if you could pass changing values to factories when calling <code>get()</code>. For that there wrae two variants for registering factories:</p>
+<p>In some cases its handy if you could pass changing values to factories when calling <code>get()</code>. For that there are two variants for registering factories:</p>
 <pre class="language-Dart"><code class="language-Dart">  /// registers a type so that a new instance will be created on each call of [get] on that type based on
   /// up to two parameters provided to [get()]
   /// [T] type to register
@@ -391,7 +394,7 @@ GetIt myOwnInstance = GetIt.asNewInstance();
 <footer>
   <span class="no-break">
     get_it
-      4.0.0-release-candidate
+      4.0.0
   </span>
 
   <!-- footer-text placeholder -->

@@ -74,6 +74,15 @@ callable class
 Additionally GetIt offers asynchronous creation functions as well as functions to synchronize
 the async initialization of multiple Singletons
         </dd>
+        <dt id="WillSignalReady">
+          <span class="name "><a href="get_it/WillSignalReady-class.html">WillSignalReady</a></span>         
+        </dt>
+        <dd>
+          If your singleton that you register wants to use the manually signalling
+of its ready state, it can implement this interface class instead of using 
+the <code>signalsReady</code> parameter of the registration functions
+(you don't really have to implement much ;-) )
+        </dd>
       </dl>
     </section>
 
@@ -136,7 +145,7 @@ errors
           </span>
                   </dt>
         <dd>
-          For Factories that expect up to two parameters if you need only one use <code>void</code> for the one 
+          For Factories that expect up to two parameters if you need only one use <code>void</code> for the one
 you don't use
                   
 </dd>
@@ -146,7 +155,7 @@ you don't use
           </span>
                   </dt>
         <dd>
-          For async Factories that expect up to two parameters if you need only one use <code>void</code> for the one 
+          For async Factories that expect up to two parameters if you need only one use <code>void</code> for the one
 you don't use
                   
 </dd>
@@ -173,6 +182,7 @@ you don't use
     <ol>
       <li class="section-title"><a href="get_it/get_it-library.html#classes">Classes</a></li>
       <li><a href="get_it/GetIt-class.html">GetIt</a></li>
+      <li><a href="get_it/WillSignalReady-class.html">WillSignalReady</a></li>
     
     
     
@@ -199,7 +209,7 @@ you don't use
 <footer>
   <span class="no-break">
     get_it
-      4.0.0-release-candidate
+      4.0.0
   </span>
 
   <!-- footer-text placeholder -->

@@ -119,13 +119,14 @@ on the first call of <a href="get_it/GetIt/get.html">get</a> on that type
 <code>instanceName</code> if you provide a value here your factory gets registered with that
 name instead of a type. This should only be necessary if you need to register more
 than one instance of one type. Its highly not recommended
-<a href="get_it/GetIt/registerLazySingleton.html">registerLazySingleton</a> does not influence <a href="get_it/GetIt/allReady.html">allReady</a> however you can wait 
+<a href="get_it/GetIt/registerLazySingleton.html">registerLazySingleton</a> does not influence <a href="get_it/GetIt/allReady.html">allReady</a> however you can wait
 for and be dependent on a LazySingleton.</p>
     </section>
     
     <section class="summary source-code" id="source">
       <h2><span>Implementation</span></h2>
-      <pre class="language-dart"><code class="language-dart">void registerLazySingleton&lt;T&gt;(FactoryFunc&lt;T&gt; factoryfunc, {String instanceName});</code></pre>
+      <pre class="language-dart"><code class="language-dart">void registerLazySingleton&lt;T&gt;(FactoryFunc&lt;T&gt; factoryfunc,
+    {String instanceName});</code></pre>
     </section>
 
   </div> <!-- /.main-content -->
@@ -138,7 +139,7 @@ for and be dependent on a LazySingleton.</p>
 <footer>
   <span class="no-break">
     get_it
-      4.0.0-release-candidate
+      4.0.0
   </span>
 
   <!-- footer-text placeholder -->
