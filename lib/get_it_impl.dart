@@ -530,7 +530,6 @@ class _GetItImplementation implements GetIt {
     Iterable<Type> dependsOn,
     @required bool shouldSignalReady,
   }) {
-    print(T.toString());
 
     throwIf(
       (!(const Object() is! T) && (instanceName == null)),
