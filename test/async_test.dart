@@ -38,8 +38,9 @@ class TestClass extends TestBaseClass{
   }
 
   // We use this as dummy init that will return a future
-  Future init() {
-    return Future.delayed(Duration(milliseconds: 10));
+  Future<TestClass> init() async {
+    await Future.delayed(Duration(milliseconds: 10));
+    return this;
   }
 
   dispose() {
@@ -271,7 +272,7 @@ void main() {
     getIt.reset();
 
     getIt.registerSingletonAsync<TestClass>(
-      () async => TestClass(internalCompletion: false)..init(),
+      () async => TestClass(internalCompletion: false).init(),
     );
     getIt.registerSingletonAsync<TestClass2>(
       () async {

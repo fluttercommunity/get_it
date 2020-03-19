@@ -146,6 +146,28 @@ void main() {
     GetIt.I.reset();
   });
 
+
+  test('register constant', () {
+    var getIt = GetIt.instance;
+    constructorCounter = 0;
+
+    getIt.registerSingleton<TestBaseClass>(TestClass());
+
+    TestBaseClass instance1 = getIt.get();
+
+    expect(instance1 is TestClass, true);
+
+    var instance2 = getIt.get<TestBaseClass>();
+
+    expect(instance1, instance2);
+
+    expect(constructorCounter, 1);
+
+    GetIt.I.reset();
+  });
+
+
+
   test('register lazySingleton', () {
     var getIt = GetIt.instance;
     constructorCounter = 0;

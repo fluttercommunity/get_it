@@ -64,7 +64,7 @@ Widget init() {
     return configService;
   });
 
-  getIt.registerSingletonAsync<RestService>(() async => RestService()..init());
+  getIt.registerSingletonAsync<RestService>(() async => RestService().init());
 
   /// this example uses an async factory function
   getIt.registerSingletonAsync<DbService>(createDbServiceAsync,
@@ -101,10 +101,9 @@ class ConfigService {
 }
 
 class RestService {
-  Future init() async {
-  // do your async initialisation...
-  // simulating it with a Delay here
-    return Future.delayed(Duration(seconds: 2));
+  Future<RestService> init() async {
+    Future.delayed(Duration(seconds: 1));
+    return this;
   }
 }
 

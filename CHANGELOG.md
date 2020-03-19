@@ -1,3 +1,8 @@
+## [4.0.1] - 19.03.2020
+
+* overhauled readme
+* removed unnecessary print statement
+
 ## [4.0.0] - 26.02.2020
 
 * Added abstract `WillSignalReady` class

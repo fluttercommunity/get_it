@@ -2,47 +2,74 @@
 
 # get_it
 
-This is a simple **Service Locator** for Dart and Flutter projects with some additional goodies highly inspired by [Splat](https://github.com/reactiveui/splat). It can be used instead of `InheritedWidget` or `Provider`.
+This is a simple **Service Locator** for Dart and Flutter projects with some additional goodies highly inspired by [Splat](https://github.com/reactiveui/splat). It can be used instead of `InheritedWidget` or `Provider` to access objects e.g. from your UI.
 
+Typical usage:
+* Accessing service objects like REST API clients, databases so that they easily can be mocked.
+* Accessing View/AppModels/Managers/BLoCs from Flutter Views
 
 >**Breaking Change with V4.0.0** 
 Principle on how to synchronize your registered instances creation has been rethought and improved :-)
-Please see [Synchronizing asynchronous initialisations of Singletons](#synchronizing_asynchronous_initialisations_of_Singletons).
+Please see [Synchronizing asynchronous initialisations of Singletons](synchronizing_asynchronous_initialisations_of_singletons).
 
-Synchronising asynchronous creation of instances
+## Why GetIt
 
->**Breaking Change with V2.0.0** 
-you no longer can directly create instances of the type `GetIt` because `GetIt` is now a singleton please see [Getting Started](#getting-started).
+When your App grows at some point you you will start to put your app's logic in classes that are separated from your Widgets and have no dependency to Flutter which makes your code better organized and easier to test and maintain.
+But now you need a way how to access these objects from your UI code. When I came to Flutter from the .Net world the only way to do this was the use of InheritedWidgets. I found the way to use them by wrapping them in a StatefulWidget quite cumbersome and had always problems getting it updating the widgets to work. Also:
 
-
-You can find here a [detailed blog post on how to use GetIt](https://www.burkharts.net/apps/blog/one-to-find-them-all-how-to-use-service-locators-with-flutter/) and on [app start-up synchronisation](https://www.burkharts.net/apps/blog/?p=447&preview=true)
-
-
->If you are not familiar with the concept of Service Locators, its a way to decouple the interface (abstract base class) from a concrete implementation and at the same time allows to access the concrete implementation from everywhere in your App over the interface.
-> I can only highly recommend to read this classic article by from Martin Fowler [Inversion of Control Containers and the Dependency Injection  pattern](https://martinfowler.com/articles/injection.html)
+* I was missing the ability to easily switch the implementation for a business object for a mocked one without changing the UI.
+* The fact that you need a `BuildContext` to access your objects made it unusable to use them from inside the Business layer. 
 
 Accessing an object from anywhere in an App can be done by other ways too but:
 
 * If you use a Singleton you cannot easily switch the implementation to another like a mock version for unit tests
-* IoC containers for Dependency Injections offer a similar functionality but with the cost of slow start-up time and less readability because you don't know where the magically injected object come from. As most IoC libs rely on reflection they cannot be used with Flutter. 
+* IoC containers for Dependency Injections offer a similar functionality but with the cost of slow start-up time and less readability because you don't know where the magically injected object come from. As most IoC libs rely on reflection they cannot be used with Flutter.
 
+As I was used to use the Service Locator _Splat_ from .Net I decided to port it to Dart. Since then It got a lot more features.
 
-Typical usage:
-* Accessing service objects like REST API clients, databases so that they easily can be mocked.
-* Accessing View/AppModels/Managers from Flutter Views
-* Because interface and implementations are decoupled you could also register Flutter Views with different implementations and decide at start-up which one you want to use e.g. depending on screen resolutions
+>If you are not familiar with the concept of Service Locators, its a way to decouple the interface (abstract base class) from a concrete implementation and at the same time allows to access the concrete implementation from everywhere in your App over the interface.
+> I can only highly recommend to read this classic article by from Martin Fowler [Inversion of Control Containers and the Dependency Injection  pattern](https://martinfowler.com/articles/injection.html)
 
-**Extremely important if you use GetIt: ALWAYS use the same style to import your project files either as relative paths OR as package which I recommend. DON'T mix them because currently Dart treats types imported in different ways as two different types although both reference the same file.**
->This warning seems no longer be necessary according to an issue in the Dart compiler. I still would decide to use one way consequently.
+GetIt is:
+* Extremely fast (O(1))
+* Easy to learn/use
+* Doesn't clutter your UI tree with special Widgets to access your data like provider or Redux does.
 
+**GetIt isn't a state management solution!** It's a locator for your objects so you need some other way to notify your UI about changes like `Streams` or `ValueNotifiers`.
 
 ## Getting Started
 
-**Before V2.0.0**
-As Dart supports global (or euphemistic ambient) variables I decided after some discussions with Simon Lightfoot and Brian Egan to use just a simple class (so that you can if you really need even create more than one Locator although **I would not advise to do that**  in most cases).
+At your start-up you register all the objects you want to access later like this:
 
-**Since 2.0.0**
-Although the approach with a global variable worked well, it has its limitations if you want to use `GetIt` across multiple packages. Therefore now GetIt itself is a singleton and the default way to access an instance of `GetIt` is to call:
+```Dart
+final getIt = GetIt.instance;
+
+void setup() {
+  getIt.registerSingleton<AppModel>(AppModel());
+
+// Alternatively you could write it if you don't like global variables 
+  GetIt.I.registerSingleton<AppModel>(AppModel());
+}
+```
+
+After that you can access your `AppModel` class from anywhere like this:
+
+```Dart
+MaterialButton(
+  child: Text("Update"),
+  onPressed: getIt<AppModel>().update   // given that your AppModel has a method update
+),
+```
+
+
+You can find here a [detailed blog post on how to use GetIt](https://www.burkharts.net/apps/blog/one-to-find-them-all-how-to-use-service-locators-with-flutter/)
+
+
+## GetIt in Detail
+
+As Dart supports global (or euphemistic ambient) variables I often assign my GetIt instance to a global variable to make the access to it as easy as possible
+
+Although the approach with a global variable worked well, it has its limitations if you want to use `GetIt` across multiple packages. Therefore GetIt itself is a singleton and the default way to access an instance of `GetIt` is to call:
 
 ```Dart
 GetIt getIt = GetIt.instance;
@@ -55,7 +82,7 @@ Through this any call to `instance` in any package of a project will get the sam
 
 
 ```Dart
-GetIt sl = GetIt.instance;
+GetIt getIt = GetIt.instance;
 ```
 
 > You can use any name you want which makes Brian happy like (`sl, backend, services...`) ;-) 
@@ -63,26 +90,27 @@ GetIt sl = GetIt.instance;
 Before you can access your objects you have to register them within `GetIt` typically direct in your start-up code.
 
 ```Dart
-sl.registerSingleton<AppModel>(AppModelImplementation());
-sl.registerLazySingleton<RESTAPI>(() =>RestAPIImplementation());
+getIt.registerSingleton<AppModel>(AppModelImplementation());
+getIt.registerLazySingleton<RESTAPI>(() =>RestAPIImplementation());
 
 // if you want to work just with the singleton:
 GetIt.instance.registerSingleton<AppModel>(AppModelImplementation());
 GetIt.I.registerLazySingleton<RESTAPI>(() =>RestAPIImplementation());
+
+/// `AppModel` and `RESTAPI` are both abstract base classes in this example
 ```
 
->`AppModel` and `RESTAPI` are both abstract base classes in this example
 
-To access the registered objects call `get<Type>()` on your `GetIt`instance
+To access the registered objects call `get<Type>()` on your `GetIt` instance
 
 ```Dart
-var myAppModel = sl.get<AppModel>();
+var myAppModel = getIt.get<AppModel>();
 ```
 
-Alternatively as `GetIt` is a callable class depending on the name you choose for your `GetIt`instance you can use the shorter version:
+Alternatively as `GetIt` is a [callable class](https://www.w3adda.com/dart-tutorial/dart-callable-classes) depending on the name you choose for your `GetIt`instance you can use the shorter version:
 
 ```Dart
-var myAppModel = sl<AppModel>();
+var myAppModel = getIt<AppModel>();
 
 // as Singleton:
 var myAppModel = GetIt.instance<AppModel>();
@@ -92,19 +120,19 @@ var myAppModel = GetIt.I<AppModel>();
 
 ## Different ways of registration
 
->Although I always would recommend using an abstract base class as registration type so that you can vary the implementations you don't have to do this. You can also register concrete types.
 
 `GetIt` offers different ways how objects are registered that effect the lifetime of this objects.
 
-### Factory
+#### Factory
 
 ```Dart 
 void registerFactory<T>(FactoryFunc<T> func)
 ```
 
-You have to pass a factory function `func` that returns an NEW instance of an implementation of `T`. Each time you call `get<T>()` you will get a new instance returned.
+You have to pass a factory function `func` that returns an NEW instance of an implementation of `T`. Each time you call `get<T>()` you will get a new instance returned. How to pass parameters to a factory you can find [here](passing_parameters_to_factories)
 
-### Singleton && LazySingleton
+#### Singleton & LazySingleton
+>Although I always would recommend using an abstract base class as registration type so that you can vary the implementations you don't have to do this. You can also register concrete types.
 
 ```Dart
 void registerSingleton<T>(T instance) 
@@ -119,6 +147,8 @@ void registerLazySingleton<T>(FactoryFunc<T> func)
 ```
   
 You have to pass a factory function `func` that returns an instance of an implementation of `T`. Only the first time you call `get<T>()` this factory function will be called to create a new instance. After that you will always get the same instance returned.
+
+
 
 ### Overwriting registrations
 If you try to register a type more than once you will get an assertion in debug mode because normally this is not needed and not advised and probably a bug.
@@ -187,9 +217,10 @@ you can await the creation of the requested new instance.
 Future<T> getAsync<T>([String instanceName]);
 ```
 
-Additionally you can register asynchronous Singletons which means Singletons that have an initialisation that requires async function calls. To be able to control such asynchronous start-up behaviour GetIt supports mechanisms to ensure the correct initialization sequence. 
 
 ## Asynchronous Singletons 
+
+Additionally you can register asynchronous Singletons which means Singletons that have an initialisation that requires async function calls. To be able to control such asynchronous start-up behaviour GetIt supports mechanisms to ensure the correct initialization sequence. 
 
 You create an Singleton with an asynchronous creation function 
 
@@ -222,18 +253,25 @@ There are different approaches how the returned Future can be completed:
 If you register any async Singletons `allReady` will complete only after all of them have completed their factory functions. Like:
 
 ```Dart
-  /// in your setup function:
+  class RestService {
+    Future<RestService> init() async {
+      Future.delayed(Duration(seconds: 1));
+      return this;
+    }
+  }
+
   final getIt = GetIt.instance;
 
+  /// in your setup function:
   getIt.registerSingletonAsync<ConfigService>(() async {
     final configService = ConfigService();
     await configService.init();
     return configService;
   });
 
-  getIt.registerSingletonAsync<RestService>(() async => RestService()..init());
-
-  getIt.registerSingletonAsync<DbService>(createDbServiceAsync);
+  getIt.registerSingletonAsync<RestService>(() async => RestService().init());
+  // here we asume an async factory function `createDbServiceAsync`
+  getIt.registerSingletonAsync<DbService>(createDbServiceAsync); 
 
 
   /// ... in your startup page:
@@ -267,7 +305,7 @@ In case that this services have to be initialized in a certain order because the
     return configService;
   });
 
-  getIt.registerSingletonAsync<RestService>(() async => RestService()..init());
+  getIt.registerSingletonAsync<RestService>(() async => RestService().init());
 
   getIt.registerSingletonAsync<DbService>(createDbServiceAsync,
       dependsOn: [ConfigService]);
@@ -402,9 +440,9 @@ If you have a mocked version of a Service you can easily switch between that and
 
 ```Dart
   if (testing) {
-    sl.registerSingleton<AppModel>(AppModelMock());
+    getIt.registerSingleton<AppModel>(AppModelMock());
   } else {
-    sl.registerSingleton<AppModel>(AppModelImplmentation());
+    getIt.registerSingleton<AppModel>(AppModelImplmentation());
   }
 ```
 
