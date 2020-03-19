@@ -10,7 +10,7 @@ Typical usage:
 
 >**Breaking Change with V4.0.0** 
 Principle on how to synchronize your registered instances creation has been rethought and improved :-)
-Please see [Synchronizing asynchronous initialisations of Singletons](synchronizing_asynchronous_initialisations_of_singletons).
+Please see [Synchronizing asynchronous initialisations of Singletons](#synchronizing-asynchronous-initialisations-of-singletons).
 
 ## Why GetIt
 
@@ -129,7 +129,7 @@ var myAppModel = GetIt.I<AppModel>();
 void registerFactory<T>(FactoryFunc<T> func)
 ```
 
-You have to pass a factory function `func` that returns an NEW instance of an implementation of `T`. Each time you call `get<T>()` you will get a new instance returned. How to pass parameters to a factory you can find [here](passing_parameters_to_factories)
+You have to pass a factory function `func` that returns an NEW instance of an implementation of `T`. Each time you call `get<T>()` you will get a new instance returned. How to pass parameters to a factory you can find [here](#passing-parameters-to-factories)
 
 #### Singleton & LazySingleton
 >Although I always would recommend using an abstract base class as registration type so that you can vary the implementations you don't have to do this. You can also register concrete types.
@@ -290,7 +290,7 @@ If you register any async Singletons `allReady` will complete only after all of 
       });
 ```
 
-The above example shows you different ways to register async Singltons. The start-up page will display a `CircularProgressIndicator` until all services have been created.
+The above example shows you different ways to register async Singletons. The start-up page will display a `CircularProgressIndicator` until all services have been created.
 
 ### Solving dependencies
 
@@ -366,6 +366,8 @@ class ConfigService {
 By calling `signalReady(null)` on your `GetIt` instance the `Future` you can get from `allReady` will be completed.
 This is the most basic way to synchronize your start-up. If you want to do that **don't use `signalsReady` or async Singeltons**!!!
 I recommend using one of the other ways because they are more flexible and express your intention more clear.
+
+You can find here a [detailed blog post on async factories and startup synchronization](https://www.burkharts.net/apps/blog/one-to-find-them-all-how-to-use-service-locators-with-flutter/)
 
 
 ## Passing Parameters to factories
