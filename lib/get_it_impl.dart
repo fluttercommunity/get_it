@@ -153,11 +153,11 @@ class _ServiceFactory<T, P1, P2> {
         case _ServiceFactoryType.alwaysNew:
           if (asyncCreationFunctionParam != null) {
             assert(
-                param1 == null || param1.runtimeType == param1Type,
+                param1 == null || param1.runtimeType != param1Type,
                 'Incompatible Type passed a param1\n'
                 'expected: $param1Type actual: ${param1.runtimeType}');
             assert(
-                param2 == null || param2.runtimeType == param2Type,
+                param2 == null || param2.runtimeType != param2Type,
                 'Incompatible Type passed a param2\n'
                 'expected: $param2Type actual: ${param2.runtimeType}');
             return asyncCreationFunctionParam(param1 as P1, param2 as P2)
@@ -473,9 +473,7 @@ class _GetItImplementation implements GetIt {
   /// is made after completion of [factoryfunc]
   @override
   void registerSingletonAsync<T>(FactoryFuncAsync<T> providerFunc,
-      {String instanceName,
-      Iterable<Type> dependsOn,
-      bool signalsReady}) {
+      {String instanceName, Iterable<Type> dependsOn, bool signalsReady}) {
     _register<T, void, void>(
         type: _ServiceFactoryType.constant,
         instanceName: instanceName,
@@ -530,7 +528,6 @@ class _GetItImplementation implements GetIt {
     Iterable<Type> dependsOn,
     @required bool shouldSignalReady,
   }) {
-    
     throwIf(
       (!(const Object() is! T) && (instanceName == null)),
       'GetIt: You have to provide either a type or a name. Did you accidentally do  `var sl=GetIt.instance();` instead of var sl=GetIt.instance;',
