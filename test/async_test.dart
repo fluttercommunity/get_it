@@ -17,6 +17,17 @@ class TestClassParam {
   TestClassParam({this.param1, this.param2});
 }
 
+class TestParamType{
+  final String name;
+
+  TestParamType({this.name});  
+}
+
+class TestParamSubType extends TestParamType{
+
+  TestParamSubType({String name}) : super(name: name);
+}
+
 class TestClass extends TestBaseClass{
   GetIt getIt;
 
@@ -545,6 +556,28 @@ void main() {
     expect(instance2.param1, '123');
     expect(instance2.param2, 5);
   });
+
+  test('register factory with subtype of Param', () async {
+    var getIt = GetIt.instance;
+    getIt.reset();
+
+    constructorCounter = 0;
+    getIt.registerFactoryParamAsync<TestClassParam, TestParamType, void>((s, _) async {
+      await Future.delayed(Duration(milliseconds: 1));
+      return TestClassParam(param1: s.name);
+    });
+
+    //var instance1 = getIt.get<TestBaseClass>();
+
+    var instance1 = await getIt.getAsync<TestClassParam>(param1: TestParamSubType(name:'abc'));
+    var instance2 = await getIt.getAsync<TestClassParam>(param1: TestParamSubType(name:'123'));
+
+    expect(instance1 is TestClassParam, true);
+    expect(instance1.param1, 'abc');
+    expect(instance2 is TestClassParam, true);
+    expect(instance2.param1, '123');
+  });
+
 
   test('register factory with Params with wrong type', () {
     var getIt = GetIt.instance;
