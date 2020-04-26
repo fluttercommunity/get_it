@@ -104,14 +104,17 @@ class _ServiceFactory<T, P1, P2> {
       switch (factoryType) {
         case _ServiceFactoryType.alwaysNew:
           if (creationFunctionParam != null) {
-            assert(
-                param1 == null || param1.runtimeType == param1Type,
-                'Incompatible Type passed as param1\n'
-                'expected: $param1Type actual: ${param1.runtimeType}');
-            assert(
-                param2 == null || param2.runtimeType == param2Type,
-                'Incompatible Type passed as param2\n'
-                'expected: $param2Type actual: ${param2.runtimeType}');
+            // param1.runtimeType == param1Type should use 'is' but Dart does
+            // not support this comparison. For the time being it is therefore
+            // disabled
+            // assert(
+            //     param1 == null || param1.runtimeType == param1Type,
+            //     'Incompatible Type passed as param1\n'
+            //     'expected: $param1Type actual: ${param1.runtimeType}');
+            // assert(
+            //     param2 == null || param2.runtimeType == param2Type,
+            //     'Incompatible Type passed as param2\n'
+            //     'expected: $param2Type actual: ${param2.runtimeType}');
             return creationFunctionParam(param1 as P1, param2 as P2);
           } else {
             return creationFunction();
@@ -598,7 +601,7 @@ class _GetItImplementation implements GetIt {
           throwIf(dependentFactory == null,
               ArgumentError('Dependent Type $type is not registered in GetIt'));
           throwIfNot(dependentFactory.canBeWaitedFor,
-              ArgumentError('Dependent Type $type is an async Singleton'));
+              ArgumentError('Dependent Type $type is not an async Singleton'));
           dependentFactory.objectsWaiting.add(serviceFactory.registrationType);
           dependentFutureGroup.add(dependentFactory._readyCompleter.future);
         });

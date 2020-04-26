@@ -1,3 +1,9 @@
+## [4.0.2] - 26.04.2020
+
+* removed too strong type check for passed factory parameter
+* fixed error message https://github.com/fluttercommunity/get_it/issues/69
+
+
 ## [4.0.1] - 19.03.2020
 
 * overhauled readme
