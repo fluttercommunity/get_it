@@ -5,29 +5,29 @@
 This is a simple **Service Locator** for Dart and Flutter projects with some additional goodies highly inspired by [Splat](https://github.com/reactiveui/splat). It can be used instead of `InheritedWidget` or `Provider` to access objects e.g. from your UI.
 
 Typical usage:
-* Accessing service objects like REST API clients, databases so that they easily can be mocked.
+* Accessing service objects like REST API clients or databases so that they easily can be mocked.
 * Accessing View/AppModels/Managers/BLoCs from Flutter Views
 
 >**Breaking Change with V4.0.0** 
-Principle on how to synchronize your registered instances creation has been rethought and improved :-)
-Please see [Synchronizing asynchronous initialisations of Singletons](#synchronizing-asynchronous-initialisations-of-singletons).
+Principle on how to synchronize your registered instances creation has been rethought and improved :smiley:.
+Please see [Synchronizing asynchronous initializations of Singletons](#synchronizing-asynchronous-initialisations-of-singletons).
 
 ## Why GetIt
 
-When your App grows at some point you you will start to put your app's logic in classes that are separated from your Widgets and have no dependency to Flutter which makes your code better organized and easier to test and maintain.
-But now you need a way how to access these objects from your UI code. When I came to Flutter from the .Net world the only way to do this was the use of InheritedWidgets. I found the way to use them by wrapping them in a StatefulWidget quite cumbersome and had always problems getting it updating the widgets to work. Also:
+As your App grows, at some point you you will need to put your app's logic in classes that are separated from your Widgets. Keeping your widgets from having direct dependencies makes your code better organized and easier to test and maintain.
+But now you need a way to access these objects from your UI code. When I came to Flutter from the .Net world, the only way to do this was the use of InheritedWidgets. I found the way to use them by wrapping them in a StatefulWidget; quite cumbersome and has problems working consistently. Also:
 
-* I was missing the ability to easily switch the implementation for a business object for a mocked one without changing the UI.
-* The fact that you need a `BuildContext` to access your objects made it unusable to use them from inside the Business layer. 
+* I missed the ability to easily switch the implementation for a mocked version without changing the UI.
+* The fact that you need a `BuildContext` to access your objects made it inaccessible from the Business layer. 
 
-Accessing an object from anywhere in an App can be done by other ways too but:
+Accessing an object from anywhere in an App can be done by other ways, but:
 
-* If you use a Singleton you cannot easily switch the implementation to another like a mock version for unit tests
-* IoC containers for Dependency Injections offer a similar functionality but with the cost of slow start-up time and less readability because you don't know where the magically injected object come from. As most IoC libs rely on reflection they cannot be used with Flutter.
+* If you use a Singleton you can't easily switch the implementation out for a mock version in tests
+* IoC containers for Dependency Injections offers similar functionality, but with the cost of slow start-up time and less readability because you don't know where the magically injected object come from. Most IoC libs rely on reflection they cannot be ported to Flutter.
 
-As I was used to use the Service Locator _Splat_ from .Net I decided to port it to Dart. Since then It got a lot more features.
+As I was used to use the Service Locator _Splat_ from .Net, I decided to port it to Dart. Since then, more features have been added.
 
->If you are not familiar with the concept of Service Locators, its a way to decouple the interface (abstract base class) from a concrete implementation and at the same time allows to access the concrete implementation from everywhere in your App over the interface.
+>If you are not familiar with the concept of Service Locators, its a way to decouple the interface (abstract base class) from a concrete implementation, and at the same time allows to access the concrete implementation from everywhere in your App over the interface.
 > I can only highly recommend to read this classic article by from Martin Fowler [Inversion of Control Containers and the Dependency Injection  pattern](https://martinfowler.com/articles/injection.html)
 
 GetIt is:
@@ -85,7 +85,7 @@ Through this any call to `instance` in any package of a project will get the sam
 GetIt getIt = GetIt.instance;
 ```
 
-> You can use any name you want which makes Brian happy like (`sl, backend, services...`) ;-) 
+> You can use any name you want which makes you happy like (`sl, backend, services...`) ;-) 
 
 Before you can access your objects you have to register them within `GetIt` typically direct in your start-up code.
 
@@ -120,7 +120,6 @@ var myAppModel = GetIt.I<AppModel>();
 
 ## Different ways of registration
 
-
 `GetIt` offers different ways how objects are registered that effect the lifetime of this objects.
 
 #### Factory
@@ -149,9 +148,8 @@ void registerLazySingleton<T>(FactoryFunc<T> func)
 You have to pass a factory function `func` that returns an instance of an implementation of `T`. Only the first time you call `get<T>()` this factory function will be called to create a new instance. After that you will always get the same instance returned.
 
 
-
 ### Overwriting registrations
-If you try to register a type more than once you will get an assertion in debug mode because normally this is not needed and not advised and probably a bug.
+If you try to register a type more than once you will fail an assertion in debug mode because normally this is not needed and probably a bug.
 If you really have to overwrite a registration, then you can by setting the property `allowReassignment==true`. 
 
 ### Testing if a Singleton is already registered
@@ -220,7 +218,7 @@ Future<T> getAsync<T>([String instanceName]);
 
 ## Asynchronous Singletons 
 
-Additionally you can register asynchronous Singletons which means Singletons that have an initialisation that requires async function calls. To be able to control such asynchronous start-up behaviour GetIt supports mechanisms to ensure the correct initialization sequence. 
+Additionally you can register asynchronous Singletons which means Singletons that have an initialization that requires async function calls. To be able to control such asynchronous start-up behavior GetIt supports mechanisms to ensure the correct initialization sequence. 
 
 You create an Singleton with an asynchronous creation function 
 
@@ -235,11 +233,11 @@ The difference to a normal Singleton is that you don't pass an existing instance
 that returns a `Future` that completes at the end of `factoryFunc` and signals that the Singleton is ready to use unless `true` is passed for `signalsReady`. (see next chapter) 
 To synchronize with other "async Singletons" you can pass a list of `Type`s in `dependsOn` that have to be ready before the passed factory is executed.
 
-There are two possible ways to signal the system that an instance is ready.
+There are two ways to signal the system that an instance is ready.
 
-## Synchronizing asynchronous initialisations of Singletons
+## Synchronizing asynchronous initializations of Singletons
 
-Often your registered services need to do asynchronous initialization work before they can be used from the rest of the app. As this is such a common task and its closely related to registration/initialization GetIt supports you here too.
+Often your registered services need to do asynchronous initialization work before they can be used from the rest of the app. As this is such a common task, GetIt supports you here too.
 
 `GetIt` has the function `allReady` which returns `Future<void>` that can be used e.g. with a Flutter FutureBuilder to await that all asynchronous initialization is finished.
 
@@ -295,7 +293,7 @@ The above example shows you different ways to register async Singletons. The sta
 ### Solving dependencies
 
 ### Automatic using `dependsOn`
-In case that this services have to be initialized in a certain order because they depend on that other services are already ready to be used you can use the `dependsOn` parameter of `registerFactoryAsync`. If you have a non async Singleton that depends on other Singletons we have added the `registerSingletonWithDependencies`. In the following example depends `DbService` on `ConfigService` and `AppModel` on `ConfigService` and `RestService`
+In case that this services have to be initialized in a certain order because they depend on that other services are already ready to be used you can use the `dependsOn` parameter of `registerFactoryAsync`. If you have a non async Singleton that depends on other Singletons, there is `registerSingletonWithDependencies`. In the following example, `DbService` depends on `ConfigService`, and `AppModel` depends on `ConfigService` and `RestService`
 
 
 ```Dart
@@ -318,8 +316,8 @@ In case that this services have to be initialized in a certain order because the
 When using `dependsOn` you ensure that the registration waits with creating its singleton on the completion of the type defined in `dependsOn`.  
 
 
-### Manually signalling the ready state of a Singleton
-Sometimes the mechanism of `dependsOn` might not give you enough control. For this case you can use `isReady` to wait for a certain singelton:
+### Manually signaling the ready state of a Singleton
+Sometimes the mechanism of `dependsOn` might not give you enough control. For this case you can use `isReady` to wait for a certain singleton:
 
 ```Dart
   /// Returns a Future that completes if the instance of an Singleton, defined by Type [T] or 
@@ -336,7 +334,7 @@ Sometimes the mechanism of `dependsOn` might not give you enough control. For th
   });
 ```
 
-To signal that it is ready a singleton can use `signalReady` to be able to use that you have to set the optional `signalsReady` parameter when registering it OR make your registration type implement the empty abstract class `WillSignalReady`. In that case `allReady` will wait on a call to signalsReady. No automatic signalling will happen in that case.
+A singleton can manually be set to ready with `signalReady`, provided you have set the optional `signalsReady` parameter when registering it OR make your registration type implement the empty abstract class `WillSignalReady`. Otherwise, `allReady` will wait on a call to signalsReady. No automatic signaling will happen in that case.
 
 ```Dart
 /// Typically this is used in this way inside the registered objects init 
@@ -344,7 +342,7 @@ To signal that it is ready a singleton can use `signalReady` to be able to use t
 void signalReady(Object instance);
 ```
 
-For instance you can use this to initialize your Singletons without async registration by using a fire and forget async function from your constructors like
+You can use this to initialize your Singletons without async registration by using a fire and forget async function from your constructors like so:
 
 ```Dart
 class ConfigService {
@@ -364,7 +362,7 @@ class ConfigService {
 ### Manual triggering **allReady** (almost deprecated)
 
 By calling `signalReady(null)` on your `GetIt` instance the `Future` you can get from `allReady` will be completed.
-This is the most basic way to synchronize your start-up. If you want to do that **don't use `signalsReady` or async Singeltons**!!!
+This is the most basic way to synchronize your start-up. If you want to do that **don't use `signalsReady` or async Singletons**!!!
 I recommend using one of the other ways because they are more flexible and express your intention more clear.
 
 You can find here a [detailed blog post on async factories and startup synchronization](https://www.burkharts.net/apps/blog/one-to-find-them-all-how-to-use-service-locators-with-flutter/)
@@ -419,7 +417,7 @@ These parameters are passed as `dynamics` (otherwise I would have had add more g
 When you are writing unit tests with GetIt in your App you have two possibilities:
 
 * register all the Objects you need inside your unit Tests so that GetIt can provide its objects to the objects tat you are testing
-* pass your dependend objects into the constructor of you test objects like:
+* pass your dependent objects into the constructor of you test objects like:
 
 ```Dart
 GetIt getIt = GetIt.instance;
@@ -438,7 +436,7 @@ class UserManager {
 This way you don't need to pass them in the `AppModel` and `dbService` inside your App but you can pass them(or a mocked version) in your Unit tests
 
 ### Integration Tests
-If you have a mocked version of a Service you can easily switch between that and the real one based on a some flag:
+If you have a mocked version of a Service, you can easily switch between that and the real one based on a some flag:
 
 ```Dart
   if (testing) {
@@ -452,22 +450,17 @@ If you have a mocked version of a Service you can easily switch between that and
 
 ### Named registration
 
-**DON'T USE THIS IF YOU ARE REALLY KNOW WHAT YOU ARE DOING!!!**
+**DON'T USE THIS IF UNLESS REALLY KNOW WHAT YOU ARE DOING!!!**
 
-This should only be your last resort as you can loose your type safety and lead the concept of a singleton add absurdum.
-This was added following a request at https://github.com/fluttercommunity/get_it/issues/10
+This should  be your last resort as you can lose type safety.
 
-Ok you have been warned. All register functions have an optional named parameter `instanceName`. If you provide a value here 
-your factory/singleton gets registered with that name instead of a type. Consequently `get()` has also an optional parameter `instanceName` to access
+All registration functions have an optional named parameter `instanceName`. Providing a name with factory/singleton here registers that instance with that name instead of a type. Consequently `get()` has also an optional parameter `instanceName` to access
 factories/singletons that were registered by name.
 
-**IMPORTANT:** Each name for registration can only used once.  
-Both way of registration are complete separate from each other. 
-
+**IMPORTANT:** Each name must be unique.  
 
 ### More than one instance of GetIt
-Although I don't recommend it, you can create your own independent instance of `GetIt` for instance if you don't want to share your locator with some
-other package or because the physics of your planet demands it :-)
+While not recommended, you can create your own independent instance of `GetIt`. An example use-case would be package-independent dependency groups.
 
 ```Dart
 /// To make sure you really know what you are doing
@@ -476,7 +469,7 @@ GetIt.allowMultipleInstances=true;
 GetIt myOwnInstance = GetIt.asNewInstance();
 ```
 
-This new instance does not share any registrations with the singleton instance
+This new instance does not share any registrations with the singleton instance.
 
 ## Acknowledgements
 Many thanks to the insightful discussions on the API with [Brian Egan](https://github.com/brianegan) and [Simon Lightfoot](https://github.com/slightfoot)    
