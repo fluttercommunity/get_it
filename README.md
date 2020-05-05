@@ -452,7 +452,7 @@ If you have a mocked version of a Service you can easily switch between that and
 
 ### Named registration
 
-**DON'T USE THIS IF YOU ARE REALLY KNOW WHAT YOU ARE DOING!!!**
+**DON'T USE THIS UNLESS YOU REALLY KNOW WHAT YOU ARE DOING!!!**
 
 This should only be your last resort as you can loose your type safety and lead the concept of a singleton add absurdum.
 This was added following a request at https://github.com/fluttercommunity/get_it/issues/10
