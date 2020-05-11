@@ -85,7 +85,7 @@ Through this any call to `instance` in any package of a project will get the sam
 GetIt getIt = GetIt.instance;
 ```
 
-> You can use any name you want which makes you happy like (`sl, backend, services...`) ;-) 
+> You can use any name you want which makes Brian :smiley: happy like (`sl, backend, services...`) ;-) 
 
 Before you can access your objects you have to register them within `GetIt` typically direct in your start-up code.
 
@@ -149,7 +149,7 @@ You have to pass a factory function `func` that returns an instance of an implem
 
 
 ### Overwriting registrations
-If you try to register a type more than once you will fail an assertion in debug mode because normally this is not needed and probably a bug.
+If you try to register a type more than once you will fail with an assertion in debug mode because normally this is not needed and probably a bug.
 If you really have to overwrite a registration, then you can by setting the property `allowReassignment==true`. 
 
 ### Testing if a Singleton is already registered
@@ -237,7 +237,7 @@ There are two ways to signal the system that an instance is ready.
 
 ## Synchronizing asynchronous initializations of Singletons
 
-Often your registered services need to do asynchronous initialization work before they can be used from the rest of the app. As this is such a common task, GetIt supports you here too.
+Often your registered services need to do asynchronous initialization work before they can be used from the rest of the app. As this is such a common task, and its closely related to registration/initialization GetIt supports you here too.
 
 `GetIt` has the function `allReady` which returns `Future<void>` that can be used e.g. with a Flutter FutureBuilder to await that all asynchronous initialization is finished.
 
@@ -316,7 +316,7 @@ In case that this services have to be initialized in a certain order because the
 When using `dependsOn` you ensure that the registration waits with creating its singleton on the completion of the type defined in `dependsOn`.  
 
 
-### Manually signaling the ready state of a Singleton
+### Manually signalling the ready state of a Singleton
 Sometimes the mechanism of `dependsOn` might not give you enough control. For this case you can use `isReady` to wait for a certain singleton:
 
 ```Dart
@@ -334,7 +334,7 @@ Sometimes the mechanism of `dependsOn` might not give you enough control. For th
   });
 ```
 
-A singleton can manually be set to ready with `signalReady`, provided you have set the optional `signalsReady` parameter when registering it OR make your registration type implement the empty abstract class `WillSignalReady`. Otherwise, `allReady` will wait on a call to signalsReady. No automatic signaling will happen in that case.
+To signal that a singleton is ready it can use `signalReady`, provided you have set the optional `signalsReady` parameter when registering it OR make your registration type implement the empty abstract class `WillSignalReady`. Otherwise, `allReady` will wait on a call to signalsReady. No automatic signaling will happen in that case.
 
 ```Dart
 /// Typically this is used in this way inside the registered objects init 
@@ -454,13 +454,14 @@ If you have a mocked version of a Service, you can easily switch between that an
 
 This should  be your last resort as you can lose type safety.
 
-All registration functions have an optional named parameter `instanceName`. Providing a name with factory/singleton here registers that instance with that name instead of a type. Consequently `get()` has also an optional parameter `instanceName` to access
+Ok you have been warned! All registration functions have an optional named parameter `instanceName`. Providing a name with factory/singleton here registers that instance with that name instead of a type. Consequently `get()` has also an optional parameter `instanceName` to access
 factories/singletons that were registered by name.
 
 **IMPORTANT:** Each name must be unique.  
-
+Both ways of registration are completely separate from each other.
 ### More than one instance of GetIt
-While not recommended, you can create your own independent instance of `GetIt`. An example use-case would be package-independent dependency groups.
+While not recommended, you can create your own independent instance of `GetIt`if you don't want to share your locator with some
+other package or because the physics of your planet demands it :-)
 
 ```Dart
 /// To make sure you really know what you are doing
