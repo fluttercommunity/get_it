@@ -450,7 +450,8 @@ If you have a mocked version of a Service, you can easily switch between that an
 
 ### Named registration
 
-**DON'T USE THIS IF UNLESS REALLY KNOW WHAT YOU ARE DOING!!!**
+**DON'T USE THIS UNLESS YOU REALLY KNOW WHAT YOU ARE DOING!!!**
+
 
 This should  be your last resort as you can lose type safety.
 
