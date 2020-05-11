@@ -20,6 +20,7 @@ But now you need a way to access these objects from your UI code. When I came to
 * I missed the ability to easily switch the implementation for a mocked version without changing the UI.
 * The fact that you need a `BuildContext` to access your objects made it inaccessible from the Business layer. 
 
+
 Accessing an object from anywhere in an App can be done by other ways, but:
 
 * If you use a Singleton you can't easily switch the implementation out for a mock version in tests
@@ -47,7 +48,7 @@ final getIt = GetIt.instance;
 void setup() {
   getIt.registerSingleton<AppModel>(AppModel());
 
-// Alternatively you could write it if you don't like global variables 
+// Alternatively you could write it if you don't like global variables
   GetIt.I.registerSingleton<AppModel>(AppModel());
 }
 ```
@@ -85,7 +86,9 @@ Through this any call to `instance` in any package of a project will get the sam
 GetIt getIt = GetIt.instance;
 ```
 
+
 > You can use any name you want which makes Brian :smiley: happy like (`sl, backend, services...`) ;-) 
+
 
 Before you can access your objects you have to register them within `GetIt` typically direct in your start-up code.
 
@@ -124,7 +127,7 @@ var myAppModel = GetIt.I<AppModel>();
 
 #### Factory
 
-```Dart 
+```Dart
 void registerFactory<T>(FactoryFunc<T> func)
 ```
 
@@ -134,7 +137,7 @@ You have to pass a factory function `func` that returns an NEW instance of an im
 >Although I always would recommend using an abstract base class as registration type so that you can vary the implementations you don't have to do this. You can also register concrete types.
 
 ```Dart
-void registerSingleton<T>(T instance) 
+void registerSingleton<T>(T instance)
 ```
 
 You have to pass an instance of `T` or a derived class of `T` that you will always get returned on a call to `get<T>()`.
@@ -144,11 +147,12 @@ As creating this instance can be time consuming at app start-up you can shift th
 ```Dart
 void registerLazySingleton<T>(FactoryFunc<T> func)
 ```
-  
+
 You have to pass a factory function `func` that returns an instance of an implementation of `T`. Only the first time you call `get<T>()` this factory function will be called to create a new instance. After that you will always get the same instance returned.
 
 
 ### Overwriting registrations
+
 If you try to register a type more than once you will fail with an assertion in debug mode because normally this is not needed and probably a bug.
 If you really have to overwrite a registration, then you can by setting the property `allowReassignment==true`. 
 
@@ -166,13 +170,13 @@ If you need to you can also unregister your registered singletons and factories 
 
 ```Dart
 /// Unregister a factory/ singletons by Type [T] or by name [instanceName]
-/// If its a singleton/lazySingleton you can unregister an existing registered object instance 
-/// by passing it as [instance]. If a lazysingleton wasn't used before expect 
+/// If its a singleton/lazySingleton you can unregister an existing registered object instance
+/// by passing it as [instance]. If a lazysingleton wasn't used before expect
 /// this to throw an `ArgumentError`
 /// if you need to dispose any resources you can do it using [disposingFunction] function
 /// that provides a instance of your class to be disposed
 void unregister<T>({Object instance,String instanceName, void Function(T) disposingFunction})
-```  
+```
 
 ### Resetting LazySingletons
 
@@ -182,8 +186,8 @@ In some cases you might not want to unregister a LazySingleton but instead to re
   /// Clears the instance of a lazy singleton registered type, being able to call the factory function on the first call of [get] on that type.
 void resetLazySingleton<T>({Object instance,
                             String instanceName,
-                            void Function(T) disposingFunction}) 
-```                            
+                            void Function(T) disposingFunction})
+```
 
 
 ### Resetting GetIt completely
@@ -216,11 +220,12 @@ Future<T> getAsync<T>([String instanceName]);
 ```
 
 
-## Asynchronous Singletons 
+## Asynchronous Singletons
 
-Additionally you can register asynchronous Singletons which means Singletons that have an initialization that requires async function calls. To be able to control such asynchronous start-up behavior GetIt supports mechanisms to ensure the correct initialization sequence. 
+Additionally you can register asynchronous Singletons which means Singletons that have an initialisation that requires async function calls. To be able to control such asynchronous start-up behaviour GetIt supports mechanisms to ensure the correct initialization sequence.
 
-You create an Singleton with an asynchronous creation function 
+
+You create an Singleton with an asynchronous creation function
 
 ```Dart
   void registerSingletonAsync<T>(FactoryFuncAsync<T> factoryfunc,
@@ -230,7 +235,7 @@ You create an Singleton with an asynchronous creation function
 ```
 
 The difference to a normal Singleton is that you don't pass an existing instance but provide an factory function
-that returns a `Future` that completes at the end of `factoryFunc` and signals that the Singleton is ready to use unless `true` is passed for `signalsReady`. (see next chapter) 
+that returns a `Future` that completes at the end of `factoryFunc` and signals that the Singleton is ready to use unless `true` is passed for `signalsReady`. (see next chapter)
 To synchronize with other "async Singletons" you can pass a list of `Type`s in `dependsOn` that have to be ready before the passed factory is executed.
 
 There are two ways to signal the system that an instance is ready.
@@ -269,7 +274,7 @@ If you register any async Singletons `allReady` will complete only after all of 
 
   getIt.registerSingletonAsync<RestService>(() async => RestService().init());
   // here we asume an async factory function `createDbServiceAsync`
-  getIt.registerSingletonAsync<DbService>(createDbServiceAsync); 
+  getIt.registerSingletonAsync<DbService>(createDbServiceAsync);
 
 
   /// ... in your startup page:
@@ -313,17 +318,17 @@ In case that this services have to be initialized in a certain order because the
       dependsOn: [ConfigService, DbService, RestService]);
 ```
 
-When using `dependsOn` you ensure that the registration waits with creating its singleton on the completion of the type defined in `dependsOn`.  
+When using `dependsOn` you ensure that the registration waits with creating its singleton on the completion of the type defined in `dependsOn`.
 
 
 ### Manually signalling the ready state of a Singleton
 Sometimes the mechanism of `dependsOn` might not give you enough control. For this case you can use `isReady` to wait for a certain singleton:
 
 ```Dart
-  /// Returns a Future that completes if the instance of an Singleton, defined by Type [T] or 
+  /// Returns a Future that completes if the instance of an Singleton, defined by Type [T] or
   /// by name [instanceName] or by passing the an existing [instance], is ready
   /// If you pass a [timeout], an [WaitingTimeOutException] will be thrown if the instance
-  /// is not ready in the given time. The Exception contains details on which Singletons are 
+  /// is not ready in the given time. The Exception contains details on which Singletons are
   /// not ready at that time.
   /// [callee] optional parameter which makes debugging easier. Pass `this` in here.
   Future<void> isReady<T>({
@@ -337,7 +342,7 @@ Sometimes the mechanism of `dependsOn` might not give you enough control. For th
 To signal that a singleton is ready it can use `signalReady`, provided you have set the optional `signalsReady` parameter when registering it OR make your registration type implement the empty abstract class `WillSignalReady`. Otherwise, `allReady` will wait on a call to signalsReady. No automatic signaling will happen in that case.
 
 ```Dart
-/// Typically this is used in this way inside the registered objects init 
+/// Typically this is used in this way inside the registered objects init
 /// method `GetIt.instance.signalReady(this);`
 void signalReady(Object instance);
 ```
@@ -383,25 +388,25 @@ In some cases its handy if you could pass changing values to factories when call
   /// [instanceName] if you provide a value here your factory gets registered with that
   /// name instead of a type. This should only be necessary if you need to register more
   /// than one instance of one type. Its highly not recommended
-  /// 
+  ///
   /// example:
-  ///    getIt.registerFactoryParam<TestClassParam,String,int>((s,i) 
+  ///    getIt.registerFactoryParam<TestClassParam,String,int>((s,i)
   ///        => TestClassParam(param1:s, param2: i));
-  /// 
+  ///
   /// if you only use one parameter:
-  /// 
-  ///    getIt.registerFactoryParam<TestClassParam,String,void>((s,_) 
+  ///
+  ///    getIt.registerFactoryParam<TestClassParam,String,void>((s,_)
   ///        => TestClassParam(param1:s);
   void registerFactoryParam<T,P1,P2>(FactoryFuncParam<T,P1,P2> factoryfunc, {String instanceName});
 ```
 
-and 
+and
 
 ```Dart
   void registerFactoryParamAsync<T,P1,P2>(FactoryFuncParamAsync<T,P1,P2> factoryfunc, {String instanceName});
 ```
 
-The reason why I settled to use two parameters is that I can imagine some scenarios where you might want to register a builder function for Flutter Widgets that need to get passed a `BuildContext` and some data object. 
+The reason why I settled to use two parameters is that I can imagine some scenarios where you might want to register a builder function for Flutter Widgets that need to get passed a `BuildContext` and some data object.
 
 When accessing these factories you pass the parameters a optional arguments to `get()`:
 
@@ -454,11 +459,13 @@ If you have a mocked version of a Service, you can easily switch between that an
 
 This should  be your last resort as you can lose type safety.
 
+
 Ok you have been warned! All registration functions have an optional named parameter `instanceName`. Providing a name with factory/singleton here registers that instance with that name instead of a type. Consequently `get()` has also an optional parameter `instanceName` to access
 factories/singletons that were registered by name.
 
 **IMPORTANT:** Each name must be unique.  
 Both ways of registration are completely separate from each other.
+
 ### More than one instance of GetIt
 While not recommended, you can create your own independent instance of `GetIt`if you don't want to share your locator with some
 other package or because the physics of your planet demands it :-)
@@ -473,4 +480,4 @@ GetIt myOwnInstance = GetIt.asNewInstance();
 This new instance does not share any registrations with the singleton instance.
 
 ## Acknowledgements
-Many thanks to the insightful discussions on the API with [Brian Egan](https://github.com/brianegan) and [Simon Lightfoot](https://github.com/slightfoot)    
+Many thanks to the insightful discussions on the API with [Brian Egan](https://github.com/brianegan) and [Simon Lightfoot](https://github.com/slightfoot)
