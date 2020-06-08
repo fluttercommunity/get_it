@@ -6,7 +6,7 @@ This is a simple **Service Locator** for Dart and Flutter projects with some add
 
 Typical usage:
 * Accessing service objects like REST API clients or databases so that they easily can be mocked.
-* Accessing View/AppModels/Managers/BLoCs from Flutter Views
+* Accessing View/AppModels/Managers/BLoCs from Flutter Widgets
 
 >**Breaking Change with V4.0.0** 
 Principle on how to synchronize your registered instances creation has been rethought and improved :smiley:.
