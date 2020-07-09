@@ -10,7 +10,7 @@ Typical usage:
 
 >**Breaking Change with V4.0.0** 
 Principle on how to synchronize your registered instances creation has been rethought and improved :smiley:.
-Please see [Synchronizing asynchronous initializations of Singletons](#synchronizing-asynchronous-initialisations-of-singletons).
+Please see [Synchronizing asynchronous initializations of Singletons](#synchronizing-asynchronous-initializations-of-singletons).
 
 ## Why GetIt
 
