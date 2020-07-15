@@ -441,7 +441,7 @@ class UserManager {
 This way you don't need to pass them in the `AppModel` and `dbService` inside your App but you can pass them(or a mocked version) in your Unit tests.
 
 ### Integration Tests
-If you have a mocked version of a Service, you can easily switch between that and the real one based on a some flag:
+If you have a mocked version of a Service, you can easily switch between that and the real one based on a flag:
 
 ```Dart
   if (testing) {
@@ -455,7 +455,7 @@ If you have a mocked version of a Service, you can easily switch between that an
 
 ### Named registration
 
-**DON'T USE THIS IF UNLESS REALLY KNOW WHAT YOU ARE DOING!!!**
+**DON'T USE THIS UNLESS YOU REALLY KNOW WHAT YOU ARE DOING!!!**
 
 This should  be your last resort as you can lose type safety.
 
