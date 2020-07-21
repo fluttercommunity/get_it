@@ -31,7 +31,21 @@ class AppModelImplmentation extends AppModel {
 Widget init() {
   bool testing;
   // ambient variable to access the service locator
-  //GetIt getIt = GetIt.instance;
+  
+    GetIt getIt = GetIt.instance;
+
+    getIt.registerFactory<AppModel>(() => AppModelImplmentation());
+
+    GetIt.instance.registerSingleton<AppModel>(AppModelImplmentation());
+
+    GetIt.I.registerLazySingleton<AppModel>(() => AppModelImplmentation());
+
+  //   if (testing) {
+  //     sl.registerSingleton<AppModel>(AppModelMock());
+  //   } else {
+  //     sl.registerSingleton<AppModel>(AppModelImplmentation());
+  //   }
+  // }
 
   // void setup() {
   //   // sl.registerFactoryAsync<AppModel>(
@@ -42,20 +56,6 @@ Widget init() {
 
   //   // sl.registerFactoryAsync<AppModel>(
   //   //     () async => AppModelImplmentation(await restCall()));
-
-  //   // sl.registerFactory<AppModel>(() => AppModelImplmentation());
-
-  //   // sl.registerSingleton<AppModel>(AppModelImplmentation());
-
-  //   // sl.registerLazySingleton<AppModel>(() => AppModelImplmentation());
-
-  //   if (testing) {
-  //     sl.registerSingleton<AppModel>(AppModelMock());
-  //   } else {
-  //     sl.registerSingleton<AppModel>(AppModelImplmentation());
-  //   }
-  // }
-
   final getIt = GetIt.instance;
 
   getIt.registerSingletonAsync<ConfigService>(() async {
