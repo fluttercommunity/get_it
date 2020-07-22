@@ -5,6 +5,7 @@ include: package:lint/analysis_options_package.yaml
     
 linter:
   rules:
+    - always_declare_return_types
     # ------ Disable individual rules ----- #
     #                 ---                   #
     # Turn off what you don't like.         #

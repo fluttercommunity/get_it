@@ -7,12 +7,11 @@ import 'package:meta/meta.dart';
 
 part 'get_it_impl.dart';
 
-
 /// If your singleton that you register wants to use the manually signalling
-/// of its ready state, it can implement this interface class instead of using 
+/// of its ready state, it can implement this interface class instead of using
 /// the [signalsReady] parameter of the registration functions
 /// (you don't really have to implement much ;-) )
-abstract class WillSignalReady{}
+abstract class WillSignalReady {}
 
 /// Signature of the factory function used by non async factories
 typedef FactoryFunc<T> = T Function();
@@ -48,19 +47,26 @@ class WaitingTimeOutException implements Exception {
 
   @override
   String toString() {
+    // ignore: avoid_print
     print(
         'GetIt: There was a timeout while waiting for an instance to signal ready');
+    // ignore: avoid_print
     print('The following instance types where waiting for completion');
-    for (var entry in areWaitedBy.entries) {
+    for (final entry in areWaitedBy.entries) {
+      // ignore: avoid_print
       print('${entry.value} is waiting for ${entry.key}');
     }
+    // ignore: avoid_print
     print('The following instance types have NOT signalled ready yet');
-    for (var entry in notReadyYet) {
-      print('$entry');
+    for (final entry in notReadyYet) {
+      // ignore: avoid_print
+      print(entry);
     }
+    // ignore: avoid_print
     print('The following instance types HAVE signalled ready yet');
-    for (var entry in areReady) {
-      print('$entry');
+    for (final entry in areReady) {
+      // ignore: avoid_print
+      print(entry);
     }
     return super.toString();
   }
@@ -78,6 +84,7 @@ abstract class GetIt {
 
   /// access to the Singleton instance of GetIt
   static GetIt get instance {
+    // ignore: join_return_with_assignment
     _instance ??= _GetItImplementation();
     return _instance;
   }
@@ -199,9 +206,7 @@ abstract class GetIt {
   /// If [signalsReady] is set to `true` it means that the future you can get from `allReady()`
   /// cannot complete until this this instance was signalled ready by calling [signalsReady(instance)].
   void registerSingletonWithDependencies<T>(FactoryFunc<T> factoryFunc,
-      {String instanceName,
-      Iterable<Type> dependsOn,
-      bool signalsReady});
+      {String instanceName, Iterable<Type> dependsOn, bool signalsReady});
 
   /// registers a type as Singleton by passing an asynchronous factory function which has to return the instance
   /// that will be returned on each call of [get] on that type.
@@ -220,9 +225,7 @@ abstract class GetIt {
   /// this instance was signalled ready by calling [signalsReady(instance)]. In that case no automatic ready signal
   /// is made after completion of [factoryfunc]
   void registerSingletonAsync<T>(FactoryFuncAsync<T> factoryfunc,
-      {String instanceName,
-      Iterable<Type> dependsOn,
-      bool signalsReady});
+      {String instanceName, Iterable<Type> dependsOn, bool signalsReady});
 
   /// registers a type as Singleton by passing a factory function that will be called
   /// on the first call of [get] on that type
@@ -312,6 +315,7 @@ abstract class GetIt {
   /// Returns if all async Singletons are ready without waiting
   /// if [allReady] should not wait for the completion of async Signletons set
   /// [ignorePendingAsyncCreation==true]
+  // ignore: avoid_positional_boolean_parameters
   bool allReadySync([bool ignorePendingAsyncCreation = false]);
 
   /// Used to manually signal the ready state of a Singleton.

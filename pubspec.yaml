@@ -9,12 +9,12 @@ authors:
 homepage: https://github.com/fluttercommunity/get_it
 
 environment:
-  sdk: '>=2.0.0 < 3.0.0'
+  sdk: '>=2.1.0 < 3.0.0'
 
 dependencies:
   async: ^2.4.0
   meta: ^1.1.0
 
 dev_dependencies:
-  test: 
-  lint: 1.1.1
+  lint: ^1.2.0
+  test: any

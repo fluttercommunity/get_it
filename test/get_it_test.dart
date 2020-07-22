@@ -12,7 +12,7 @@ class TestClass extends TestBaseClass {
   TestClass() {
     constructorCounter++;
   }
-  dispose() {
+  void dispose() {
     disposeCounter++;
   }
 }
@@ -37,19 +37,19 @@ void main() {
   });
 
   test('register factory', () {
-    var getIt = GetIt.instance;
+    final getIt = GetIt.instance;
     getIt.reset();
 
     constructorCounter = 0;
     getIt.registerFactory<TestBaseClass>(() => TestClass());
 
-    //var instance1 = getIt.get<TestBaseClass>();
+    //final instance1 = getIt.get<TestBaseClass>();
 
-    var instance1 = getIt<TestBaseClass>();
+    final instance1 = getIt<TestBaseClass>();
 
     expect(instance1 is TestClass, true);
 
-    var instance2 = getIt.get<TestBaseClass>();
+    final instance2 = getIt.get<TestBaseClass>();
 
     expect(getIt.isRegistered<TestBaseClass>(), true);
     expect(getIt.isRegistered<TestClass2>(), false);
@@ -59,17 +59,17 @@ void main() {
   });
 
   test('register factory with one Param', () {
-    var getIt = GetIt.instance;
+    final getIt = GetIt.instance;
     getIt.reset();
 
     constructorCounter = 0;
     getIt.registerFactoryParam<TestClassParam, String, void>(
         (s, _) => TestClassParam(param1: s));
 
-    //var instance1 = getIt.get<TestBaseClass>();
+    //final instance1 = getIt.get<TestBaseClass>();
 
-    var instance1 = getIt<TestClassParam>(param1: 'abc');
-    var instance2 = getIt<TestClassParam>(param1: '123');
+    final instance1 = getIt<TestClassParam>(param1: 'abc');
+    final instance2 = getIt<TestClassParam>(param1: '123');
 
     expect(instance1 is TestClassParam, true);
     expect(instance1.param1, 'abc');
@@ -78,17 +78,17 @@ void main() {
   });
 
   test('register factory with two Params', () {
-    var getIt = GetIt.instance;
+    final getIt = GetIt.instance;
     getIt.reset();
 
     constructorCounter = 0;
     getIt.registerFactoryParam<TestClassParam, String, int>(
         (s, i) => TestClassParam(param1: s, param2: i));
 
-    //var instance1 = getIt.get<TestBaseClass>();
+    //final instance1 = getIt.get<TestBaseClass>();
 
-    var instance1 = getIt<TestClassParam>(param1: 'abc', param2: 3);
-    var instance2 = getIt<TestClassParam>(param1: '123', param2: 5);
+    final instance1 = getIt<TestClassParam>(param1: 'abc', param2: 3);
+    final instance2 = getIt<TestClassParam>(param1: '123', param2: 5);
 
     expect(instance1 is TestClassParam, true);
     expect(instance1.param1, 'abc');
@@ -99,7 +99,7 @@ void main() {
   });
 
   test('register factory with Params with wrong type', () {
-    var getIt = GetIt.instance;
+    final getIt = GetIt.instance;
     getIt.reset();
 
     constructorCounter = 0;
@@ -107,18 +107,18 @@ void main() {
         (s, i) => TestClassParam(param1: s, param2: i));
 
     expect(() => getIt.get<TestClassParam>(param1: 'abc', param2: '3'),
-        throwsA(const TypeMatcher<AssertionError>()));
+        throwsA(const TypeMatcher<TypeError>()));
   });
 
   test('register factory with access as singleton', () {
     constructorCounter = 0;
     GetIt.instance.registerFactory<TestBaseClass>(() => TestClass());
 
-    var instance1 = GetIt.I<TestBaseClass>();
+    final instance1 = GetIt.I<TestBaseClass>();
 
     expect(instance1 is TestClass, true);
 
-    var instance2 = GetIt.I.get<TestBaseClass>();
+    final instance2 = GetIt.I.get<TestBaseClass>();
 
     expect(instance1, isNot(instance2));
 
@@ -128,16 +128,16 @@ void main() {
   });
 
   test('register constant', () {
-    var getIt = GetIt.instance;
+    final getIt = GetIt.instance;
     constructorCounter = 0;
 
     getIt.registerSingleton<TestBaseClass>(TestClass());
 
-    var instance1 = getIt.get<TestBaseClass>();
+    final instance1 = getIt.get<TestBaseClass>();
 
     expect(instance1 is TestClass, true);
 
-    var instance2 = getIt.get<TestBaseClass>();
+    final instance2 = getIt.get<TestBaseClass>();
 
     expect(instance1, instance2);
 
@@ -145,19 +145,18 @@ void main() {
 
     GetIt.I.reset();
   });
-
 
   test('register constant', () {
-    var getIt = GetIt.instance;
+    final getIt = GetIt.instance;
     constructorCounter = 0;
 
     getIt.registerSingleton<TestBaseClass>(TestClass());
 
-    TestBaseClass instance1 = getIt.get();
+    final TestBaseClass instance1 = getIt.get();
 
     expect(instance1 is TestClass, true);
 
-    var instance2 = getIt.get<TestBaseClass>();
+    final instance2 = getIt.get<TestBaseClass>();
 
     expect(instance1, instance2);
 
@@ -166,21 +165,19 @@ void main() {
     GetIt.I.reset();
   });
 
-
-
   test('register lazySingleton', () {
-    var getIt = GetIt.instance;
+    final getIt = GetIt.instance;
     constructorCounter = 0;
     getIt.registerLazySingleton<TestBaseClass>(() => TestClass());
 
     expect(constructorCounter, 0);
 
-    var instance1 = getIt.get<TestBaseClass>();
+    final instance1 = getIt.get<TestBaseClass>();
 
     expect(instance1 is TestClass, true);
     expect(constructorCounter, 1);
 
-    var instance2 = getIt.get<TestBaseClass>();
+    final instance2 = getIt.get<TestBaseClass>();
 
     expect(instance1, instance2);
 
@@ -190,25 +187,25 @@ void main() {
   });
 
   test('trying to access not registered type', () {
-    var getIt = GetIt.instance;
+    final getIt = GetIt.instance;
 
-    expect(() => getIt.get<int>(), throwsA(TypeMatcher<AssertionError>()));
+    expect(
+        () => getIt.get<int>(), throwsA(const TypeMatcher<AssertionError>()));
 
     GetIt.I.reset();
   });
 
   test('register factory by Name', () {
-    var getIt = GetIt.instance;
+    final getIt = GetIt.instance;
 
     constructorCounter = 0;
     getIt.registerFactory(() => TestClass(), instanceName: 'FactoryByName');
 
-    var instance1 = getIt(instanceName: 'FactoryByName');
+    final instance1 = getIt(instanceName: 'FactoryByName');
 
     expect(instance1 is TestClass, true);
 
-    var instance2 = getIt(instanceName: 'FactoryByName');
-    ;
+    final instance2 = getIt(instanceName: 'FactoryByName');
 
     expect(instance1, isNot(instance2));
 
@@ -218,16 +215,17 @@ void main() {
   });
 
   test('register constant by name', () {
-    var getIt = GetIt.instance;
+    final getIt = GetIt.instance;
     constructorCounter = 0;
 
     getIt.registerSingleton(TestClass(), instanceName: 'ConstantByName');
 
-    var instance1 = getIt(instanceName: 'ConstantByName');
+    final instance1 = getIt(instanceName: 'ConstantByName');
 
     expect(instance1 is TestClass, true);
 
-    TestClass instance2 = getIt(instanceName: 'ConstantByName') as TestClass;
+    final TestClass instance2 =
+        getIt(instanceName: 'ConstantByName') as TestClass;
 
     expect(instance1, instance2);
 
@@ -236,18 +234,18 @@ void main() {
   });
 
   test('register lazySingleton by name', () {
-    var getIt = GetIt.instance;
+    final getIt = GetIt.instance;
     constructorCounter = 0;
     getIt.registerLazySingleton(() => TestClass(), instanceName: 'LazyByName');
 
     expect(constructorCounter, 0);
 
-    var instance1 = getIt(instanceName: 'LazyByName');
+    final instance1 = getIt(instanceName: 'LazyByName');
 
     expect(instance1 is TestClass, true);
     expect(constructorCounter, 1);
 
-    var instance2 = getIt(instanceName: 'LazyByName');
+    final instance2 = getIt(instanceName: 'LazyByName');
 
     expect(instance1, instance2);
 
@@ -256,22 +254,22 @@ void main() {
   });
 
   test('register lazy singleton two instances of GetIt', () {
-    var secondGetIt = GetIt.asNewInstance();
+    final secondGetIt = GetIt.asNewInstance();
 
     constructorCounter = 0;
     GetIt.instance.registerLazySingleton<TestBaseClass>(() => TestClass());
     secondGetIt.registerLazySingleton<TestBaseClass>(() => TestClass());
 
-    var instance1 = GetIt.I<TestBaseClass>();
+    final instance1 = GetIt.I<TestBaseClass>();
 
     expect(instance1 is TestClass, true);
 
-    var instance2 = GetIt.I.get<TestBaseClass>();
+    final instance2 = GetIt.I.get<TestBaseClass>();
 
     expect(instance1, instance2);
     expect(constructorCounter, 1);
 
-    var instanceSecondGetIt = secondGetIt.get<TestBaseClass>();
+    final instanceSecondGetIt = secondGetIt.get<TestBaseClass>();
 
     expect(instance1, isNot(instanceSecondGetIt));
     expect(constructorCounter, 2);
@@ -280,26 +278,26 @@ void main() {
   });
 
   test('trying to access not registered type by name', () {
-    var getIt = GetIt.instance;
+    final getIt = GetIt.instance;
 
     expect(() => getIt(instanceName: 'not there'),
-        throwsA(TypeMatcher<AssertionError>()));
+        throwsA(const TypeMatcher<AssertionError>()));
     GetIt.I.reset();
   });
 
   test('reset lazySingleton', () {
-    var getIt = GetIt.instance;
+    final getIt = GetIt.instance;
     constructorCounter = 0;
     getIt.registerLazySingleton<TestBaseClass>(() => TestClass());
 
     expect(constructorCounter, 0);
 
-    var instance1 = getIt.get<TestBaseClass>();
+    final instance1 = getIt.get<TestBaseClass>();
 
     expect(instance1 is TestClass, true);
     expect(constructorCounter, 1);
 
-    var instance2 = getIt.get<TestBaseClass>();
+    final instance2 = getIt.get<TestBaseClass>();
 
     expect(instance1, instance2);
 
@@ -307,7 +305,7 @@ void main() {
 
     GetIt.I.resetLazySingleton<TestBaseClass>();
 
-    var instance3 = getIt.get<TestBaseClass>();
+    final instance3 = getIt.get<TestBaseClass>();
 
     expect(instance3 is TestClass, true);
 
@@ -319,17 +317,17 @@ void main() {
   });
 
   test('unregister by instance', () {
-    var getIt = GetIt.instance;
+    final getIt = GetIt.instance;
     disposeCounter = 0;
     constructorCounter = 0;
 
     getIt.registerSingleton<TestClass>(TestClass());
 
-    var instance1 = getIt.get<TestClass>();
+    final instance1 = getIt.get<TestClass>();
 
     expect(instance1 is TestClass, true);
 
-    var instance2 = getIt.get<TestClass>();
+    final instance2 = getIt.get<TestClass>();
 
     expect(instance1, instance2);
 
@@ -343,22 +341,22 @@ void main() {
 
     expect(disposeCounter, 1);
 
-    expect(
-        () => getIt.get<TestClass>(), throwsA(TypeMatcher<AssertionError>()));
+    expect(() => getIt.get<TestClass>(),
+        throwsA(const TypeMatcher<AssertionError>()));
   });
 
   test('unregister by type', () {
-    var getIt = GetIt.instance;
+    final getIt = GetIt.instance;
     disposeCounter = 0;
     constructorCounter = 0;
 
     getIt.registerSingleton<TestClass>(TestClass());
 
-    var instance1 = getIt.get<TestClass>();
+    final instance1 = getIt.get<TestClass>();
 
     expect(instance1 is TestClass, true);
 
-    var instance2 = getIt.get<TestClass>();
+    final instance2 = getIt.get<TestClass>();
 
     expect(instance1, instance2);
 
@@ -370,18 +368,18 @@ void main() {
 
     expect(disposeCounter, 1);
 
-    expect(
-        () => getIt.get<TestClass>(), throwsA(TypeMatcher<AssertionError>()));
+    expect(() => getIt.get<TestClass>(),
+        throwsA(const TypeMatcher<AssertionError>()));
   });
 
   test('unregister by name', () {
-    var getIt = GetIt.instance;
+    final getIt = GetIt.instance;
     disposeCounter = 0;
     constructorCounter = 0;
 
     getIt.registerSingleton(TestClass(), instanceName: 'instanceName');
 
-    var instance1 = getIt.get(instanceName: 'instanceName');
+    final instance1 = getIt.get(instanceName: 'instanceName');
 
     expect(instance1 is TestClass, true);
 
@@ -394,21 +392,21 @@ void main() {
     expect(disposeCounter, 1);
 
     expect(() => getIt(instanceName: 'instanceName'),
-        throwsA(TypeMatcher<AssertionError>()));
+        throwsA(const TypeMatcher<AssertionError>()));
   });
 
   test('unregister by instance without disposing function', () {
-    var getIt = GetIt.instance;
+    final getIt = GetIt.instance;
     disposeCounter = 0;
     constructorCounter = 0;
 
     getIt.registerSingleton<TestClass>(TestClass());
 
-    var instance1 = getIt.get<TestClass>();
+    final instance1 = getIt.get<TestClass>();
 
     expect(instance1 is TestClass, true);
 
-    var instance2 = getIt.get<TestClass>();
+    final instance2 = getIt.get<TestClass>();
 
     expect(instance1, instance2);
 
@@ -418,22 +416,22 @@ void main() {
 
     expect(disposeCounter, 0);
 
-    expect(
-        () => getIt.get<TestClass>(), throwsA(TypeMatcher<AssertionError>()));
+    expect(() => getIt.get<TestClass>(),
+        throwsA(const TypeMatcher<AssertionError>()));
   });
 
   test('unregister by type without disposing function', () {
-    var getIt = GetIt.instance;
+    final getIt = GetIt.instance;
     disposeCounter = 0;
     constructorCounter = 0;
 
     getIt.registerSingleton<TestClass>(TestClass());
 
-    var instance1 = getIt.get<TestClass>();
+    final instance1 = getIt.get<TestClass>();
 
     expect(instance1 is TestClass, true);
 
-    var instance2 = getIt.get<TestClass>();
+    final instance2 = getIt.get<TestClass>();
 
     expect(instance1, instance2);
 
@@ -443,18 +441,18 @@ void main() {
 
     expect(disposeCounter, 0);
 
-    expect(
-        () => getIt.get<TestClass>(), throwsA(TypeMatcher<AssertionError>()));
+    expect(() => getIt.get<TestClass>(),
+        throwsA(const TypeMatcher<AssertionError>()));
   });
 
   test('unregister by name without disposing function', () {
-    var getIt = GetIt.instance;
+    final getIt = GetIt.instance;
     disposeCounter = 0;
     constructorCounter = 0;
 
     getIt.registerSingleton(TestClass(), instanceName: 'instanceName');
 
-    var instance1 = getIt.get(instanceName: 'instanceName');
+    final instance1 = getIt.get(instanceName: 'instanceName');
 
     expect(instance1 is TestClass, true);
 
@@ -463,7 +461,7 @@ void main() {
     expect(disposeCounter, 0);
 
     expect(() => getIt(instanceName: 'instanceName'),
-        throwsA(TypeMatcher<AssertionError>()));
+        throwsA(const TypeMatcher<AssertionError>()));
   });
 
   test(
@@ -473,7 +471,7 @@ void main() {
 
     getIt.registerSingleton(TestClass(), instanceName: 'instanceName');
 
-    var instance1 = getIt.get<TestClass>(instanceName: 'instanceName');
+    final instance1 = getIt.get<TestClass>(instanceName: 'instanceName');
 
     expect(instance1 is TestClass, true);
   });
@@ -482,7 +480,7 @@ void main() {
 
     final instance = GetIt.I<Injector>();
 
-    expect(instance, TypeMatcher<Injector>());
+    expect(instance, const TypeMatcher<Injector>());
   });
 }
 

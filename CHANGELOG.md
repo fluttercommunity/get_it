@@ -1,7 +1,7 @@
-## [4.0.3] - 22.07020
+## [4.0.3] - 22.07.2020
 
-* fixes of several typos thanks to PRs  
-* fixed error message https://github.com/fluttercommunity/get_it/issues/69
+* fixes of several typos thanks to PRs from @Bryanx, @sspatari 
+* fixed error https://github.com/fluttercommunity/get_it/issues/92
 
 ## [4.0.2] - 26.04.2020
 
