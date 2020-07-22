@@ -476,9 +476,7 @@ class _GetItImplementation implements GetIt {
   /// is made after completion of [factoryfunc]
   @override
   void registerSingletonAsync<T>(FactoryFuncAsync<T> providerFunc,
-      {String instanceName,
-      Iterable<Type> dependsOn,
-      bool signalsReady}) {
+      {String instanceName, Iterable<Type> dependsOn, bool signalsReady}) {
     _register<T, void, void>(
         type: _ServiceFactoryType.constant,
         instanceName: instanceName,
@@ -533,7 +531,6 @@ class _GetItImplementation implements GetIt {
     Iterable<Type> dependsOn,
     @required bool shouldSignalReady,
   }) {
-    
     throwIf(
       (!(const Object() is! T) && (instanceName == null)),
       'GetIt: You have to provide either a type or a name. Did you accidentally do  `var sl=GetIt.instance();` instead of var sl=GetIt.instance;',
@@ -729,13 +726,14 @@ class _GetItImplementation implements GetIt {
         instanceFactory.factoryType == _ServiceFactoryType.lazy,
         StateError(
             'There is no type ${instance.runtimeType} registered as LazySingleton in GetIt'));
-    instanceFactory.instance = null;
-    instanceFactory.pendingResult == null;
-    instanceFactory._readyCompleter = Completer();
 
     if (instanceFactory.instance != null) {
       disposingFunction?.call(instanceFactory.instance as T);
     }
+
+    instanceFactory.instance = null;
+    instanceFactory.pendingResult == null;
+    instanceFactory._readyCompleter = Completer();
   }
 
   _ServiceFactory _findFactoryByInstance(Object instance) {
