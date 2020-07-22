@@ -14,7 +14,7 @@ Please see [Synchronizing asynchronous initializations of Singletons](#synchroni
 
 ## Why GetIt
 
-As your App grows, at some point you you will need to put your app's logic in classes that are separated from your Widgets. Keeping your widgets from having direct dependencies makes your code better organized and easier to test and maintain.
+As your App grows, at some point you will need to put your app's logic in classes that are separated from your Widgets. Keeping your widgets from having direct dependencies makes your code better organized and easier to test and maintain.
 But now you need a way to access these objects from your UI code. When I came to Flutter from the .Net world, the only way to do this was the use of InheritedWidgets. I found the way to use them by wrapping them in a StatefulWidget; quite cumbersome and has problems working consistently. Also:
 
 * I missed the ability to easily switch the implementation for a mocked version without changing the UI.
@@ -28,8 +28,8 @@ Accessing an object from anywhere in an App can be done by other ways, but:
 
 As I was used to use the Service Locator _Splat_ from .Net, I decided to port it to Dart. Since then, more features have been added.
 
->If you are not familiar with the concept of Service Locators, its a way to decouple the interface (abstract base class) from a concrete implementation, and at the same time allows to access the concrete implementation from everywhere in your App over the interface.
-> I can only highly recommend to read this classic article by from Martin Fowler [Inversion of Control Containers and the Dependency Injection  pattern](https://martinfowler.com/articles/injection.html)
+>If you are not familiar with the concept of Service Locators, it's a way to decouple the interface (abstract base class) from a concrete implementation, and at the same time allows to access the concrete implementation from everywhere in your App over the interface.
+> I can only highly recommend to read this classic article by from Martin Fowler [Inversion of Control Containers and the Dependency Injection  pattern](https://martinfowler.com/articles/injection.html).
 
 GetIt is:
 * Extremely fast (O(1))
@@ -222,7 +222,7 @@ Future<T> getAsync<T>([String instanceName]);
 
 ## Asynchronous Singletons
 
-Additionally you can register asynchronous Singletons which means Singletons that have an initialisation that requires async function calls. To be able to control such asynchronous start-up behaviour GetIt supports mechanisms to ensure the correct initialization sequence.
+Additionally you can register asynchronous Singletons which means Singletons that have an initialization that requires async function calls. To be able to control such asynchronous start-up behaviour GetIt supports mechanisms to ensure the correct initialization sequence.
 
 
 You create an Singleton with an asynchronous creation function
@@ -421,8 +421,8 @@ These parameters are passed as `dynamics` (otherwise I would have had add more g
 ### Unit Tests
 When you are writing unit tests with GetIt in your App you have two possibilities:
 
-* register all the Objects you need inside your unit Tests so that GetIt can provide its objects to the objects tat you are testing
-* pass your dependent objects into the constructor of you test objects like:
+* Register all the Objects you need inside your unit Tests so that GetIt can provide its objects to the objects that you are testing.
+* Pass your dependent objects into the constructor of your test objects like:
 
 ```Dart
 GetIt getIt = GetIt.instance;
@@ -438,10 +438,10 @@ class UserManager {
 }
 ```
 
-This way you don't need to pass them in the `AppModel` and `dbService` inside your App but you can pass them(or a mocked version) in your Unit tests
+This way you don't need to pass them in the `AppModel` and `dbService` inside your App but you can pass them(or a mocked version) in your Unit tests.
 
 ### Integration Tests
-If you have a mocked version of a Service, you can easily switch between that and the real one based on a some flag:
+If you have a mocked version of a Service, you can easily switch between that and the real one based on a flag:
 
 ```Dart
   if (testing) {
@@ -455,7 +455,7 @@ If you have a mocked version of a Service, you can easily switch between that an
 
 ### Named registration
 
-**DON'T USE THIS IF UNLESS REALLY KNOW WHAT YOU ARE DOING!!!**
+**DON'T USE THIS UNLESS YOU REALLY KNOW WHAT YOU ARE DOING!!!**
 
 This should  be your last resort as you can lose type safety.
 
