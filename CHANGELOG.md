@@ -1,3 +1,7 @@
+## [4.0.4] - 22.07.2020
+
+* fixed linter errors
+
 ## [4.0.3] - 22.07.2020
 
 * fixes of several typos thanks to PRs from @Bryanx, @sspatari 
