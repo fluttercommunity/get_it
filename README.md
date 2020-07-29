@@ -447,7 +447,7 @@ If you have a mocked version of a Service, you can easily switch between that an
   if (testing) {
     getIt.registerSingleton<AppModel>(AppModelMock());
   } else {
-    getIt.registerSingleton<AppModel>(AppModelImplmentation());
+    getIt.registerSingleton<AppModel>(AppModelImplementation());
   }
 ```
 
