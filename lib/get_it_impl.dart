@@ -587,6 +587,52 @@ class _GetItImplementation implements GetIt {
     await _currentScope.reset();
   }
 
+  /// Creates a new registration scope. If you register types after creating
+  /// a new scope they will hide any previous registration of the same type.
+  /// Scopes allow you to manage different live times of your Objects.
+  /// [scopeName] if you name a scope you can pop all scopes above the named one
+  /// by using the name.
+  /// [dispose] function that will be called when you pop this scope. The scope
+  /// is still valied while it is executed
+  @override
+  void pushNewScope({String scopeName, ScopeDisposeFunc dispose}) {
+    assert(
+        _scopes.firstWhere((x) => x.name == scopeName, orElse: () => null) ==
+            null,
+        'You already have used the scope name $scopeName');
+    _scopes.add(_Scope(name: scopeName, disposeFunc: dispose));
+  }
+
+  /// Disposes all factories/Singletons that have ben registered in this scope
+  /// and pops (destroys) the scope so that the previous scope gets active again.
+  /// if you provided  dispose functions on registration, they will be called.
+  /// if you passed a dispose function when you pushed this scope it will be
+  /// calles before the scope is popped.
+  /// As dispose funcions can be async, you should await this function.
+  @override
+  Future<void> popScope() async {
+    await _currentScope.disposeFunc?.call();
+    await _currentScope.dispose();
+    _scopes.removeLast();
+  }
+
+  /// if you have a lot of scopes with names you can pop (see [popScope]) all scopes above
+  /// the scope with [name] including that scope
+  /// Scopes are poped in order from the top
+  /// As dispose funcions can be async, you should await this function.
+  @override
+  Future<bool> popScopesTill(String name) async {
+    if (_scopes.firstWhere((x) => x.name == name, orElse: () => null) == null) {
+      return false;
+    }
+    String scopeName;
+    do {
+      scopeName = _currentScope.name;
+      await popScope();
+    } while (scopeName != name);
+    return true;
+  }
+
   void _register<T, P1, P2>(
       {@required _ServiceFactoryType type,
       FactoryFunc<T> factoryFunc,
