@@ -145,23 +145,21 @@ void main() {
     GetIt.I.reset();
   });
 
-  test('register constant', () {
+  test('reset', () async {
     final getIt = GetIt.instance;
-    constructorCounter = 0;
+    int destructorCounter = 0;
 
     getIt.registerSingleton<TestBaseClass>(TestClass());
+    getIt.registerSingleton<TestBaseClass>(TestClass(),
+        instanceName: 'instance2', dispose: (_) {
+      destructorCounter++;
+    });
 
-    final TestBaseClass instance1 = getIt.get();
+    await getIt.reset();
+    expect(() => getIt.get<TestClass>(),
+        throwsA(const TypeMatcher<AssertionError>()));
 
-    expect(instance1 is TestClass, true);
-
-    final instance2 = getIt.get<TestBaseClass>();
-
-    expect(instance1, instance2);
-
-    expect(constructorCounter, 1);
-
-    GetIt.I.reset();
+    expect(destructorCounter, 1);
   });
 
   test('register lazySingleton', () {

@@ -37,7 +37,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   @override
-  initState() {
+  void initState() {
     // Access the instance of the registered AppModel
     // As we don't know for sure if AppModel is already ready we use getAsync
     getIt
@@ -55,7 +55,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.dispose();
   }
 
-  update() => setState(() => {});
+  void update() => setState(() => {});
 
   @override
   Widget build(BuildContext context) {

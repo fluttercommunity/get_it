@@ -43,6 +43,9 @@ class _ServiceFactory<T, P1, P2> {
   final FactoryFuncParam<T, P1, P2> creationFunctionParam;
   final FactoryFuncParamAsync<T, P1, P2> asyncCreationFunctionParam;
 
+  ///  Dispose function that is used when a scope is popped
+  final DisposingFunc<T> disposeFunction;
+
   /// In case of a named registration the instance name is here stored for easy access
   final String instanceName;
 
@@ -77,21 +80,24 @@ class _ServiceFactory<T, P1, P2> {
 
   final bool shouldSignalReady;
 
-  _ServiceFactory(
-    this.factoryType, {
-    this.creationFunction,
-    this.asyncCreationFunction,
-    this.creationFunctionParam,
-    this.asyncCreationFunctionParam,
-    this.instance,
-    this.isAsync = false,
-    this.instanceName,
-    @required this.shouldSignalReady,
-  }) {
+  _ServiceFactory(this.factoryType,
+      {this.creationFunction,
+      this.asyncCreationFunction,
+      this.creationFunctionParam,
+      this.asyncCreationFunctionParam,
+      this.instance,
+      this.isAsync = false,
+      this.instanceName,
+      @required this.shouldSignalReady,
+      this.disposeFunction}) {
     registrationType = T;
     param1Type = P1;
     param2Type = P2;
     _readyCompleter = Completer();
+  }
+
+  FutureOr dispose() {
+    return disposeFunction?.call(instance as T);
   }
 
   /// returns an instance depending on the type of the registration if [async==false]
@@ -403,13 +409,16 @@ class _GetItImplementation implements GetIt {
   /// [registerLazySingleton] does not influence [allReady] however you can wait
   /// for and be dependent on a LazySingleton.
   @override
-  void registerLazySingleton<T>(FactoryFunc<T> func, {String instanceName}) {
+  void registerLazySingleton<T>(FactoryFunc<T> func,
+      {String instanceName, DisposingFunc<T> dispose}) {
     _register<T, void, void>(
-        type: _ServiceFactoryType.lazy,
-        instanceName: instanceName,
-        factoryFunc: func,
-        isAsync: false,
-        shouldSignalReady: false);
+      type: _ServiceFactoryType.lazy,
+      instanceName: instanceName,
+      factoryFunc: func,
+      isAsync: false,
+      shouldSignalReady: false,
+      disposeFunc: dispose,
+    );
   }
 
   /// registers a type as Singleton by passing an [instance] of that type
@@ -425,13 +434,16 @@ class _GetItImplementation implements GetIt {
     T instance, {
     String instanceName,
     bool signalsReady,
+    DisposingFunc<T> dispose,
   }) {
     _register<T, void, void>(
-        type: _ServiceFactoryType.constant,
-        instanceName: instanceName,
-        instance: instance,
-        isAsync: false,
-        shouldSignalReady: signalsReady ?? <T>[] is List<WillSignalReady>);
+      type: _ServiceFactoryType.constant,
+      instanceName: instanceName,
+      instance: instance,
+      isAsync: false,
+      shouldSignalReady: signalsReady ?? <T>[] is List<WillSignalReady>,
+      disposeFunc: dispose,
+    );
   }
 
   /// registers a type as Singleton by passing an factory function of that type
@@ -452,14 +464,17 @@ class _GetItImplementation implements GetIt {
     String instanceName,
     Iterable<Type> dependsOn,
     bool signalsReady,
+    DisposingFunc<T> dispose,
   }) {
     _register<T, void, void>(
-        type: _ServiceFactoryType.constant,
-        instanceName: instanceName,
-        isAsync: false,
-        factoryFunc: providerFunc,
-        dependsOn: dependsOn,
-        shouldSignalReady: signalsReady ?? <T>[] is List<WillSignalReady>);
+      type: _ServiceFactoryType.constant,
+      instanceName: instanceName,
+      isAsync: false,
+      factoryFunc: providerFunc,
+      dependsOn: dependsOn,
+      shouldSignalReady: signalsReady ?? <T>[] is List<WillSignalReady>,
+      disposeFunc: dispose,
+    );
   }
 
   /// registers a type as Singleton by passing an asynchronous factory function which has to return the instance
@@ -480,14 +495,19 @@ class _GetItImplementation implements GetIt {
   /// is made after completion of [factoryfunc]
   @override
   void registerSingletonAsync<T>(FactoryFuncAsync<T> providerFunc,
-      {String instanceName, Iterable<Type> dependsOn, bool signalsReady}) {
+      {String instanceName,
+      Iterable<Type> dependsOn,
+      bool signalsReady,
+      DisposingFunc<T> dispose}) {
     _register<T, void, void>(
-        type: _ServiceFactoryType.constant,
-        instanceName: instanceName,
-        isAsync: true,
-        factoryFuncAsync: providerFunc,
-        dependsOn: dependsOn,
-        shouldSignalReady: signalsReady ?? <T>[] is List<WillSignalReady>);
+      type: _ServiceFactoryType.constant,
+      instanceName: instanceName,
+      isAsync: true,
+      factoryFuncAsync: providerFunc,
+      dependsOn: dependsOn,
+      shouldSignalReady: signalsReady ?? <T>[] is List<WillSignalReady>,
+      disposeFunc: dispose,
+    );
   }
 
   /// registers a type as Singleton by passing a async factory function that will be called
@@ -507,34 +527,38 @@ class _GetItImplementation implements GetIt {
   /// for and be dependent on a LazySingleton.
   @override
   void registerLazySingletonAsync<T>(FactoryFuncAsync<T> func,
-      {String instanceName}) {
+      {String instanceName, DisposingFunc<T> dispose}) {
     _register<T, void, void>(
-        isAsync: true,
-        type: _ServiceFactoryType.lazy,
-        instanceName: instanceName,
-        factoryFuncAsync: func,
-        shouldSignalReady: false);
+      isAsync: true,
+      type: _ServiceFactoryType.lazy,
+      instanceName: instanceName,
+      factoryFuncAsync: func,
+      shouldSignalReady: false,
+      disposeFunc: dispose,
+    );
   }
 
   /// Clears all registered types. Handy when writing unit tests
   @override
-  void reset() {
-    _factoriesByName.clear();
+  Future<void> reset() async {
+    for (final _factory in _allFactories) {
+      await _factory.dispose();
+    }
     _factoriesByName.clear();
   }
 
-  void _register<T, P1, P2>({
-    @required _ServiceFactoryType type,
-    FactoryFunc<T> factoryFunc,
-    FactoryFuncParam<T, P1, P2> factoryFuncParam,
-    FactoryFuncAsync<T> factoryFuncAsync,
-    FactoryFuncParamAsync<T, P1, P2> factoryFuncParamAsync,
-    T instance,
-    @required String instanceName,
-    @required bool isAsync,
-    Iterable<Type> dependsOn,
-    @required bool shouldSignalReady,
-  }) {
+  void _register<T, P1, P2>(
+      {@required _ServiceFactoryType type,
+      FactoryFunc<T> factoryFunc,
+      FactoryFuncParam<T, P1, P2> factoryFuncParam,
+      FactoryFuncAsync<T> factoryFuncAsync,
+      FactoryFuncParamAsync<T, P1, P2> factoryFuncParamAsync,
+      T instance,
+      @required String instanceName,
+      @required bool isAsync,
+      Iterable<Type> dependsOn,
+      @required bool shouldSignalReady,
+      DisposingFunc<T> disposeFunc}) {
     throwIfNot(
       const Object() is! T,
       'GetIt: You have to provide type. Did you accidentally do  `var sl=GetIt.instance();` instead of var sl=GetIt.instance;',
@@ -548,17 +572,16 @@ class _GetItImplementation implements GetIt {
             'Object/factory with ${instanceName != null ? 'with name $instanceName and ' : ''}'
             ' type ${T.toString()} is already registered inside GetIt. '));
 
-    final serviceFactory = _ServiceFactory<T, P1, P2>(
-      type,
-      creationFunction: factoryFunc,
-      creationFunctionParam: factoryFuncParam,
-      asyncCreationFunctionParam: factoryFuncParamAsync,
-      asyncCreationFunction: factoryFuncAsync,
-      instance: instance,
-      isAsync: isAsync,
-      instanceName: instanceName,
-      shouldSignalReady: shouldSignalReady,
-    );
+    final serviceFactory = _ServiceFactory<T, P1, P2>(type,
+        creationFunction: factoryFunc,
+        creationFunctionParam: factoryFuncParam,
+        asyncCreationFunctionParam: factoryFuncParamAsync,
+        asyncCreationFunction: factoryFuncAsync,
+        instance: instance,
+        isAsync: isAsync,
+        instanceName: instanceName,
+        shouldSignalReady: shouldSignalReady,
+        disposeFunction: disposeFunc);
 
     _factoriesByName.putIfAbsent(instanceName,
         () => <Type, _ServiceFactory<dynamic, dynamic, dynamic>>{});

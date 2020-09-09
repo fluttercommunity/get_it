@@ -23,6 +23,11 @@ typedef FactoryFuncParam<T, P1, P2> = T Function(P1 param1, P2 param2);
 /// Signature of the factory function used by async factories
 typedef FactoryFuncAsync<T> = Future<T> Function();
 
+/// Signature for disposing function
+/// because closures like `(x){}` have a return type of Null we don't use `FutureOr<void>`
+/// ignore: prefer_void_to_null
+typedef DisposingFunc<T> = FutureOr Function(T param);
+
 /// For async Factories that expect up to two parameters if you need only one use `void` for the one
 /// you don't use
 typedef FactoryFuncParamAsync<T, P1, P2> = Future<T> Function(
@@ -191,7 +196,7 @@ abstract class GetIt {
   /// If [signalsReady] is set to `true` it means that the future you can get from `allReady()`
   /// cannot complete until this this instance was signalled ready by calling [signalsReady(instance)].
   void registerSingleton<T>(T instance,
-      {String instanceName, bool signalsReady});
+      {String instanceName, bool signalsReady, DisposingFunc<T> dispose});
 
   /// registers a type as Singleton by passing an factory function of that type
   /// that will be called on each call of [get] on that type
@@ -206,7 +211,10 @@ abstract class GetIt {
   /// If [signalsReady] is set to `true` it means that the future you can get from `allReady()`
   /// cannot complete until this this instance was signalled ready by calling [signalsReady(instance)].
   void registerSingletonWithDependencies<T>(FactoryFunc<T> factoryFunc,
-      {String instanceName, Iterable<Type> dependsOn, bool signalsReady});
+      {String instanceName,
+      Iterable<Type> dependsOn,
+      bool signalsReady,
+      DisposingFunc<T> dispose});
 
   /// registers a type as Singleton by passing an asynchronous factory function which has to return the instance
   /// that will be returned on each call of [get] on that type.
@@ -225,7 +233,10 @@ abstract class GetIt {
   /// this instance was signalled ready by calling [signalsReady(instance)]. In that case no automatic ready signal
   /// is made after completion of [factoryfunc]
   void registerSingletonAsync<T>(FactoryFuncAsync<T> factoryfunc,
-      {String instanceName, Iterable<Type> dependsOn, bool signalsReady});
+      {String instanceName,
+      Iterable<Type> dependsOn,
+      bool signalsReady,
+      DisposingFunc<T> dispose});
 
   /// registers a type as Singleton by passing a factory function that will be called
   /// on the first call of [get] on that type
@@ -237,7 +248,7 @@ abstract class GetIt {
   /// [registerLazySingleton] does not influence [allReady] however you can wait
   /// for and be dependent on a LazySingleton.
   void registerLazySingleton<T>(FactoryFunc<T> factoryfunc,
-      {String instanceName});
+      {String instanceName, DisposingFunc<T> dispose});
 
   /// registers a type as Singleton by passing a async factory function that will be called
   /// on the first call of [getAsnc] on that type
@@ -255,14 +266,14 @@ abstract class GetIt {
   /// [registerLazySingletonAsync] does not influence [allReady] however you can wait
   /// for and be dependent on a LazySingleton.
   void registerLazySingletonAsync<T>(FactoryFuncAsync<T> factoryFunc,
-      {String instanceName});
+      {String instanceName, DisposingFunc<T> dispose});
 
   /// Tests if an [instance] of an object or aType [T] or a name [instanceName]
   /// is registered inside GetIt
   bool isRegistered<T>({Object instance, String instanceName});
 
   /// Clears all registered types. Handy when writing unit tests
-  void reset();
+  Future<void> reset();
 
   /// Clears the instance of a lazy singleton,
   /// being able to call the factory function on the next call
@@ -270,7 +281,8 @@ abstract class GetIt {
   /// you select the lazy Singleton you want to reset by either providing
   /// an [instance], its registered type [T] or its registration name.
   /// if you need to dispose some resources before the reset, you can
-  /// provide a [disposingFunction]
+  /// provide a [disposingFunction]. This function overrides the disposing
+  /// you might have provided when registering.
   void resetLazySingleton<T>(
       {Object instance,
       String instanceName,
@@ -278,7 +290,8 @@ abstract class GetIt {
 
   /// Unregister an [instance] of an object or a factory/singleton by Type [T] or by name [instanceName]
   /// if you need to dispose any resources you can do it using [disposingFunction] function
-  /// that provides a instance of your class to be disposed
+  /// that provides a instance of your class to be disposed. This function overrides the disposing
+  /// you might have provided when registering.
   void unregister<T>(
       {Object instance,
       String instanceName,
