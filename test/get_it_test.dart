@@ -30,9 +30,9 @@ class TestClassParam {
 }
 
 void main() {
-  setUp(() {
+  setUp(() async {
     //make sure the instance is cleared before each test
-    GetIt.I.reset();
+    await GetIt.I.reset();
   });
 
   test('register factory', () {

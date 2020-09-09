@@ -25,8 +25,10 @@ typedef FactoryFuncAsync<T> = Future<T> Function();
 
 /// Signature for disposing function
 /// because closures like `(x){}` have a return type of Null we don't use `FutureOr<void>`
-/// ignore: prefer_void_to_null
 typedef DisposingFunc<T> = FutureOr Function(T param);
+
+/// Signature for disposing function on scope level
+typedef ScopeDisposeFunc = FutureOr Function();
 
 /// For async Factories that expect up to two parameters if you need only one use `void` for the one
 /// you don't use
@@ -273,7 +275,10 @@ abstract class GetIt {
   bool isRegistered<T>({Object instance, String instanceName});
 
   /// Clears all registered types. Handy when writing unit tests
-  Future<void> reset();
+  Future<void> reset({bool noDisposal = false});
+
+  /// Clears all registered types
+  Future<void> resetScope({bool noDisposal = false});
 
   /// Clears the instance of a lazy singleton,
   /// being able to call the factory function on the next call

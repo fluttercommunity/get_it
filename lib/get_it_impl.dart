@@ -224,9 +224,33 @@ class _ServiceFactory<T, P1, P2> {
   }
 }
 
-class _GetItImplementation implements GetIt {
-  final _factoriesByName =
+class _Scope {
+  final String name;
+  final ScopeDisposeFunc disposeFunc;
+  final factoriesByName =
       <String, Map<Type, _ServiceFactory<dynamic, dynamic, dynamic>>>{};
+
+  _Scope({this.name, this.disposeFunc});
+
+  Future<void> reset() async {
+    for (final _factory in allFactories) {
+      await _factory.dispose();
+    }
+    factoriesByName.clear();
+  }
+
+  List<_ServiceFactory> get allFactories => factoriesByName.values
+      .fold<List<_ServiceFactory>>([], (sum, x) => sum..addAll(x.values));
+
+  Future<void> dispose() async {
+    await disposeFunc?.call();
+  }
+}
+
+class _GetItImplementation implements GetIt {
+  final _scopes = [_Scope(name: 'baseScope')];
+
+  _Scope get _currentScope => _scopes.last;
 
   /// We still support a global ready signal mechanism for that we use this
   /// Completer.
@@ -249,10 +273,14 @@ class _GetItImplementation implements GetIt {
 
     _ServiceFactory<T, dynamic, dynamic> instanceFactory;
 
-    final factoryByTypes = _factoriesByName[instanceName];
-    instanceFactory = factoryByTypes != null
-        ? factoryByTypes[T] as _ServiceFactory<T, dynamic, dynamic>
-        : null;
+    int scopeLevel = _scopes.length - 1;
+    while (instanceFactory == null && scopeLevel >= 0) {
+      final factoryByTypes = _scopes[scopeLevel].factoriesByName[instanceName];
+      instanceFactory = factoryByTypes != null
+          ? factoryByTypes[T] as _ServiceFactory<T, dynamic, dynamic>
+          : null;
+      scopeLevel--;
+    }
     assert(
         instanceFactory != null,
         'Object/factory with ${instanceName != null ? 'with name $instanceName and ' : ''}'
@@ -540,11 +568,23 @@ class _GetItImplementation implements GetIt {
 
   /// Clears all registered types. Handy when writing unit tests
   @override
-  Future<void> reset() async {
-    for (final _factory in _allFactories) {
-      await _factory.dispose();
+  Future<void> reset({bool noDisposal = false}) async {
+    if (!noDisposal) {
+      for (int level = _scopes.length - 1; level >= 0; level--) {
+        await _scopes[level].dispose();
+        await _scopes[level].reset();
+      }
     }
-    _factoriesByName.clear();
+    _scopes.removeRange(1, _scopes.length);
+  }
+
+  /// Clears all registered types of the current scope.
+  @override
+  Future<void> resetScope({bool noDisposal = false}) async {
+    if (!noDisposal) {
+      await _currentScope.dispose();
+    }
+    await _currentScope.reset();
   }
 
   void _register<T, P1, P2>(
@@ -563,10 +603,10 @@ class _GetItImplementation implements GetIt {
       const Object() is! T,
       'GetIt: You have to provide type. Did you accidentally do  `var sl=GetIt.instance();` instead of var sl=GetIt.instance;',
     );
-
+    final factoriesByName = _currentScope.factoriesByName;
     throwIf(
-        _factoriesByName.containsKey(instanceName) &&
-            _factoriesByName[instanceName].containsKey(T) &&
+        factoriesByName.containsKey(instanceName) &&
+            factoriesByName[instanceName].containsKey(T) &&
             !allowReassignment,
         ArgumentError(
             'Object/factory with ${instanceName != null ? 'with name $instanceName and ' : ''}'
@@ -583,9 +623,9 @@ class _GetItImplementation implements GetIt {
         shouldSignalReady: shouldSignalReady,
         disposeFunction: disposeFunc);
 
-    _factoriesByName.putIfAbsent(instanceName,
+    factoriesByName.putIfAbsent(instanceName,
         () => <Type, _ServiceFactory<dynamic, dynamic, dynamic>>{});
-    _factoriesByName[instanceName][T] = serviceFactory;
+    factoriesByName[instanceName][T] = serviceFactory;
 
     // simple Singletons get creates immediately
     if (type == _ServiceFactoryType.constant &&
@@ -616,7 +656,7 @@ class _GetItImplementation implements GetIt {
         final dependentFutureGroup = FutureGroup();
 
         for (final type in dependsOn) {
-          final dependentFactory = _factoriesByName[null][type];
+          final dependentFactory = factoriesByName[null][type];
           throwIf(dependentFactory == null,
               ArgumentError('Dependent Type $type is not registered in GetIt'));
           throwIfNot(dependentFactory.canBeWaitedFor,
@@ -717,7 +757,7 @@ class _GetItImplementation implements GetIt {
         StateError(
             'There are still other objects waiting for this instance so signal ready'));
 
-    _factoriesByName[factoryToRemove.instanceName]
+    _currentScope.factoriesByName[factoryToRemove.instanceName]
         .remove(factoryToRemove.registrationType);
 
     if (factoryToRemove.instance != null) {
@@ -758,8 +798,8 @@ class _GetItImplementation implements GetIt {
     instanceFactory._readyCompleter = Completer();
   }
 
-  List<_ServiceFactory> get _allFactories => _factoriesByName.values
-      .fold<List<_ServiceFactory>>([], (sum, x) => sum..addAll(x.values));
+  List<_ServiceFactory> get _allFactories => _scopes
+      .fold<List<_ServiceFactory>>([], (sum, x) => sum..addAll(x.allFactories));
 
   _ServiceFactory _findFactoryByInstance(Object instance) {
     final registeredFactories =

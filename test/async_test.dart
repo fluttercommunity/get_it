@@ -82,6 +82,11 @@ class TestClass4 extends TestClass {
 }
 
 void main() {
+  setUp(() async {
+    //make sure the instance is cleared before each test
+    await GetIt.I.reset();
+  });
+
   /// This is the most basic sync functionality. Not sure if we should keep it.
   test('manual ready future test', () async {
     final getIt = GetIt.instance;
@@ -107,7 +112,7 @@ void main() {
       'signalReady will throw if any async Singletons have not signaled completion',
       () async {
     final getIt = GetIt.instance;
-    getIt.reset();
+    await getIt.reset();
 
     getIt.registerSingletonAsync<TestClass>(
       () => Future.delayed(const Duration(milliseconds: 1))
@@ -146,7 +151,6 @@ void main() {
       'signalReady will throw if any Singletons that has signalsReads==true '
       'have not signaled completion', () async {
     final getIt = GetIt.instance;
-    getIt.reset();
 
     getIt.registerSingletonAsync<TestClass>(
         () => Future.delayed(const Duration(milliseconds: 1))
@@ -173,7 +177,6 @@ void main() {
   });
   test('all ready ignoring pending async Singletons', () async {
     final getIt = GetIt.instance;
-    getIt.reset();
 
     getIt.registerSingletonAsync<TestClass>(
       () => Future.delayed(const Duration(milliseconds: 100))
@@ -203,7 +206,6 @@ void main() {
       'Normal Singletons, ready with internal signalling setting signalsReady parameter',
       () async {
     final getIt = GetIt.instance;
-    getIt.reset();
     errorCounter = 0;
 
     getIt.registerSingleton<TestClass>(
@@ -229,7 +231,6 @@ void main() {
       'Normal Singletons,ready with internal signalling relying on implementing WillSignalReady interface',
       () async {
     final getIt = GetIt.instance;
-    getIt.reset();
     errorCounter = 0;
 
     getIt.registerSingleton<TestClassWillSignalReady>(
@@ -253,7 +254,6 @@ void main() {
 
   test('ready external signalling', () async {
     final getIt = GetIt.instance;
-    getIt.reset();
 
     getIt.registerSingleton<TestClass>(
         TestClass(internalCompletion: false, getIt: getIt),
@@ -353,7 +353,6 @@ void main() {
 
   test('ready automatic synchronisation of sequence', () async {
     final getIt = GetIt.instance;
-    getIt.reset();
     errorCounter = 0;
     var flag1 = false;
 
@@ -403,7 +402,6 @@ void main() {
   test('ready automatic synchronisation of sequence with following getAsync',
       () async {
     final getIt = GetIt.instance;
-    getIt.reset();
     errorCounter = 0;
     var flag1 = false;
     var flag2 = false;
@@ -458,7 +456,6 @@ void main() {
 
   test('allReady will throw after timeout', () async {
     final getIt = GetIt.instance;
-    getIt.reset();
 
     getIt.registerSingletonAsync<TestClass>(
         () async => TestClass(internalCompletion: false, getIt: getIt),
@@ -514,7 +511,6 @@ void main() {
 
   test('register factory with one Param', () async {
     final getIt = GetIt.instance;
-    getIt.reset();
 
     constructorCounter = 0;
     getIt.registerFactoryParamAsync<TestClassParam, String, void>((s, _) async {
@@ -535,7 +531,6 @@ void main() {
 
   test('register factory with two Params', () async {
     final getIt = GetIt.instance;
-    getIt.reset();
 
     constructorCounter = 0;
     getIt.registerFactoryParamAsync<TestClassParam, String, int>((s, i) async {
@@ -611,7 +606,6 @@ void main() {
 
   test('asyncLazySingleton called with get after wait for ready', () async {
     final getIt = GetIt.instance;
-    getIt.reset();
 
     getIt.registerLazySingletonAsync<TestClass>(
       () => Future.value(TestClass(internalCompletion: false)),
