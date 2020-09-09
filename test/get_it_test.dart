@@ -1,6 +1,5 @@
-import 'package:test/test.dart';
-
 import 'package:get_it/get_it.dart';
+import 'package:test/test.dart';
 
 int constructorCounter = 0;
 int disposeCounter = 0;
@@ -201,11 +200,12 @@ void main() {
     constructorCounter = 0;
     getIt.registerFactory(() => TestClass(), instanceName: 'FactoryByName');
 
-    final instance1 = getIt(instanceName: 'FactoryByName');
+    final instance1 = getIt<TestClass>(instanceName: 'FactoryByName');
 
     expect(instance1 is TestClass, true);
 
-    final instance2 = getIt(instanceName: 'FactoryByName');
+    // ignore: prefer_final_locals
+    TestClass instance2 = getIt(instanceName: 'FactoryByName');
 
     expect(instance1, isNot(instance2));
 
@@ -220,12 +220,11 @@ void main() {
 
     getIt.registerSingleton(TestClass(), instanceName: 'ConstantByName');
 
-    final instance1 = getIt(instanceName: 'ConstantByName');
+    final instance1 = getIt<TestClass>(instanceName: 'ConstantByName');
 
     expect(instance1 is TestClass, true);
 
-    final TestClass instance2 =
-        getIt(instanceName: 'ConstantByName') as TestClass;
+    final TestClass instance2 = getIt(instanceName: 'ConstantByName');
 
     expect(instance1, instance2);
 
@@ -236,16 +235,17 @@ void main() {
   test('register lazySingleton by name', () {
     final getIt = GetIt.instance;
     constructorCounter = 0;
-    getIt.registerLazySingleton(() => TestClass(), instanceName: 'LazyByName');
+    getIt.registerLazySingleton<TestBaseClass>(() => TestClass(),
+        instanceName: 'LazyByName');
 
     expect(constructorCounter, 0);
 
-    final instance1 = getIt(instanceName: 'LazyByName');
+    final instance1 = getIt<TestBaseClass>(instanceName: 'LazyByName');
 
     expect(instance1 is TestClass, true);
     expect(constructorCounter, 1);
 
-    final instance2 = getIt(instanceName: 'LazyByName');
+    final instance2 = getIt<TestBaseClass>(instanceName: 'LazyByName');
 
     expect(instance1, instance2);
 
@@ -378,12 +378,14 @@ void main() {
     constructorCounter = 0;
 
     getIt.registerSingleton(TestClass(), instanceName: 'instanceName');
+    getIt.registerSingleton(TestClass(), instanceName: 'instanceName2');
+    getIt.registerSingleton(TestClass2(), instanceName: 'instanceName');
 
-    final instance1 = getIt.get(instanceName: 'instanceName');
+    final TestClass instance1 = getIt.get(instanceName: 'instanceName');
 
     expect(instance1 is TestClass, true);
 
-    getIt.unregister(
+    getIt.unregister<TestClass>(
         instanceName: 'instanceName',
         disposingFunction: (testClass) {
           testClass.dispose();
@@ -391,8 +393,12 @@ void main() {
 
     expect(disposeCounter, 1);
 
-    expect(() => getIt(instanceName: 'instanceName'),
+    expect(() => getIt<TestClass>(instanceName: 'instanceName'),
         throwsA(const TypeMatcher<AssertionError>()));
+    expect(getIt<TestClass>(instanceName: 'instanceName2'),
+        const TypeMatcher<TestClass>());
+    expect(getIt<TestClass2>(instanceName: 'instanceName'),
+        const TypeMatcher<TestClass2>());
   });
 
   test('unregister by instance without disposing function', () {
@@ -452,15 +458,15 @@ void main() {
 
     getIt.registerSingleton(TestClass(), instanceName: 'instanceName');
 
-    final instance1 = getIt.get(instanceName: 'instanceName');
+    final instance1 = getIt.get<TestClass>(instanceName: 'instanceName');
 
     expect(instance1 is TestClass, true);
 
-    getIt.unregister(instanceName: 'instanceName');
+    getIt.unregister<TestClass>(instanceName: 'instanceName');
 
     expect(disposeCounter, 0);
 
-    expect(() => getIt(instanceName: 'instanceName'),
+    expect(() => getIt<TestClass>(instanceName: 'instanceName'),
         throwsA(const TypeMatcher<AssertionError>()));
   });
 

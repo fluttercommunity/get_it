@@ -70,8 +70,7 @@ class _ServiceFactory<T, P1, P2> {
 
   bool get isNamedRegistration => instanceName != null;
 
-  String get debugName =>
-      isNamedRegistration ? instanceName : registrationType.toString();
+  String get debugName => '$instanceName : $registrationType';
 
   bool get canBeWaitedFor =>
       shouldSignalReady || pendingResult != null || isAsync;
@@ -220,12 +219,8 @@ class _ServiceFactory<T, P1, P2> {
 }
 
 class _GetItImplementation implements GetIt {
-  /// stores all [_ServiceFactory] that get registered by Type
-  final _factories = <Type, _ServiceFactory<dynamic, dynamic, dynamic>>{};
-
-  /// the ones that get registered by name.
   final _factoriesByName =
-      <String, _ServiceFactory<dynamic, dynamic, dynamic>>{};
+      <String, Map<Type, _ServiceFactory<dynamic, dynamic, dynamic>>>{};
 
   /// We still support a global ready signal mechanism for that we use this
   /// Completer.
@@ -237,26 +232,28 @@ class _GetItImplementation implements GetIt {
   bool allowReassignment = false;
 
   /// Is used by several other functions to retrieve the correct [_ServiceFactory]
-  _ServiceFactory _findFactoryByNameOrType<T>(String instanceName) {
+  _ServiceFactory _findFactoryByNameAndType<T>(String instanceName) {
     /// We use an assert here instead of an `if..throw` because it gets called on every call
     /// of [get]
     /// `(const Object() is! T)` tests if [T] is a real type and not Object or dynamic
     assert(
-      !(!(const Object() is! T) && (instanceName == null)),
-      'GetIt: You have to provide either a type or a name. Did you accidentally do  `var sl=GetIt.instance();` instead of var sl=GetIt.instance;',
+      const Object() is! T,
+      'GetIt: The compiler could not infer the type. You have to provide a type and optional a name. Did you accidentally do  `var sl=GetIt.instance();` instead of var sl=GetIt.instance;',
     );
 
     _ServiceFactory<T, dynamic, dynamic> instanceFactory;
-    if (instanceName != null) {
-      instanceFactory = _factoriesByName[instanceName]
-          as _ServiceFactory<T, dynamic, dynamic>;
-      assert(instanceFactory != null,
-          'Object/factory with name $instanceName is not registered inside GetIt. Did you forget to register it?');
-    } else {
-      instanceFactory = _factories[T] as _ServiceFactory<T, dynamic, dynamic>;
-      assert(instanceFactory != null,
-          'No type ${T.toString()} is registered inside GetIt.\n Did you forget to pass an instance name? \n(Did you accidentally do  GetIt sl=GetIt.instance(); instead of GetIt sl=GetIt.instance;\ndid you forget to register it?)');
-    }
+
+    final factoryByTypes = _factoriesByName[instanceName];
+    instanceFactory = factoryByTypes != null
+        ? factoryByTypes[T] as _ServiceFactory<T, dynamic, dynamic>
+        : null;
+    assert(
+        instanceFactory != null,
+        'Object/factory with ${instanceName != null ? 'with name $instanceName and ' : ''}'
+        ' type ${T.toString()} is not registered inside GetIt. '
+        '\n(Did you accidentally do  GetIt sl=GetIt.instance(); instead of GetIt sl=GetIt.instance;'
+        '\nDid you forget to register it?)');
+
     return instanceFactory;
   }
 
@@ -266,7 +263,7 @@ class _GetItImplementation implements GetIt {
   /// given at registration with [registerFactoryParam()]
   @override
   T get<T>({String instanceName, dynamic param1, dynamic param2}) {
-    final instanceFactory = _findFactoryByNameOrType<T>(instanceName);
+    final instanceFactory = _findFactoryByNameAndType<T>(instanceName);
 
     Object instance;
     if (instanceFactory.isAsync || instanceFactory.pendingResult != null) {
@@ -301,7 +298,7 @@ class _GetItImplementation implements GetIt {
   /// given at registration with [registerFactoryParamAsync()]
   @override
   Future<T> getAsync<T>({String instanceName, dynamic param1, dynamic param2}) {
-    final factoryToGet = _findFactoryByNameOrType<T>(instanceName);
+    final factoryToGet = _findFactoryByNameAndType<T>(instanceName);
     return factoryToGet.getObjectAsync<T>(param1, param2);
   }
 
@@ -522,7 +519,7 @@ class _GetItImplementation implements GetIt {
   /// Clears all registered types. Handy when writing unit tests
   @override
   void reset() {
-    _factories.clear();
+    _factoriesByName.clear();
     _factoriesByName.clear();
   }
 
@@ -538,19 +535,18 @@ class _GetItImplementation implements GetIt {
     Iterable<Type> dependsOn,
     @required bool shouldSignalReady,
   }) {
-    throwIf(
-      !(const Object() is! T) && (instanceName == null),
-      'GetIt: You have to provide either a type or a name. Did you accidentally do  `var sl=GetIt.instance();` instead of var sl=GetIt.instance;',
+    throwIfNot(
+      const Object() is! T,
+      'GetIt: You have to provide type. Did you accidentally do  `var sl=GetIt.instance();` instead of var sl=GetIt.instance;',
     );
 
     throwIf(
-      instanceName != null &&
-          (_factoriesByName.containsKey(instanceName) && !allowReassignment),
-      ArgumentError('An object of name $instanceName is already registered'),
-    );
-    throwIf(
-        instanceName == null && _factories.containsKey(T) && !allowReassignment,
-        ArgumentError('Type ${T.toString()} is already registered'));
+        _factoriesByName.containsKey(instanceName) &&
+            _factoriesByName[instanceName].containsKey(T) &&
+            !allowReassignment,
+        ArgumentError(
+            'Object/factory with ${instanceName != null ? 'with name $instanceName and ' : ''}'
+            ' type ${T.toString()} is already registered inside GetIt. '));
 
     final serviceFactory = _ServiceFactory<T, P1, P2>(
       type,
@@ -564,11 +560,9 @@ class _GetItImplementation implements GetIt {
       shouldSignalReady: shouldSignalReady,
     );
 
-    if (instanceName == null) {
-      _factories[T] = serviceFactory;
-    } else {
-      _factoriesByName[instanceName] = serviceFactory;
-    }
+    _factoriesByName.putIfAbsent(instanceName,
+        () => <Type, _ServiceFactory<dynamic, dynamic, dynamic>>{});
+    _factoriesByName[instanceName][T] = serviceFactory;
 
     // simple Singletons get creates immediately
     if (type == _ServiceFactoryType.constant &&
@@ -599,7 +593,7 @@ class _GetItImplementation implements GetIt {
         final dependentFutureGroup = FutureGroup();
 
         for (final type in dependsOn) {
-          final dependentFactory = _factories[type];
+          final dependentFactory = _factoriesByName[null][type];
           throwIf(dependentFactory == null,
               ArgumentError('Dependent Type $type is not registered in GetIt'));
           throwIfNot(dependentFactory.canBeWaitedFor,
@@ -667,7 +661,7 @@ class _GetItImplementation implements GetIt {
       if (instance != null) {
         factoryToCheck = _findFactoryByInstance(instance);
       } else {
-        factoryToCheck = _findFactoryByNameOrType<T>(instanceName);
+        factoryToCheck = _findFactoryByNameAndType<T>(instanceName);
       }
       // because not being registered isn't an error when you want to check if an object is registered
       // ignore: avoid_catching_errors
@@ -692,7 +686,7 @@ class _GetItImplementation implements GetIt {
     if (instance != null) {
       factoryToRemove = _findFactoryByInstance(instance);
     } else {
-      factoryToRemove = _findFactoryByNameOrType<T>(instanceName);
+      factoryToRemove = _findFactoryByNameAndType<T>(instanceName);
     }
 
     throwIf(
@@ -700,11 +694,8 @@ class _GetItImplementation implements GetIt {
         StateError(
             'There are still other objects waiting for this instance so signal ready'));
 
-    if (factoryToRemove.isNamedRegistration) {
-      _factoriesByName.remove(factoryToRemove.instanceName);
-    } else {
-      _factories.remove(factoryToRemove.registrationType);
-    }
+    _factoriesByName[factoryToRemove.instanceName]
+        .remove(factoryToRemove.registrationType);
 
     if (factoryToRemove.instance != null) {
       disposingFunction?.call(factoryToRemove.instance as T);
@@ -728,7 +719,7 @@ class _GetItImplementation implements GetIt {
     if (instance != null) {
       instanceFactory = _findFactoryByInstance(instance);
     } else {
-      instanceFactory = _findFactoryByNameOrType<T>(instanceName);
+      instanceFactory = _findFactoryByNameAndType<T>(instanceName);
     }
     throwIfNot(
         instanceFactory.factoryType == _ServiceFactoryType.lazy,
@@ -744,10 +735,12 @@ class _GetItImplementation implements GetIt {
     instanceFactory._readyCompleter = Completer();
   }
 
+  List<_ServiceFactory> get _allFactories => _factoriesByName.values
+      .fold<List<_ServiceFactory>>([], (sum, x) => sum..addAll(x.values));
+
   _ServiceFactory _findFactoryByInstance(Object instance) {
-    final registeredFactories = _factories.values
-        .followedBy(_factoriesByName.values)
-        .where((x) => identical(x.instance, instance));
+    final registeredFactories =
+        _allFactories.where((x) => identical(x.instance, instance));
 
     throwIf(
         registeredFactories.isEmpty,
@@ -808,24 +801,20 @@ class _GetItImplementation implements GetIt {
 
       /// In case that there are still factories that are marked to wait for a signal
       /// but aren't signalled we throw an error with details which objects are concerned
-      final notReadyTypes = _factories.entries
+      final notReady = _allFactories
           .where((x) =>
-              (x.value.shouldSignalReady) && (!x.value.isReady) ||
-              (x.value.pendingResult != null) && (!x.value.isReady))
-          .map<String>((x) => x.key.toString())
-          .toList();
-      final notReadyNames = _factoriesByName.entries
-          .where((x) => x.value.canBeWaitedFor && !x.value.isReady)
-          .map<String>((x) => x.key)
+              (x.shouldSignalReady) && (!x.isReady) ||
+              (x.pendingResult != null) && (!x.isReady))
+          .map<String>((x) => '${x.registrationType}/${x.instanceName}')
           .toList();
       throwIf(
-          notReadyNames.isNotEmpty || notReadyTypes.isNotEmpty,
+          notReady.isNotEmpty,
           StateError(
-              "You can't signal reads manually if you have registered instances that should signal ready or are asnyc.\n"
+              "You can't signal ready manually if you have registered instances that should signal ready or are asnyc.\n"
               // this lint is stupif because it doesn't recognize newlines
               // ignore: missing_whitespace_between_adjacent_strings
               'Did you forget to pass an object instance?'
-              'This registered types/names: $notReadyTypes  / $notReadyNames should signal ready but are not ready'));
+              'This registered types/names: $notReady should signal ready but are not ready'));
 
       _globalReadyCompleter.complete();
     }
@@ -841,8 +830,7 @@ class _GetItImplementation implements GetIt {
   Future<void> allReady(
       {Duration timeout, bool ignorePendingAsyncCreation = false}) {
     final futures = FutureGroup();
-    _factories.values
-        .followedBy(_factoriesByName.values)
+    _allFactories
         .where((x) =>
             (x.isAsync && !ignorePendingAsyncCreation ||
                 (!x.isAsync &&
@@ -866,8 +854,7 @@ class _GetItImplementation implements GetIt {
   /// [ignorePendingAsyncCreation==true]
   @override
   bool allReadySync([bool ignorePendingAsyncCreation = false]) {
-    final notReadyTypes = _factories.values
-        .followedBy(_factoriesByName.values)
+    final notReadyTypes = _allFactories
         .where((x) =>
             (x.isAsync && !ignorePendingAsyncCreation ||
                     (!x.isAsync &&
@@ -899,11 +886,11 @@ class _GetItImplementation implements GetIt {
     return notReadyTypes.isEmpty;
   }
 
-  /// we use dynamic here because this functoin is used at twon places, one that expects a Future
+  /// we use dynamic here because this functoin is used at two places, one that expects a Future
   /// the other a List. As this function just throws an exception and doesn't return anything
   /// this is save
   List _throwTimeoutError() {
-    final allFactories = _factories.values.followedBy(_factoriesByName.values);
+    final allFactories = _allFactories;
     final waitedBy = Map.fromEntries(
       allFactories
           .where((x) =>
@@ -949,7 +936,7 @@ class _GetItImplementation implements GetIt {
     if (instance != null) {
       factoryToCheck = _findFactoryByInstance(instance);
     } else {
-      factoryToCheck = _findFactoryByNameOrType<T>(instanceName);
+      factoryToCheck = _findFactoryByNameAndType<T>(instanceName);
     }
     throwIfNot(
       factoryToCheck.canBeWaitedFor &&
@@ -988,7 +975,7 @@ class _GetItImplementation implements GetIt {
     if (instance != null) {
       factoryToCheck = _findFactoryByInstance(instance);
     } else {
-      factoryToCheck = _findFactoryByNameOrType<T>(instanceName);
+      factoryToCheck = _findFactoryByNameAndType<T>(instanceName);
     }
     throwIfNot(
         factoryToCheck.canBeWaitedFor &&

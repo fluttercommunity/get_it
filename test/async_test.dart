@@ -1,7 +1,6 @@
+import 'package:get_it/get_it.dart';
 import 'package:meta/meta.dart';
 import 'package:test/test.dart';
-
-import 'package:get_it/get_it.dart';
 
 int constructorCounter = 0;
 int disposeCounter = 0;
@@ -134,7 +133,8 @@ void main() {
 
     expect(getIt.isReadySync<TestClass>(), true);
     expect(getIt.isReadySync<TestClass3>(), false);
-    expect(getIt.isReadySync(instanceName: 'TestNamesInstance'), false);
+    expect(
+        getIt.isReadySync<TestClass>(instanceName: 'TestNamesInstance'), false);
     expect(getIt.allReadySync(), false);
 
     /// We call [signalReady] before the last has completed
@@ -217,7 +217,8 @@ void main() {
 
     expect(getIt.isReadySync<TestClass>(), false);
     expect(getIt.isReadySync<TestClass2>(), false);
-    expect(getIt.isReadySync(instanceName: 'Second Instance'), false);
+    expect(
+        getIt.isReadySync<TestClass2>(instanceName: 'Second Instance'), false);
 
     final timer = Stopwatch()..start();
     await getIt.allReady(timeout: const Duration(milliseconds: 20));
@@ -242,7 +243,8 @@ void main() {
 
     expect(getIt.isReadySync<TestClassWillSignalReady>(), false);
     expect(getIt.isReadySync<TestClassWillSignalReady2>(), false);
-    expect(getIt.isReadySync(instanceName: 'Second Instance'), false);
+    expect(
+        getIt.isReadySync<TestClass2>(instanceName: 'Second Instance'), false);
 
     final timer = Stopwatch()..start();
     await getIt.allReady(timeout: const Duration(milliseconds: 20));
@@ -487,12 +489,14 @@ void main() {
     } catch (ex) {
       expect(ex, const TypeMatcher<WaitingTimeOutException>());
       final timeOut = ex as WaitingTimeOutException;
-      expect(timeOut.notReadyYet.contains('TestClass'), true);
-      expect(timeOut.notReadyYet.contains('TestClass2'), true);
-      expect(timeOut.notReadyYet.contains('TestClass3'), true);
-      expect(timeOut.areReady.contains('TestClass4'), true);
-      expect(timeOut.areWaitedBy['TestClass'].contains('TestClass2'), true);
-      expect(timeOut.areWaitedBy['TestClass3'].contains('String'), true);
+      expect(timeOut.notReadyYet.contains('null : TestClass'), true);
+      expect(timeOut.notReadyYet.contains('null : TestClass2'), true);
+      expect(timeOut.notReadyYet.contains('null : TestClass3'), true);
+      expect(timeOut.areReady.contains('null : TestClass4'), true);
+      expect(timeOut.areReady.contains('Second instance : TestClass'), true);
+      expect(
+          timeOut.areWaitedBy['null : TestClass'].contains('TestClass2'), true);
+      expect(timeOut.areWaitedBy['null : TestClass3'].contains('String'), true);
     }
   });
 
