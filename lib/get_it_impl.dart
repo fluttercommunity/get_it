@@ -232,9 +232,11 @@ class _Scope {
 
   _Scope({this.name, this.disposeFunc});
 
-  Future<void> reset() async {
-    for (final _factory in allFactories) {
-      await _factory.dispose();
+  Future<void> reset({@required bool dispose}) async {
+    if (dispose) {
+      for (final _factory in allFactories) {
+        await _factory.dispose();
+      }
     }
     factoriesByName.clear();
   }
@@ -248,7 +250,8 @@ class _Scope {
 }
 
 class _GetItImplementation implements GetIt {
-  final _scopes = [_Scope(name: 'baseScope')];
+  static const _baseScopeName = 'baseScope';
+  final _scopes = [_Scope(name: _baseScopeName)];
 
   _Scope get _currentScope => _scopes.last;
 
@@ -568,23 +571,24 @@ class _GetItImplementation implements GetIt {
 
   /// Clears all registered types. Handy when writing unit tests
   @override
-  Future<void> reset({bool noDisposal = false}) async {
-    if (!noDisposal) {
+  Future<void> reset({bool dispose = true}) async {
+    if (dispose) {
       for (int level = _scopes.length - 1; level >= 0; level--) {
         await _scopes[level].dispose();
-        await _scopes[level].reset();
+        await _scopes[level].reset(dispose: dispose);
       }
     }
     _scopes.removeRange(1, _scopes.length);
+    resetScope(dispose: dispose);
   }
 
   /// Clears all registered types of the current scope.
   @override
-  Future<void> resetScope({bool noDisposal = false}) async {
-    if (!noDisposal) {
+  Future<void> resetScope({bool dispose = true}) async {
+    if (dispose) {
       await _currentScope.dispose();
     }
-    await _currentScope.reset();
+    await _currentScope.reset(dispose: dispose);
   }
 
   /// Creates a new registration scope. If you register types after creating
@@ -596,6 +600,8 @@ class _GetItImplementation implements GetIt {
   /// is still valied while it is executed
   @override
   void pushNewScope({String scopeName, ScopeDisposeFunc dispose}) {
+    assert(scopeName != _baseScopeName,
+        'This name is reseved for the real base scope');
     assert(
         _scopes.firstWhere((x) => x.name == scopeName, orElse: () => null) ==
             null,
@@ -611,25 +617,31 @@ class _GetItImplementation implements GetIt {
   /// As dispose funcions can be async, you should await this function.
   @override
   Future<void> popScope() async {
-    await _currentScope.disposeFunc?.call();
+    assert(
+        _scopes.length > 1,
+        "You are already on the base scope. you can't pop"
+        ' this one');
     await _currentScope.dispose();
+    await _currentScope.reset(dispose: true);
     _scopes.removeLast();
   }
 
   /// if you have a lot of scopes with names you can pop (see [popScope]) all scopes above
-  /// the scope with [name] including that scope
+  /// the scope with [scopeName] including that scope
   /// Scopes are poped in order from the top
   /// As dispose funcions can be async, you should await this function.
   @override
-  Future<bool> popScopesTill(String name) async {
-    if (_scopes.firstWhere((x) => x.name == name, orElse: () => null) == null) {
+  Future<bool> popScopesTill(String scopeName) async {
+    assert(scopeName != _baseScopeName, "You can't pop the base scope");
+    if (_scopes.firstWhere((x) => x.name == scopeName, orElse: () => null) ==
+        null) {
       return false;
     }
-    String scopeName;
+    String _scopeName;
     do {
-      scopeName = _currentScope.name;
+      _scopeName = _currentScope.name;
       await popScope();
-    } while (scopeName != name);
+    } while (_scopeName != scopeName);
     return true;
   }
 
@@ -836,7 +848,11 @@ class _GetItImplementation implements GetIt {
             'There is no type ${instance.runtimeType} registered as LazySingleton in GetIt'));
 
     if (instanceFactory.instance != null) {
-      disposingFunction?.call(instanceFactory.instance as T);
+      if (disposingFunction != null) {
+        disposingFunction?.call(instanceFactory.instance as T);
+      } else {
+        instanceFactory.dispose();
+      }
     }
 
     instanceFactory.instance = null;

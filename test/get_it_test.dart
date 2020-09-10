@@ -37,7 +37,6 @@ void main() {
 
   test('register factory', () {
     final getIt = GetIt.instance;
-    getIt.reset();
 
     constructorCounter = 0;
     getIt.registerFactory<TestBaseClass>(() => TestClass());
@@ -59,7 +58,6 @@ void main() {
 
   test('register factory with one Param', () {
     final getIt = GetIt.instance;
-    getIt.reset();
 
     constructorCounter = 0;
     getIt.registerFactoryParam<TestClassParam, String, void>(
@@ -78,7 +76,6 @@ void main() {
 
   test('register factory with two Params', () {
     final getIt = GetIt.instance;
-    getIt.reset();
 
     constructorCounter = 0;
     getIt.registerFactoryParam<TestClassParam, String, int>(
@@ -99,7 +96,6 @@ void main() {
 
   test('register factory with Params with wrong type', () {
     final getIt = GetIt.instance;
-    getIt.reset();
 
     constructorCounter = 0;
     getIt.registerFactoryParam<TestClassParam, String, int>(
