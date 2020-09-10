@@ -1,39 +1,3 @@
-Skip to content
-Search or jump to…
-
-Pull requests
-Issues
-Marketplace
-Explore
- 
-@escamoteur 
-escamoteur
-/
-flutter_command
-3
-11
-1
-Code
-Issues
-Pull requests
-Actions
-Projects
-Wiki
-Security
-1
-Insights
-Settings
-flutter_command/.github/workflows/build.yml
-@Abhilash-Chandran
-Abhilash-Chandran Remove temprory fixes made for analysis .
-Latest commit 6db709b 20 days ago
- History
- 1 contributor
-We found a potential security vulnerability in one of your dependencies.
-Only the owner of this repository can see this message.
-
-52 lines (45 sloc)  1.7 KB
-  
 # This is a basic workflow to help you get started with Actions
 name: Build
 
@@ -86,15 +50,3 @@ jobs:
         uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-© 2020 GitHub, Inc.
-Terms
-Privacy
-Security
-Status
-Help
-Contact GitHub
-Pricing
-API
-Training
-Blog
-About
