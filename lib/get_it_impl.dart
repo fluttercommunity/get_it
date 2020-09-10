@@ -579,7 +579,7 @@ class _GetItImplementation implements GetIt {
       }
     }
     _scopes.removeRange(1, _scopes.length);
-    resetScope(dispose: dispose);
+    await resetScope(dispose: dispose);
   }
 
   /// Clears all registered types of the current scope.

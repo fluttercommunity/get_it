@@ -39,10 +39,10 @@ class TestClassParam {
 void main() {
   setUp(() async {
     //make sure the instance is cleared before each test
+    await GetIt.I.reset();
     constructorCounter = 0;
     disposeCounter = 0;
     errorCounter = 0;
-    await GetIt.I.reset();
   });
 
   test('register constant in two scopes', () {
