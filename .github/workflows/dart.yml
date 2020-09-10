@@ -1,0 +1,100 @@
+Skip to content
+Search or jump to…
+
+Pull requests
+Issues
+Marketplace
+Explore
+ 
+@escamoteur 
+escamoteur
+/
+flutter_command
+3
+11
+1
+Code
+Issues
+Pull requests
+Actions
+Projects
+Wiki
+Security
+1
+Insights
+Settings
+flutter_command/.github/workflows/build.yml
+@Abhilash-Chandran
+Abhilash-Chandran Remove temprory fixes made for analysis .
+Latest commit 6db709b 20 days ago
+ History
+ 1 contributor
+We found a potential security vulnerability in one of your dependencies.
+Only the owner of this repository can see this message.
+
+52 lines (45 sloc)  1.7 KB
+  
+# This is a basic workflow to help you get started with Actions
+name: Build
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build_and_test:
+    name: Build and test fluter_command on stable flutter
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:                
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      # Checks-out the respective branch.
+      - uses: actions/checkout@v2
+      - uses: actions/setup-java@v1
+        with:
+          java-version: "12.x"
+
+      - uses: subosito/flutter-action@v1
+        with:
+          channel: "stable"
+      
+      - name: Install dependencies
+        run: flutter pub get        
+                   
+      # Exits the workflow if any format is carried out.
+      # from docs:   --set-exit-if-changed    Return exit code 1 if there are any formatting changes.
+      - name: Check format
+        run: flutter format --set-exit-if-changed .
+      
+      # Carry out an flutter analysis      
+      # - name: Analyze
+      #   run: flutter analyze
+      #   working-directory: ${{ matrix.dirs }}
+      # If golden files are added then this should be handled differently for different OS
+      - name: Run tests
+        run: flutter test --coverage
+      
+      # Code coverage can be acitivated once its ready.
+      - name: Upload coverage to codecov
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+© 2020 GitHub, Inc.
+Terms
+Privacy
+Security
+Status
+Help
+Contact GitHub
+Pricing
+API
+Training
+Blog
+About
