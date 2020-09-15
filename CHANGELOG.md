@@ -1,3 +1,14 @@
+## [5.0.0] - 15.09.2020
+
+* New scope support for registration
+* optional dispose functions for registered objects
+* **Breaking change:** `reset()` now is async and returns a `Future` because it will call the new optional disposal functions that can be async
+* **Breaking change:** If you use names to register your objects you now have to provide a type too or at least make sure the compiler can infer the type. With this change it is now possible to use the same name for different types.
+
+## [5.0.0-alpha] - 11.09.2020
+
+* alpha version of V5.0 
+
 ## [4.0.4] - 22.07.2020
 
 * fixed linter errors

@@ -276,14 +276,14 @@ abstract class GetIt {
 
   /// Clears all registered types. Handy when writing unit tests
   /// If you provided dispose function when registering they will be called
-  /// [dispose] if `true` it only resets without calling any dispose
+  /// [dispose] if `false` it only resets without calling any dispose
   /// functions
   /// As dispose funcions can be async, you should await this function.
   Future<void> reset({bool dispose = true});
 
   /// Clears all registered types for the current scope
   /// If you provided dispose function when registering they will be called
-  /// [dispose] if `true` it only resets without calling any dispose
+  /// [dispose] if `false` it only resets without calling any dispose
   /// functions
   /// As dispose funcions can be async, you should await this function.
   Future<void> resetScope({bool dispose = true});

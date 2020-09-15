@@ -265,12 +265,13 @@ class _GetItImplementation implements GetIt {
   bool allowReassignment = false;
 
   /// Is used by several other functions to retrieve the correct [_ServiceFactory]
-  _ServiceFactory _findFactoryByNameAndType<T>(String instanceName) {
+  _ServiceFactory _findFactoryByNameAndType<T>(String instanceName,
+      [Type type]) {
     /// We use an assert here instead of an `if..throw` because it gets called on every call
     /// of [get]
     /// `(const Object() is! T)` tests if [T] is a real type and not Object or dynamic
     assert(
-      const Object() is! T,
+      type != null || const Object() is! T,
       'GetIt: The compiler could not infer the type. You have to provide a type and optional a name. Did you accidentally do  `var sl=GetIt.instance();` instead of var sl=GetIt.instance;',
     );
 
@@ -279,9 +280,18 @@ class _GetItImplementation implements GetIt {
     int scopeLevel = _scopes.length - 1;
     while (instanceFactory == null && scopeLevel >= 0) {
       final factoryByTypes = _scopes[scopeLevel].factoriesByName[instanceName];
-      instanceFactory = factoryByTypes != null
-          ? factoryByTypes[T] as _ServiceFactory<T, dynamic, dynamic>
-          : null;
+      if (type == null) {
+        instanceFactory = factoryByTypes != null
+            ? factoryByTypes[T] as _ServiceFactory<T, dynamic, dynamic>
+            : null;
+      } else {
+        /// in most cases we can rely on the generic type T because it is passed
+        /// in by callers. In case of dependent types this does not work as these types
+        /// are dynamic
+        instanceFactory = factoryByTypes != null
+            ? factoryByTypes[type] as _ServiceFactory<T, dynamic, dynamic>
+            : null;
+      }
       scopeLevel--;
     }
     assert(
@@ -714,7 +724,7 @@ class _GetItImplementation implements GetIt {
         final dependentFutureGroup = FutureGroup();
 
         for (final type in dependsOn) {
-          final dependentFactory = factoriesByName[null][type];
+          final dependentFactory = _findFactoryByNameAndType(null, type);
           throwIf(dependentFactory == null,
               ArgumentError('Dependent Type $type is not registered in GetIt'));
           throwIfNot(dependentFactory.canBeWaitedFor,

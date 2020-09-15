@@ -1,5 +1,6 @@
 [![Flutter Community: get_it](https://fluttercommunity.dev/_github/header/get_it)](https://github.com/fluttercommunity/community)
 
+
 # get_it
 
 This is a simple **Service Locator** for Dart and Flutter projects with some additional goodies highly inspired by [Splat](https://github.com/reactiveui/splat). It can be used instead of `InheritedWidget` or `Provider` to access objects e.g. from your UI.
@@ -8,8 +9,9 @@ Typical usage:
 * Accessing service objects like REST API clients or databases so that they easily can be mocked.
 * Accessing View/AppModels/Managers/BLoCs from Flutter Views
 
->**Breaking Change with V4.0.0** 
-Principle on how to synchronize your registered instances creation has been rethought and improved :smiley:.
+>**V5.0 has some breaking changes** Check please check the release notes to see what's new.
+
+>**Breaking Change with V4.0.0** The principle on how to synchronize your registered instances creation has been rethought and improved :smiley:.
 Please see [Synchronizing asynchronous initializations of Singletons](#synchronizing-asynchronous-initializations-of-singletons).
 
 ## Why GetIt
@@ -110,7 +112,7 @@ To access the registered objects call `get<Type>()` on your `GetIt` instance
 var myAppModel = getIt.get<AppModel>();
 ```
 
-Alternatively as `GetIt` is a [callable class](https://www.w3adda.com/dart-tutorial/dart-callable-classes) depending on the name you choose for your `GetIt`instance you can use the shorter version:
+Alternatively as `GetIt` is a [callable class](https://www.w3adda.com/dart-tutorial/dart-callable-classes) depending on the name you choose for your `GetIt` instance you can use the shorter version:
 
 ```Dart
 var myAppModel = getIt<AppModel>();
@@ -169,12 +171,10 @@ You can check if a certain Type or instance is already registered in GetIt with:
 If you need to you can also unregister your registered singletons and factories and pass a optional `disposingFunction` for clean-up.
 
 ```Dart
-/// Unregister a factory/ singletons by Type [T] or by name [instanceName]
-/// If its a singleton/lazySingleton you can unregister an existing registered object instance
-/// by passing it as [instance]. If a lazysingleton wasn't used before expect
-/// this to throw an `ArgumentError`
-/// if you need to dispose any resources you can do it using [disposingFunction] function
-/// that provides a instance of your class to be disposed
+/// Unregister an [instance] of an object or a factory/singleton by Type [T] or by name [instanceName]
+/// if you need to dispose some resources before the reset, you can
+/// provide a [disposingFunction]. This function overrides the disposing
+/// you might have provided when registering.
 void unregister<T>({Object instance,String instanceName, void Function(T) disposingFunction})
 ```
 
@@ -183,7 +183,14 @@ void unregister<T>({Object instance,String instanceName, void Function(T) dispos
 In some cases you might not want to unregister a LazySingleton but instead to reset its instance so that it gets newly created on the next access to it.
 
 ```Dart
-  /// Clears the instance of a lazy singleton registered type, being able to call the factory function on the first call of [get] on that type.
+  /// Clears the instance of a lazy singleton,
+  /// being able to call the factory function on the next call
+  /// of [get] on that type again.
+  /// you select the lazy Singleton you want to reset by either providing
+  /// an [instance], its registered type [T] or its registration name.
+  /// if you need to dispose some resources before the reset, you can
+  /// provide a [disposingFunction]. This function overrides the disposing
+  /// you might have provided when registering.
 void resetLazySingleton<T>({Object instance,
                             String instanceName,
                             void Function(T) disposingFunction})
@@ -194,8 +201,71 @@ void resetLazySingleton<T>({Object instance,
 
 ```Dart
 /// Clears all registered types. Handy when writing unit tests
-void reset()
+/// If you provided dispose function when registering they will be called
+/// [dispose] if `false` it only resets without calling any dispose
+/// functions
+/// As dispose funcions can be async, you should await this function.
+Future<void> reset({bool dispose = true});
 ```
+## Scopes
+With V5.0 of GetIt it now supports hierarchical scoping of registration. What does this mean?
+You can push a new registration scope like you push a new page on the Navigator. Any registration after that will be registered in this new scope. When accessing an object with `get` GetIt first checks the topmost scope for an registration and then the ones below. This means you can register the same type that was already registered in a lower scope again in a scope above and you will always get the latest registered object. 
+
+Imagine an app that can be used with or without a login. On App start-up a `DefaultUser` object is registered with the abstract type `User` as singleton. As soon as the user logs in, a new scope is pushed and a new `LoggedInUser` object again with the `User` type is registered that allows more functions. For the rest of the App nothing has changed as it still accesses `User` objects through GetIt.
+As soon as the user Logs off all you have to do is pop the Scope and automatically the `DefaultUser` is used again.
+
+Another example could be a shopping basket where you want to ensure that not a cart from a previous session is used again. So at the beginning of a new session you push a new scope and register a new cart object. At the end of the session you pop this scope again.
+
+### Disposing Singletons and Scopes
+From V5.0 on you can pass a `disose` function when registering any Singletons. For this the registration functions have a optional parameter:
+
+```Dart
+DisposingFunc<T> dispose
+``` 
+where `DisposingFunc` is defined as 
+
+```Dart
+typedef DisposingFunc<T> = FutureOr Function(T param);
+```
+
+So you can pass simple and async functions as this parameter. This function is called when you pop or reset the scope or when you reset GetIt completely.
+
+When you push a new scope you can also pass a `dispose` function that is called when a scope is popped or reset but before the dispose functions of the registered objects is called which mean it can still access the objects that were registered in that scope. 
+
+
+### Scope functions
+
+```Dart
+  /// Creates a new registration scope. If you register types after creating
+  /// a new scope they will hide any previous registration of the same type.
+  /// Scopes allow you to manage different live times of your Objects.
+  /// [scopeName] if you name a scope you can pop all scopes above the named one
+  /// by using the name.
+  /// [dispose] function that will be called when you pop this scope. The scope
+  /// is still valied while it is executed
+  void pushNewScope({String scopeName, ScopeDisposeFunc dispose});
+
+  /// Disposes all factories/Singletons that have ben registered in this scope
+  /// and pops (destroys) the scope so that the previous scope gets active again.
+  /// if you provided  dispose functions on registration, they will be called.
+  /// if you passed a dispose function when you pushed this scope it will be
+  /// calles before the scope is popped.
+  /// As dispose funcions can be async, you should await this function.
+  Future<void> popScope();
+
+  /// if you have a lot of scopes with names you can pop (see [popScope]) all
+  /// scopes above the scope with [name] including that scope
+  /// Scopes are poped in order from the top
+  /// As dispose funcions can be async, you should await this function.
+  /// it no scope with [name] exists, nothing is popped and `false` is returned
+  Future<bool> popScopesTill(String name);
+
+  /// Clears all registered types for the current scope
+  /// If you provided dispose function when registering they will be called
+  /// [dispose] if `false` it only resets without calling any dispose
+  /// functions
+  /// As dispose funcions can be async, you should await this function.
+  Future<void> resetScope({bool dispose = true});
 
 
 ## Asynchronous Factories
@@ -362,7 +432,8 @@ class ConfigService {
   }
 }
 ```
-
+### Using `allReady` repeatedly 
+Even if you already have awaited `allReady`, the moment you register new async singletons or singletons with dependencies you can use `allReady` again. This makes especially sense if you uses scopes where every scope needs to get initialized. 
 
 ### Manual triggering **allReady** (almost deprecated)
 
@@ -455,16 +526,10 @@ If you have a mocked version of a Service, you can easily switch between that an
 
 ### Named registration
 
-**DON'T USE THIS UNLESS YOU REALLY KNOW WHAT YOU ARE DOING!!!**
-
-This should  be your last resort as you can lose type safety.
-
-
-Ok you have been warned! All registration functions have an optional named parameter `instanceName`. Providing a name with factory/singleton here registers that instance with that name instead of a type. Consequently `get()` has also an optional parameter `instanceName` to access
+Ok you have been warned! All registration functions have an optional named parameter `instanceName`. Providing a name with factory/singleton here registers that instance with that name and a type. Consequently `get()` has also an optional parameter `instanceName` to access
 factories/singletons that were registered by name.
 
-**IMPORTANT:** Each name must be unique.  
-Both ways of registration are completely separate from each other.
+**IMPORTANT:** Each name must be unique per type.  
 
 ### More than one instance of GetIt
 While not recommended, you can create your own independent instance of `GetIt`if you don't want to share your locator with some
