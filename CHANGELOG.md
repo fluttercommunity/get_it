@@ -1,3 +1,7 @@
+## [5.0.1] - 23.09.2020
+
+* fixed formatting in readme
+
 ## [5.0.0-mixin-version] - 17.09.2020
 
 * experimental
