@@ -1,3 +1,7 @@
+## [5.0.0-mixin-version] - 17.09.2020
+
+* experimental
+
 ## [5.0.0] - 15.09.2020
 
 * New scope support for registration

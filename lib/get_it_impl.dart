@@ -880,7 +880,9 @@ class _GetItImplementation implements GetIt {
     throwIf(
         registeredFactories.isEmpty,
         StateError(
-            'There is no object type ${instance.runtimeType} registered in GetIt'));
+            'This instance of the type ${instance.runtimeType} is not available in GetIt '
+            'If you have registered it as LazySingleton, are you sure you have used '
+            'it at least once?'));
 
     throwIfNot(
         registeredFactories.length == 1,

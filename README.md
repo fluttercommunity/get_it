@@ -266,6 +266,7 @@ When you push a new scope you can also pass a `dispose` function that is called 
   /// functions
   /// As dispose funcions can be async, you should await this function.
   Future<void> resetScope({bool dispose = true});
+  ```
 
 
 ## Asynchronous Factories
@@ -448,27 +449,28 @@ You can find here a [detailed blog post on async factories and startup synchroni
 
 In some cases its handy if you could pass changing values to factories when calling `get()`. For that there are two variants for registering factories:
 
-```Dart
-  /// registers a type so that a new instance will be created on each call of [get] on that type based on
-  /// up to two parameters provided to [get()]
-  /// [T] type to register
-  /// [P1] type of  param1
-  /// [P2] type of  param2
-  /// if you use only one parameter pass void here
-  /// [factoryfunc] factory function for this type that accepts two parameters
-  /// [instanceName] if you provide a value here your factory gets registered with that
-  /// name instead of a type. This should only be necessary if you need to register more
-  /// than one instance of one type. Its highly not recommended
-  ///
-  /// example:
-  ///    getIt.registerFactoryParam<TestClassParam,String,int>((s,i)
-  ///        => TestClassParam(param1:s, param2: i));
-  ///
-  /// if you only use one parameter:
-  ///
-  ///    getIt.registerFactoryParam<TestClassParam,String,void>((s,_)
-  ///        => TestClassParam(param1:s);
-  void registerFactoryParam<T,P1,P2>(FactoryFuncParam<T,P1,P2> factoryfunc, {String instanceName});
+```dart
+/// registers a type so that a new instance will be created on each call of [get] on that type based on
+/// up to two parameters provided to [get()]
+/// [T] type to register
+/// [P1] type of  param1
+/// [P2] type of  param2
+/// if you use only one parameter pass void here
+/// [factoryfunc] factory function for this type that accepts two parameters
+/// [instanceName] if you provide a value here your factory gets registered with that
+/// name instead of a type. This should only be necessary if you need to register more
+/// than one instance of one type. Its highly not recommended
+///
+/// example:
+///    getIt.registerFactoryParam<TestClassParam,String,int>((s,i)
+///        => TestClassParam(param1:s, param2: i));
+///
+/// if you only use one parameter:
+///
+///    getIt.registerFactoryParam<TestClassParam,String,void>((s,_)
+///        => TestClassParam(param1:s);
+void registerFactoryParam<T,P1,P2>(FactoryFuncParam<T,P1,P2> factoryfunc, {String instanceName});
+
 ```
 
 and
