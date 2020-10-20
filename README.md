@@ -217,7 +217,7 @@ As soon as the user Logs off all you have to do is pop the Scope and automatical
 Another example could be a shopping basket where you want to ensure that not a cart from a previous session is used again. So at the beginning of a new session you push a new scope and register a new cart object. At the end of the session you pop this scope again.
 
 ### Disposing Singletons and Scopes
-From V5.0 on you can pass a `disose` function when registering any Singletons. For this the registration functions have a optional parameter:
+From V5.0 on you can pass a `dispose` function when registering any Singletons. For this the registration functions have a optional parameter:
 
 ```Dart
 DisposingFunc<T> dispose
