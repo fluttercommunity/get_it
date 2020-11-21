@@ -87,17 +87,13 @@ class WaitingTimeOutException implements Exception {
 /// Additionally GetIt offers asynchronous creation functions as well as functions to synchronize
 /// the async initialization of multiple Singletons
 abstract class GetIt {
-  static GetIt _instance;
+  static final GetIt _instance = _GetItImplementation();
 
   /// access to the Singleton instance of GetIt
-  static GetIt get instance {
-    // ignore: join_return_with_assignment
-    _instance ??= _GetItImplementation();
-    return _instance;
-  }
+  static GetIt get instance => _instance;
 
   /// Short form to access the instance of GetIt
-  static GetIt get I => instance;
+  static GetIt get I => _instance;
 
   /// If you need more than one instance of GetIt you can use [asNewInstance()]
   /// You should prefer to use the `instance()` method to access the global instance of [GetIt].
@@ -119,11 +115,12 @@ abstract class GetIt {
   /// not ready with its initialization.
   /// for async factories you can pass up to 2 parameters [param1,param2] they have to match the types
   /// given at registration with [registerFactoryParamAsync()]
-  Future<T> getAsync<T>({String instanceName, dynamic param1, dynamic param2});
+  Future<T> /*?*/ getAsync<T>(
+      {String instanceName, dynamic param1, dynamic param2});
 
   /// Callable class so that you can write `GetIt.instance<MyType>` instead of
   /// `GetIt.instance.get<MyType>`
-  T call<T>({String instanceName, dynamic param1, dynamic param2});
+  T /*?*/ call<T>({String instanceName, dynamic param1, dynamic param2});
 
   /// registers a type so that a new instance will be created on each call of [get] on that type
   /// [T] type to register

@@ -312,7 +312,7 @@ class _GetItImplementation implements GetIt {
   T get<T>({String instanceName, dynamic param1, dynamic param2}) {
     final instanceFactory = _findFactoryByNameAndType<T>(instanceName);
 
-    Object instance;
+    Object instance = Object; //late
     if (instanceFactory.isAsync || instanceFactory.pendingResult != null) {
       /// We use an assert here instead of an `if..throw` for performance reasons
       assert(
