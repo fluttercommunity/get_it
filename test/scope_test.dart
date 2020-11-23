@@ -8,7 +8,7 @@ int errorCounter = 0;
 abstract class TestBaseClass {}
 
 class TestClass extends TestBaseClass {
-  final String id;
+  final String? id;
   TestClass([this.id]) {
     constructorCounter++;
   }
@@ -18,7 +18,7 @@ class TestClass extends TestBaseClass {
 }
 
 class TestClass2 {
-  final String id;
+  final String? id;
   TestClass2([this.id]);
   void dispose() {
     disposeCounter++;
@@ -30,8 +30,8 @@ class TestClass3 {}
 class TestClass4 {}
 
 class TestClassParam {
-  final String param1;
-  final int param2;
+  final String? param1;
+  final int? param2;
 
   TestClassParam({this.param1, this.param2});
 }

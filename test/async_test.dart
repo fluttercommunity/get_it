@@ -1,5 +1,4 @@
 import 'package:get_it/get_it.dart';
-import 'package:meta/meta.dart';
 import 'package:test/test.dart';
 
 int constructorCounter = 0;
@@ -9,19 +8,19 @@ int errorCounter = 0;
 abstract class TestBaseClass {}
 
 class TestClassParam {
-  final String param1;
-  final int param2;
+  final String? param1;
+  final int? param2;
 
   TestClassParam({this.param1, this.param2});
 }
 
 class TestClass extends TestBaseClass {
-  GetIt getIt;
+  GetIt? getIt;
 
   /// if we do the initialisation from inside the constructor the init function has to signal GetIt
   /// that it has finished. For that we need to pass in the completer that we got from the factory call
   /// that we set up in the registration.
-  TestClass({@required bool internalCompletion, this.getIt}) {
+  TestClass({required bool internalCompletion, this.getIt}) {
     constructorCounter++;
     if (internalCompletion) {
       assert(getIt != null);
@@ -32,7 +31,7 @@ class TestClass extends TestBaseClass {
   /// This one signals after a delay
   Future initWithSignal() {
     return Future.delayed(const Duration(milliseconds: 10))
-        .then((_) => getIt.signalReady(this));
+        .then((_) => getIt!.signalReady(this));
   }
 
   // We use this as dummy init that will return a future
@@ -48,36 +47,36 @@ class TestClass extends TestBaseClass {
 
 class TestClassWillSignalReady extends TestClass implements WillSignalReady {
   TestClassWillSignalReady({
-    @required bool internalCompletion,
-    GetIt getIt,
+    required bool internalCompletion,
+    GetIt? getIt,
   }) : super(internalCompletion: internalCompletion, getIt: getIt);
 }
 
 class TestClassWillSignalReady2 extends TestClass implements WillSignalReady {
   TestClassWillSignalReady2({
-    @required bool internalCompletion,
-    GetIt getIt,
+    required bool internalCompletion,
+    GetIt? getIt,
   }) : super(internalCompletion: internalCompletion, getIt: getIt);
 }
 
 class TestClass2 extends TestClass {
   TestClass2({
-    @required bool internalCompletion,
-    GetIt getIt,
+    required bool internalCompletion,
+    GetIt? getIt,
   }) : super(internalCompletion: internalCompletion, getIt: getIt);
 }
 
 class TestClass3 extends TestClass {
   TestClass3({
-    @required bool internalCompletion,
-    GetIt getIt,
+    required bool internalCompletion,
+    GetIt? getIt,
   }) : super(internalCompletion: internalCompletion, getIt: getIt);
 }
 
 class TestClass4 extends TestClass {
   TestClass4({
-    @required bool internalCompletion,
-    GetIt getIt,
+    required bool internalCompletion,
+    GetIt? getIt,
   }) : super(internalCompletion: internalCompletion, getIt: getIt);
 }
 
@@ -491,9 +490,10 @@ void main() {
       expect(timeOut.notReadyYet.contains('null : TestClass3'), true);
       expect(timeOut.areReady.contains('null : TestClass4'), true);
       expect(timeOut.areReady.contains('Second instance : TestClass'), true);
+      expect(timeOut.areWaitedBy['null : TestClass']!.contains('TestClass2'),
+          true);
       expect(
-          timeOut.areWaitedBy['null : TestClass'].contains('TestClass2'), true);
-      expect(timeOut.areWaitedBy['null : TestClass3'].contains('String'), true);
+          timeOut.areWaitedBy['null : TestClass3']!.contains('String'), true);
     }
   });
 

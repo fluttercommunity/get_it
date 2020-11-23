@@ -23,8 +23,8 @@ class TestClass3 {}
 class TestClass4 {}
 
 class TestClassParam {
-  final String param1;
-  final int param2;
+  final String? param1;
+  final int? param2;
 
   TestClassParam({this.param1, this.param2});
 }
@@ -46,7 +46,7 @@ void main() {
 
     //final instance1 = getIt.get<TestBaseClass>();
 
-    final instance1 = getIt<TestBaseClass>();
+    final TestBaseClass? instance1 = getIt<TestBaseClass>();
 
     expect(instance1 is TestClass, true);
 
@@ -112,7 +112,7 @@ void main() {
     constructorCounter = 0;
     GetIt.instance.registerFactory<TestBaseClass>(() => TestClass());
 
-    final instance1 = GetIt.I<TestBaseClass>();
+    final TestBaseClass? instance1 = GetIt.I<TestBaseClass>();
 
     expect(instance1 is TestClass, true);
 
@@ -197,7 +197,7 @@ void main() {
     constructorCounter = 0;
     getIt.registerFactory(() => TestClass(), instanceName: 'FactoryByName');
 
-    final instance1 = getIt<TestClass>(instanceName: 'FactoryByName');
+    final TestClass? instance1 = getIt<TestClass>(instanceName: 'FactoryByName');
 
     expect(instance1 is TestClass, true);
 
@@ -217,7 +217,7 @@ void main() {
 
     getIt.registerSingleton(TestClass(), instanceName: 'ConstantByName');
 
-    final instance1 = getIt<TestClass>(instanceName: 'ConstantByName');
+    final TestClass? instance1 = getIt<TestClass>(instanceName: 'ConstantByName');
 
     expect(instance1 is TestClass, true);
 
@@ -237,12 +237,12 @@ void main() {
 
     expect(constructorCounter, 0);
 
-    final instance1 = getIt<TestBaseClass>(instanceName: 'LazyByName');
+    final TestBaseClass? instance1 = getIt<TestBaseClass>(instanceName: 'LazyByName');
 
     expect(instance1 is TestClass, true);
     expect(constructorCounter, 1);
 
-    final instance2 = getIt<TestBaseClass>(instanceName: 'LazyByName');
+    final TestBaseClass? instance2 = getIt<TestBaseClass>(instanceName: 'LazyByName');
 
     expect(instance1, instance2);
 
@@ -257,7 +257,7 @@ void main() {
     GetIt.instance.registerLazySingleton<TestBaseClass>(() => TestClass());
     secondGetIt.registerLazySingleton<TestBaseClass>(() => TestClass());
 
-    final instance1 = GetIt.I<TestBaseClass>();
+    final TestBaseClass? instance1 = GetIt.I<TestBaseClass>();
 
     expect(instance1 is TestClass, true);
 
@@ -332,7 +332,7 @@ void main() {
 
     getIt.unregister(
         instance: instance2,
-        disposingFunction: (testClass) {
+        disposingFunction: (dynamic testClass) {
           testClass.dispose();
         });
 
@@ -481,7 +481,7 @@ void main() {
   test('register LazySingleton with lambda and factory function', () {
     GetIt.I.registerLazySingleton(() => SingletonInjector.configuration());
 
-    final instance = GetIt.I<Injector>();
+    final Injector? instance = GetIt.I<Injector>();
 
     expect(instance, const TypeMatcher<Injector>());
   });

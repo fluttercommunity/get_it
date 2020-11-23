@@ -109,18 +109,18 @@ abstract class GetIt {
   /// function used for this type or based on a name.
   /// for factories you can pass up to 2 parameters [param1,param2] they have to match the types
   /// given at registration with [registerFactoryParam()]
-  T get<T>({String instanceName, dynamic param1, dynamic param2});
+  T get<T>({String? instanceName, dynamic param1, dynamic param2});
 
   /// Returns an Future of an instance that is created by an async factory or a Singleton that is
   /// not ready with its initialization.
   /// for async factories you can pass up to 2 parameters [param1,param2] they have to match the types
   /// given at registration with [registerFactoryParamAsync()]
-  Future<T> /*?*/ getAsync<T>(
-      {String instanceName, dynamic param1, dynamic param2});
+  Future<T> getAsync<T>(
+      {String? instanceName, dynamic param1, dynamic param2});
 
   /// Callable class so that you can write `GetIt.instance<MyType>` instead of
   /// `GetIt.instance.get<MyType>`
-  T /*?*/ call<T>({String instanceName, dynamic param1, dynamic param2});
+  T call<T>({String? instanceName, dynamic param1, dynamic param2});
 
   /// registers a type so that a new instance will be created on each call of [get] on that type
   /// [T] type to register
@@ -128,7 +128,7 @@ abstract class GetIt {
   /// [instanceName] if you provide a value here your factory gets registered with that
   /// name instead of a type. This should only be necessary if you need to register more
   /// than one instance of one type. Its highly not recommended
-  void registerFactory<T>(FactoryFunc<T> factoryfunc, {String instanceName});
+  void registerFactory<T>(FactoryFunc<T> factoryfunc, {String? instanceName});
 
   /// registers a type so that a new instance will be created on each call of [get] on that type based on
   /// up to two parameters provided to [get()]
@@ -150,7 +150,7 @@ abstract class GetIt {
   ///    getIt.registerFactoryParam<TestClassParam,String,void>((s,_)
   ///        => TestClassParam(param1:s);
   void registerFactoryParam<T, P1, P2>(FactoryFuncParam<T, P1, P2> factoryfunc,
-      {String instanceName});
+      {String? instanceName});
 
   /// registers a type so that a new instance will be created on each call of [getAsync] on that type
   /// the creation function is executed asynchronously and has to be accessed  with [getAsync]
@@ -160,7 +160,7 @@ abstract class GetIt {
   /// name instead of a type. This should only be necessary if you need to register more
   /// than one instance of one type. Its highly not recommended
   void registerFactoryAsync<T>(FactoryFuncAsync<T> factoryfunc,
-      {String instanceName});
+      {String? instanceName});
 
   /// registers a type so that a new instance will be created on each call of [getAsync]
   /// on that type based on up to two parameters provided to [getAsync()]
@@ -184,7 +184,7 @@ abstract class GetIt {
   ///        => TestClassParam(param1:s);
   void registerFactoryParamAsync<T, P1, P2>(
       FactoryFuncParamAsync<T, P1, P2> factoryfunc,
-      {String instanceName});
+      {String? instanceName});
 
   /// registers a type as Singleton by passing an [instance] of that type
   /// that will be returned on each call of [get] on that type
@@ -195,7 +195,7 @@ abstract class GetIt {
   /// If [signalsReady] is set to `true` it means that the future you can get from `allReady()`
   /// cannot complete until this this instance was signalled ready by calling [signalsReady(instance)].
   void registerSingleton<T>(T instance,
-      {String instanceName, bool signalsReady, DisposingFunc<T> dispose});
+      {String? instanceName, bool? signalsReady, DisposingFunc<T>? dispose});
 
   /// registers a type as Singleton by passing an factory function of that type
   /// that will be called on each call of [get] on that type
@@ -210,10 +210,10 @@ abstract class GetIt {
   /// If [signalsReady] is set to `true` it means that the future you can get from `allReady()`
   /// cannot complete until this this instance was signalled ready by calling [signalsReady(instance)].
   void registerSingletonWithDependencies<T>(FactoryFunc<T> factoryFunc,
-      {String instanceName,
-      Iterable<Type> dependsOn,
-      bool signalsReady,
-      DisposingFunc<T> dispose});
+      {String? instanceName,
+      Iterable<Type>? dependsOn,
+      bool? signalsReady,
+      DisposingFunc<T>? dispose});
 
   /// registers a type as Singleton by passing an asynchronous factory function which has to return the instance
   /// that will be returned on each call of [get] on that type.
@@ -232,10 +232,10 @@ abstract class GetIt {
   /// this instance was signalled ready by calling [signalsReady(instance)]. In that case no automatic ready signal
   /// is made after completion of [factoryfunc]
   void registerSingletonAsync<T>(FactoryFuncAsync<T> factoryfunc,
-      {String instanceName,
-      Iterable<Type> dependsOn,
-      bool signalsReady,
-      DisposingFunc<T> dispose});
+      {String? instanceName,
+      Iterable<Type>? dependsOn,
+      bool? signalsReady,
+      DisposingFunc<T>? dispose});
 
   /// registers a type as Singleton by passing a factory function that will be called
   /// on the first call of [get] on that type
@@ -247,7 +247,7 @@ abstract class GetIt {
   /// [registerLazySingleton] does not influence [allReady] however you can wait
   /// for and be dependent on a LazySingleton.
   void registerLazySingleton<T>(FactoryFunc<T> factoryfunc,
-      {String instanceName, DisposingFunc<T> dispose});
+      {String? instanceName, DisposingFunc<T>? dispose});
 
   /// registers a type as Singleton by passing a async factory function that will be called
   /// on the first call of [getAsnc] on that type
@@ -265,11 +265,11 @@ abstract class GetIt {
   /// [registerLazySingletonAsync] does not influence [allReady] however you can wait
   /// for and be dependent on a LazySingleton.
   void registerLazySingletonAsync<T>(FactoryFuncAsync<T> factoryFunc,
-      {String instanceName, DisposingFunc<T> dispose});
+      {String? instanceName, DisposingFunc<T>? dispose});
 
   /// Tests if an [instance] of an object or aType [T] or a name [instanceName]
   /// is registered inside GetIt
-  bool isRegistered<T>({Object instance, String instanceName});
+  bool isRegistered<T>({Object? instance, String? instanceName});
 
   /// Clears all registered types. Handy when writing unit tests
   /// If you provided dispose function when registering they will be called
@@ -292,7 +292,7 @@ abstract class GetIt {
   /// by using the name.
   /// [dispose] function that will be called when you pop this scope. The scope
   /// is still valied while it is executed
-  void pushNewScope({String scopeName, ScopeDisposeFunc dispose});
+  void pushNewScope({String? scopeName, ScopeDisposeFunc? dispose});
 
   /// Disposes all factories/Singletons that have ben registered in this scope
   /// and pops (destroys) the scope so that the previous scope gets active again.
@@ -318,18 +318,18 @@ abstract class GetIt {
   /// provide a [disposingFunction]. This function overrides the disposing
   /// you might have provided when registering.
   void resetLazySingleton<T>(
-      {Object instance,
-      String instanceName,
-      void Function(T) disposingFunction});
+      {Object? instance,
+      String? instanceName,
+      void Function(T)? disposingFunction});
 
   /// Unregister an [instance] of an object or a factory/singleton by Type [T] or by name [instanceName]
   /// if you need to dispose any resources you can do it using [disposingFunction] function
   /// that provides a instance of your class to be disposed. This function overrides the disposing
   /// you might have provided when registering.
   void unregister<T>(
-      {Object instance,
-      String instanceName,
-      void Function(T) disposingFunction});
+      {Object? instance,
+      String? instanceName,
+      void Function(T)? disposingFunction});
 
   /// returns a Future that completes if all asynchronously created Singletons and any Singleton that had
   ///  [signalsReady==true] are ready.
@@ -340,7 +340,7 @@ abstract class GetIt {
   /// if [allReady] should not wait for the completion of async Signletons set
   /// [ignorePendingAsyncCreation==true]
   Future<void> allReady(
-      {Duration timeout, bool ignorePendingAsyncCreation = false});
+      {Duration? timeout, bool ignorePendingAsyncCreation = false});
 
   /// Returns a Future that completes if the instance of an Singleton, defined by Type [T] or
   /// by name [instanceName] or by passing the an existing [instance],  is ready
@@ -349,15 +349,15 @@ abstract class GetIt {
   /// not ready at that time.
   /// [callee] optional parameter which makes debugging easier. Pass `this` in here.
   Future<void> isReady<T>({
-    Object instance,
-    String instanceName,
-    Duration timeout,
-    Object callee,
+    Object? instance,
+    String? instanceName,
+    Duration? timeout,
+    Object? callee,
   });
 
   /// Checks if an async Singleton defined by an [instance], a type [T] or an [instanceName]
   /// is ready without waiting
-  bool isReadySync<T>({Object instance, String instanceName});
+  bool isReadySync<T>({Object? instance, String? instanceName});
 
   /// Returns if all async Singletons are ready without waiting
   /// if [allReady] should not wait for the completion of async Signletons set
@@ -385,5 +385,5 @@ abstract class GetIt {
   ///
   /// Or use async registrations methods or let individual instances signal their ready
   /// state on their own.
-  void signalReady(Object instance);
+  void signalReady(Object? instance);
 }
