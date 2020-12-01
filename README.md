@@ -540,7 +540,6 @@ other package or because the physics of your planet demands it :-)
 ```Dart
 /// To make sure you really know what you are doing
 /// you have to first enable this feature:
-GetIt.allowMultipleInstances=true;
 GetIt myOwnInstance = GetIt.asNewInstance();
 ```
 
