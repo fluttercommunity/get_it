@@ -825,6 +825,8 @@ class _GetItImplementation implements GetIt {
 
     if (factoryToRemove.instance != null) {
       disposingFunction?.call(factoryToRemove.instance as T);
+    } else {
+      factoryToRemove?.dispose();
     }
   }
 
