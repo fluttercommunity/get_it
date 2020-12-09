@@ -829,9 +829,11 @@ class _GetItImplementation implements GetIt {
         .remove(factoryToRemove.registrationType);
 
     if (factoryToRemove.instance != null) {
-      disposingFunction?.call(factoryToRemove.instance as T);
-    } else {
-      factoryToRemove?.dispose();
+      if (disposingFunction != null) {
+        disposingFunction?.call(factoryToRemove.instance as T);
+      } else {
+        factoryToRemove.dispose();
+      }
     }
   }
 
@@ -847,29 +849,29 @@ class _GetItImplementation implements GetIt {
       {Object instance,
       String instanceName,
       void Function(T) disposingFunction}) {
-    _ServiceFactory instanceFactory;
+    _ServiceFactory factoryToReset;
 
     if (instance != null) {
-      instanceFactory = _findFactoryByInstance(instance);
+      factoryToReset = _findFactoryByInstance(instance);
     } else {
-      instanceFactory = _findFactoryByNameAndType<T>(instanceName);
+      factoryToReset = _findFactoryByNameAndType<T>(instanceName);
     }
     throwIfNot(
-        instanceFactory.factoryType == _ServiceFactoryType.lazy,
+        factoryToReset.factoryType == _ServiceFactoryType.lazy,
         StateError(
             'There is no type ${instance.runtimeType} registered as LazySingleton in GetIt'));
 
-    if (instanceFactory.instance != null) {
+    if (factoryToReset.instance != null) {
       if (disposingFunction != null) {
-        disposingFunction?.call(instanceFactory.instance as T);
+        disposingFunction?.call(factoryToReset.instance as T);
       } else {
-        instanceFactory.dispose();
+        factoryToReset.dispose();
       }
     }
 
-    instanceFactory.instance = null;
-    instanceFactory.pendingResult = null;
-    instanceFactory._readyCompleter = Completer();
+    factoryToReset.instance = null;
+    factoryToReset.pendingResult = null;
+    factoryToReset._readyCompleter = Completer();
   }
 
   List<_ServiceFactory> get _allFactories => _scopes

@@ -369,33 +369,53 @@ void main() {
         throwsA(const TypeMatcher<AssertionError>()));
   });
 
-  test('unregister by name', () {
+  test('unregister by type', () {
     final getIt = GetIt.instance;
     disposeCounter = 0;
     constructorCounter = 0;
 
-    getIt.registerSingleton(TestClass(), instanceName: 'instanceName');
-    getIt.registerSingleton(TestClass(), instanceName: 'instanceName2');
-    getIt.registerSingleton(TestClass2(), instanceName: 'instanceName');
+    getIt.registerSingleton<TestClass>(TestClass());
+
+    final instance1 = getIt.get<TestClass>();
+
+    expect(instance1 is TestClass, true);
+
+    final instance2 = getIt.get<TestClass>();
+
+    expect(instance1, instance2);
+
+    expect(constructorCounter, 1);
+
+    getIt.unregister<TestClass>(disposingFunction: (testClass) {
+      testClass.dispose();
+    });
+
+    expect(disposeCounter, 1);
+
+    expect(() => getIt.get<TestClass>(),
+        throwsA(const TypeMatcher<AssertionError>()));
+  });
+  test('unregister with registered dispose call', () {
+    final getIt = GetIt.instance;
+    disposeCounter = 0;
+    constructorCounter = 0;
+
+    getIt.registerSingleton(TestClass(),
+        instanceName: 'instanceName',
+        dispose: (instance) => instance.dispose());
 
     final TestClass instance1 = getIt.get(instanceName: 'instanceName');
 
     expect(instance1 is TestClass, true);
 
     getIt.unregister<TestClass>(
-        instanceName: 'instanceName',
-        disposingFunction: (testClass) {
-          testClass.dispose();
-        });
+      instanceName: 'instanceName',
+    );
 
     expect(disposeCounter, 1);
 
     expect(() => getIt<TestClass>(instanceName: 'instanceName'),
         throwsA(const TypeMatcher<AssertionError>()));
-    expect(getIt<TestClass>(instanceName: 'instanceName2'),
-        const TypeMatcher<TestClass>());
-    expect(getIt<TestClass2>(instanceName: 'instanceName'),
-        const TypeMatcher<TestClass2>());
   });
 
   test('unregister by instance without disposing function', () {
