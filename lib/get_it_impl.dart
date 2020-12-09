@@ -829,9 +829,11 @@ class _GetItImplementation implements GetIt {
         .remove(factoryToRemove.registrationType);
 
     if (factoryToRemove.instance != null) {
-      disposingFunction?.call(factoryToRemove.instance as T);
-    } else {
-      factoryToRemove?.dispose();
+      if (disposingFunction != null) {
+        disposingFunction.call(factoryToRemove.instance as T);
+      } else {
+        factoryToRemove?.dispose();
+      }
     }
   }
 
