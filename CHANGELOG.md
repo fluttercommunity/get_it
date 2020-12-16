@@ -1,7 +1,11 @@
-## [5.0.2] - 08.12.2020
+## [5.0.3] - 09.12.2020
 
 * fixed https://github.com/fluttercommunity/get_it/issues/138 when calling `unRegister` the dispose function
 that can be passed when registering wasn't called. 
+
+## [5.0.2] - 08.12.2020
+
+* did not fix #138 as expected 
 
 ## [5.0.1] - 23.09.2020
 
