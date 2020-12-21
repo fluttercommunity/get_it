@@ -484,3 +484,4 @@ DerivedData/
 .packages
 android/local.properties
 .vscode/settings.json
+example/ios/Flutter/flutter_export_environment.sh

@@ -129,7 +129,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "5.0.1"
+    version: "6.0.0-nullsafety.1"
   glob:
     dependency: transitive
     description:
