@@ -6,8 +6,7 @@ import 'package:get_it_example/app_model.dart';
 GetIt getIt = GetIt.instance;
 
 void main() {
-  getIt.registerSingleton<AppModel>(AppModelImplementation(),
-      signalsReady: true);
+  getIt.registerSingleton<AppModel>(AppModelImplementation(), signalsReady: true);
 
   runApp(MyApp());
 }
@@ -40,9 +39,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     // Access the instance of the registered AppModel
     // As we don't know for sure if AppModel is already ready we use getAsync
-    getIt
-        .isReady<AppModel>()
-        .then((_) => getIt<AppModel>().addListener(update));
+    getIt.isReady<AppModel>().then((_) => getIt<AppModel>().addListener(update));
     // Alternative
     // getIt.get<AppModel>().addListener(update);
 
