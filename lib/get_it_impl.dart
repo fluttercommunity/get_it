@@ -300,8 +300,9 @@ class _GetItImplementation implements GetIt {
 
     assert(
       instanceFactory != null,
-      'Object/factory with ${instanceName != null ? 'with name $instanceName and ' : ''}'
-      ' type ${T.toString()} is not registered inside GetIt. '
+      // ignore: missing_whitespace_between_adjacent_strings
+      'Object/factory with ${instanceName != null ? 'with name $instanceName and ' : ' '}'
+      'type ${T.toString()} is not registered inside GetIt. '
       '\n(Did you accidentally do GetIt sl=GetIt.instance(); instead of GetIt sl=GetIt.instance;'
       '\nDid you forget to register it?)',
     );
