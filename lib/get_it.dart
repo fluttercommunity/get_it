@@ -18,7 +18,10 @@ typedef FactoryFunc<T> = T Function();
 
 /// For Factories that expect up to two parameters if you need only one use `void` for the one
 /// you don't use
-typedef FactoryFuncParam<T, P1, P2> = T Function(P1 param1, P2 param2);
+typedef FactoryFuncParam<T, P1, P2> = T Function(
+  P1 param1,
+  P2 param2,
+);
 
 /// Signature of the factory function used by async factories
 typedef FactoryFuncAsync<T> = Future<T> Function();
@@ -32,7 +35,10 @@ typedef ScopeDisposeFunc = FutureOr Function();
 
 /// For async Factories that expect up to two parameters if you need only one use `void` for the one
 /// you don't use
-typedef FactoryFuncParamAsync<T, P1, P2> = Future<T> Function(P1 param1, P2 param2);
+typedef FactoryFuncParamAsync<T, P1, P2> = Future<T> Function(
+  P1 param1,
+  P2 param2,
+);
 
 class WaitingTimeOutException implements Exception {
   /// In case of an timeout while waiting for an instance to get ready
@@ -48,13 +54,18 @@ class WaitingTimeOutException implements Exception {
   /// Lists with Types that are already ready.
   final List<String> areReady;
 
-  WaitingTimeOutException(this.areWaitedBy, this.notReadyYet, this.areReady);
+  WaitingTimeOutException(
+    this.areWaitedBy,
+    this.notReadyYet,
+    this.areReady,
+  );
   // todo : assert(areWaitedBy != null && notReadyYet != null && areReady != null);
 
   @override
   String toString() {
     // ignore: avoid_print
-    print('GetIt: There was a timeout while waiting for an instance to signal ready');
+    print(
+        'GetIt: There was a timeout while waiting for an instance to signal ready');
     // ignore: avoid_print
     print('The following instance types where waiting for completion');
     for (final entry in areWaitedBy.entries) {
