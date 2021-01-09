@@ -297,10 +297,10 @@ class _GetItImplementation implements GetIt {
     throwIf(
         instanceFactory == null,
         StateError(
-        'Object/factory with ${instanceName != null ? 'with name $instanceName and ' : ''}'
-        'type ${T.toString()} is not registered inside GetIt. '
-        '\n(Did you accidentally do GetIt sl=GetIt.instance(); instead of GetIt sl=GetIt.instance;'
-        '\nDid you forget to register it?)'));
+            'Object/factory with ${instanceName != null ? 'with name $instanceName and ' : ''}'
+            'type ${T.toString()} is not registered inside GetIt. '
+            '\n(Did you accidentally do GetIt sl=GetIt.instance(); instead of GetIt sl=GetIt.instance;'
+            '\nDid you forget to register it?)'));
 
     return instanceFactory;
   }
