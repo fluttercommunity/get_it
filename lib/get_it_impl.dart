@@ -294,12 +294,13 @@ class _GetItImplementation implements GetIt {
       }
       scopeLevel--;
     }
-    assert(
-        instanceFactory != null,
-        'Object/factory with ${instanceName != null ? 'with name $instanceName and ' : ''}'
-        ' type ${T.toString()} is not registered inside GetIt. '
-        '\n(Did you accidentally do  GetIt sl=GetIt.instance(); instead of GetIt sl=GetIt.instance;'
-        '\nDid you forget to register it?)');
+    throwIf(
+        instanceFactory == null,
+        StateError(
+            'Object/factory with ${instanceName != null ? 'with name $instanceName and ' : ''}'
+            'type ${T.toString()} is not registered inside GetIt. '
+            '\n(Did you accidentally do GetIt sl=GetIt.instance(); instead of GetIt sl=GetIt.instance;'
+            '\nDid you forget to register it?)'));
 
     return instanceFactory;
   }
@@ -725,8 +726,6 @@ class _GetItImplementation implements GetIt {
 
         for (final type in dependsOn) {
           final dependentFactory = _findFactoryByNameAndType(null, type);
-          throwIf(dependentFactory == null,
-              ArgumentError('Dependent Type $type is not registered in GetIt'));
           throwIfNot(dependentFactory.canBeWaitedFor,
               ArgumentError('Dependent Type $type is not an async Singleton'));
           dependentFactory.objectsWaiting.add(serviceFactory.registrationType);
