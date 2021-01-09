@@ -726,8 +726,6 @@ class _GetItImplementation implements GetIt {
 
         for (final type in dependsOn) {
           final dependentFactory = _findFactoryByNameAndType(null, type);
-          throwIf(dependentFactory == null,
-              ArgumentError('Dependent Type $type is not registered in GetIt'));
           throwIfNot(dependentFactory.canBeWaitedFor,
               ArgumentError('Dependent Type $type is not an async Singleton'));
           dependentFactory.objectsWaiting.add(serviceFactory.registrationType);
