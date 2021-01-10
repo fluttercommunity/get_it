@@ -1,3 +1,7 @@
+## [5.0.4] - 10.01.2021
+
+* fix for possible null reference exception in ´isRegistered´
+
 ## [5.0.3] - 09.12.2020
 
 * fixed https://github.com/fluttercommunity/get_it/issues/138 when calling `unRegister` the dispose function
