@@ -743,7 +743,8 @@ class _GetItImplementation implements GetIt {
         final dependentFutureGroup = FutureGroup();
 
         for (final type in dependsOn) {
-          final dependentFactory = _findFactoryByNameAndType(null, type);
+          final dependentFactory =
+              _findFirstFactoryByNameAndTypeOrNull(instanceName);
           throwIf(dependentFactory == null,
               ArgumentError('Dependent Type $type is not registered in GetIt'));
           throwIfNot(dependentFactory.canBeWaitedFor,
@@ -888,22 +889,23 @@ class _GetItImplementation implements GetIt {
   List<_ServiceFactory> get _allFactories => _scopes
       .fold<List<_ServiceFactory>>([], (sum, x) => sum..addAll(x.allFactories));
 
-  _ServiceFactory _findFactoryByInstance(Object instance) {
+  _ServiceFactory _findFirstFactoryByInstanceOrNull(Object instance) {
     final registeredFactories =
         _allFactories.where((x) => identical(x.instance, instance));
+    return registeredFactories.isEmpty ? null : registeredFactories.first;
+  }
+
+  _ServiceFactory _findFactoryByInstance(Object instance) {
+    final registeredFactory = _findFirstFactoryByInstanceOrNull(instance);
 
     throwIf(
-        registeredFactories.isEmpty,
-        StateError(
-            'This instance of the type ${instance.runtimeType} is not available in GetIt '
-            'If you have registered it as LazySingleton, are you sure you have used '
-            'it at least once?'));
-
-    throwIfNot(
-        registeredFactories.length == 1,
-        StateError(
-            'One Instance of ${instance.runtimeType} more than once registered in GetIt'));
-    return registeredFactories.first;
+      registeredFactory == null,
+      StateError(
+          'This instance of the type ${instance.runtimeType} is not available in GetIt '
+          'If you have registered it as LazySingleton, are you sure you have used '
+          'it at least once?'),
+    );
+    return registeredFactory;
   }
 
   /// Used to manually signal the ready state of a Singleton.
