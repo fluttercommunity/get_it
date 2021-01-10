@@ -786,23 +786,15 @@ class _GetItImplementation implements GetIt {
   /// Tests if an [instance] of an object or aType [T] or a name [instanceName]
   /// is registered inside GetIt
   @override
-  bool isRegistered<T>({Object instance, String instanceName}) {
-    _ServiceFactory factoryToCheck;
-    try {
-      if (instance != null) {
-        factoryToCheck = _findFactoryByInstance(instance);
-      } else {
-        factoryToCheck = _findFactoryByNameAndType<T>(instanceName);
-      }
-      // because not being registered isn't an error when you want to check if an object is registered
-      // ignore: avoid_catching_errors
-    } on StateError {
-      return false;
-      // ignore: avoid_catching_errors
-    } on AssertionError {
-      return false;
+  bool isRegistered<T extends Object>({
+    Object instance,
+    String instanceName,
+  }) {
+    if (instance != null) {
+      return _findFirstFactoryByInstanceOrNull(instance) != null;
+    } else {
+      return _findFirstFactoryByNameAndTypeOrNull<T>(instanceName) != null;
     }
-    return factoryToCheck != null;
   }
 
   /// Unregister an instance of an object or a factory/singleton by Type [T] or by name [instanceName]
