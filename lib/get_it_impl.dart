@@ -309,7 +309,7 @@ class _GetItImplementation implements GetIt {
     Type type,
   ]) {
     final instanceFactory =
-        _findFirstFactoryByNameAndTypeOrNull(instanceName, type);
+        _findFirstFactoryByNameAndTypeOrNull<T>(instanceName, type);
 
     assert(
       instanceFactory != null,
