@@ -301,13 +301,12 @@ class _GetItImplementation implements GetIt {
   }
 
   /// Is used by several other functions to retrieve the correct [_ServiceFactory]
-  _ServiceFactory /*!*/ /*!*/ /*!*/ /*!*/ /*!*/ _findFactoryByNameAndType<
-      T extends Object>(
+  _ServiceFactory _findFactoryByNameAndType<T extends Object>(
     String? instanceName, [
     Type? type,
   ]) {
     final instanceFactory =
-        _findFirstFactoryByNameAndTypeOrNull(instanceName, type);
+        _findFirstFactoryByNameAndTypeOrNull<T>(instanceName, type);
 
     assert(
       instanceFactory != null,
