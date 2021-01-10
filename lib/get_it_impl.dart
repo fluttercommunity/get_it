@@ -265,14 +265,19 @@ class _GetItImplementation implements GetIt {
   bool allowReassignment = false;
 
   /// Is used by several other functions to retrieve the correct [_ServiceFactory]
-  _ServiceFactory _findFactoryByNameAndType<T>(String instanceName,
-      [Type type]) {
+  _ServiceFactory<T, dynamic, dynamic>
+      _findFirstFactoryByNameAndTypeOrNull<T extends Object>(
+    String instanceName, [
+    Type type,
+  ]) {
     /// We use an assert here instead of an `if..throw` because it gets called on every call
     /// of [get]
     /// `(const Object() is! T)` tests if [T] is a real type and not Object or dynamic
     assert(
       type != null || const Object() is! T,
-      'GetIt: The compiler could not infer the type. You have to provide a type and optional a name. Did you accidentally do  `var sl=GetIt.instance();` instead of var sl=GetIt.instance;',
+      'GetIt: The compiler could not infer the type. You have to provide a type '
+      'and optionally a name. Did you accidentally do `var sl=GetIt.instance();` '
+      'instead of var sl=GetIt.instance;',
     );
 
     _ServiceFactory<T, dynamic, dynamic> instanceFactory;
@@ -294,12 +299,26 @@ class _GetItImplementation implements GetIt {
       }
       scopeLevel--;
     }
+
+    return instanceFactory;
+  }
+
+  /// Is used by several other functions to retrieve the correct [_ServiceFactory]
+  _ServiceFactory _findFactoryByNameAndType<T extends Object>(
+    String instanceName, [
+    Type type,
+  ]) {
+    final instanceFactory =
+        _findFirstFactoryByNameAndTypeOrNull(instanceName, type);
+
     assert(
-        instanceFactory != null,
-        'Object/factory with ${instanceName != null ? 'with name $instanceName and ' : ''}'
-        ' type ${T.toString()} is not registered inside GetIt. '
-        '\n(Did you accidentally do  GetIt sl=GetIt.instance(); instead of GetIt sl=GetIt.instance;'
-        '\nDid you forget to register it?)');
+      instanceFactory != null,
+      // ignore: missing_whitespace_between_adjacent_strings
+      'Object/factory with ${instanceName != null ? 'with name $instanceName and ' : ' '}'
+      'type ${T.toString()} is not registered inside GetIt. '
+      '\n(Did you accidentally do GetIt sl=GetIt.instance(); instead of GetIt sl=GetIt.instance;'
+      '\nDid you forget to register it?)',
+    );
 
     return instanceFactory;
   }
