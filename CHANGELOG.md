@@ -1,3 +1,7 @@
+## [5.0.5] - 22.01.2021
+
+* fix for bug in dependend types
+
 ## [5.0.4] - 10.01.2021
 
 * fix for possible null reference exception in ´isRegistered´

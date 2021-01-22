@@ -633,7 +633,7 @@ void main() {
     expect(instance, const TypeMatcher<TestClass>());
   });
 
-  test('async issue', () async {
+  test('async issue when used named instances', () async {
     final getIt = GetIt.instance;
 
     getIt.registerSingletonAsync<Father>(() => Future.value(Father()));
@@ -644,8 +644,7 @@ void main() {
     getIt.registerSingletonAsync<Child>(() => Future.value(Child()),
         instanceName: "childTwo", dependsOn: [Father]);
 
-    await getIt.allReady(timeout: const Duration(seconds: 1));
-    print("test");
+    expect(getIt.allReady(), completes);
   });
 
   test('Code for ReadMe', () async {
