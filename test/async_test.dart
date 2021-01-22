@@ -633,6 +633,21 @@ void main() {
     expect(instance, const TypeMatcher<TestClass>());
   });
 
+  test('async issue', () async {
+    final getIt = GetIt.instance;
+
+    getIt.registerSingletonAsync<Father>(() => Future.value(Father()));
+
+    getIt.registerSingletonAsync<Child>(() => Future.value(Child()),
+        instanceName: "childOne", dependsOn: [Father]);
+
+    getIt.registerSingletonAsync<Child>(() => Future.value(Child()),
+        instanceName: "childTwo", dependsOn: [Father]);
+
+    await getIt.allReady(timeout: const Duration(seconds: 1));
+    print("test");
+  });
+
   test('Code for ReadMe', () async {
     final sl = GetIt.instance;
 
@@ -665,4 +680,10 @@ class Service2Implementation implements Service2 {
     await Future.delayed(const Duration(microseconds: 1));
     // From here on we are ready
   }
+}
+
+class Father {}
+
+class Child {
+  final Father father = GetIt.instance.get<Father>();
 }
