@@ -1,3 +1,7 @@
+## [5.0.6] - 22.01.2021
+
+* fix for bug getAsync with factory
+
 ## [5.0.5] - 22.01.2021
 
 * fix for bug in dependend types
