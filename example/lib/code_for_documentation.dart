@@ -1,162 +1,160 @@
-// import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
-// /// This file only contains code snippets for the readme file.
-// /// just ignore it
+/// This file only contains code snippets for the readme file.
+/// just ignore it
+import 'package:get_it/get_it.dart';
 
-// import 'package:get_it/get_it.dart';
-// import 'package:get_it_example/app_model.dart';
+class AppModel {}
 
-// class AppModel {}
+class AppModelImplmentation extends AppModel {
+  AppModelImplmentation();
+}
 
-// class AppModelImplmentation extends AppModel {
-//   AppModelImplmentation();
-// }
+// class AppModelMock extends AppModel {}
 
-// // class AppModelMock extends AppModel {}
+// GetIt getIt = GetIt.instance;
 
-// // GetIt getIt = GetIt.instance;
+// class UserManager {
+//   AppModel appModel;
+//   DbService dbService;
 
-// // class UserManager {
-// //   AppModel appModel;
-// //   DbService dbService;
-
-// //   UserManager({AppModel appModel, DbService dbService}) {
-// //     this.appModel = appModel ?? getIt.get<AppModel>();
-// //     this.dbService = dbService ?? getIt.get<DbService>();
-// //   }
-// // }
-
-// // Future restCall() async {}
-
-// Widget init() {
-//   bool testing;
-//   // ambient variable to access the service locator
-
-//     GetIt getIt = GetIt.instance;
-
-//     getIt.registerFactory<AppModel>(() => AppModelImplmentation());
-
-//     GetIt.instance.registerSingleton<AppModel>(AppModelImplmentation());
-
-//     GetIt.I.registerLazySingleton<AppModel>(() => AppModelImplmentation());
-
-//   //   if (testing) {
-//   //     sl.registerSingleton<AppModel>(AppModelMock());
-//   //   } else {
-//   //     sl.registerSingleton<AppModel>(AppModelImplmentation());
-//   //   }
-//   // }
-
-//   // void setup() {
-//   //   // sl.registerFactoryAsync<AppModel>(
-//   //   //     () async => AppModelImplmentation(await restCall()));
-
-//   //   // sl.registerSingletonAsync<AppModel>(
-//   //   //     () async => AppModelImplmentation(await restCall()));
-
-//   //   // sl.registerFactoryAsync<AppModel>(
-//   //   //     () async => AppModelImplmentation(await restCall()));
-//   final getIt = GetIt.instance;
-
-//   getIt.registerSingletonAsync<ConfigService>(() async {
-//     final configService = ConfigService();
-//     await configService.init();
-//     return configService;
-//   });
-
-//   getIt.registerSingletonAsync<RestService>(() async => RestService().init());
-
-//   /// this example uses an async factory function
-//   getIt.registerSingletonAsync<DbService>(createDbServiceAsync,
-//       dependsOn: [ConfigService]);
-
-//   getIt.registerSingletonWithDependencies<AppModel>(
-//       () => AppModelImplmentation(),
-//       dependsOn: [ConfigService, DbService, RestService]);
-
-//   return FutureBuilder(
-//       future: getIt.allReady(),
-//       builder: (BuildContext context, AsyncSnapshot snapshot) {
-//         if (snapshot.hasData) {
-//           return Scaffold(
-//             body: Center(
-//               child: Text('The first real Page of your App'),
-//             ),
-//           );
-//         } else {
-//           return CircularProgressIndicator();
-//         }
-//       });
-// }
-
-// class ConfigService {
-//   ConfigService() {
-//     init();
-//   }
-//   Future init() async {
-//     // do your async initialisation...
-
-//     GetIt.instance.signalReady(this);
+//   UserManager({AppModel appModel, DbService dbService}) {
+//     this.appModel = appModel ?? getIt.get<AppModel>();
+//     this.dbService = dbService ?? getIt.get<DbService>();
 //   }
 // }
 
-// class RestService {
-//   Future<RestService> init() async {
-//     Future.delayed(Duration(seconds: 1));
-//     return this;
-//   }
-// }
+// Future restCall() async {}
 
-// class DbService {
-//   Future init() async {
-//     return null;
-//   }
-// }
+Widget init() {
+  bool testing;
+  // ambient variable to access the service locator
 
-// Future<DbService> createDbServiceAsync() async {
-//   return DbService();
-// }
+  GetIt getIt = GetIt.instance;
 
-// // /// instead of
-// // MaterialButton(
-// //   child: Text("Update"),
-// //   onPressed: TheViewModel.of(context).update
-// //   ),
+  getIt.registerFactory<AppModel>(() => AppModelImplmentation());
 
-// // /// do
-// // MaterialButton(
-// //   child: Text("Update"),
-// //   onPressed: sl.get<AppModel>().update
-// //   ),
+  GetIt.instance.registerSingleton<AppModel>(AppModelImplmentation());
 
-// // /// or even shorter
-// // MaterialButton(
-// //   child:  Text("Update"),
-// //   onPressed: sl.<AppModel>().update
-// //   ),
+  GetIt.I.registerLazySingleton<AppModel>(() => AppModelImplmentation());
 
-// class StartupPage extends StatefulWidget {
-//   @override
-//   _StartupPageState createState() => _StartupPageState();
-// }
+  //   if (testing) {
+  //     sl.registerSingleton<AppModel>(AppModelMock());
+  //   } else {
+  //     sl.registerSingleton<AppModel>(AppModelImplmentation());
+  //   }
+  // }
 
-// class _StartupPageState extends State<StartupPage> {
-//   @override
-//   void initState() {
-//     GetIt.I.allReady().then((_) => Navigator.pushReplacement(
-//         context, MaterialPageRoute(builder: (context) => MainPage())));
-//     super.initState();
-//   }
+  // void setup() {
+  //   // sl.registerFactoryAsync<AppModel>(
+  //   //     () async => AppModelImplmentation(await restCall()));
 
-//   @override
-//   Widget build(BuildContext context) {
-//     return Container();
-//   }
-// }
+  //   // sl.registerSingletonAsync<AppModel>(
+  //   //     () async => AppModelImplmentation(await restCall()));
 
-// class MainPage extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return Container();
-//   }
-// }
+  //   // sl.registerFactoryAsync<AppModel>(
+  //   //     () async => AppModelImplmentation(await restCall()));
+  final getIt = GetIt.instance;
+
+  getIt.registerSingletonAsync<ConfigService>(() async {
+    final configService = ConfigService();
+    await configService.init();
+    return configService;
+  });
+
+  getIt.registerSingletonAsync<RestService>(() async => RestService().init());
+
+  /// this example uses an async factory function
+  getIt.registerSingletonAsync<DbService>(createDbServiceAsync,
+      dependsOn: [ConfigService]);
+
+  getIt.registerSingletonWithDependencies<AppModel>(
+      () => AppModelImplmentation(),
+      dependsOn: [ConfigService, DbService, RestService]);
+
+  return FutureBuilder(
+      future: getIt.allReady(),
+      builder: (BuildContext context, AsyncSnapshot snapshot) {
+        if (snapshot.hasData) {
+          return Scaffold(
+            body: Center(
+              child: Text('The first real Page of your App'),
+            ),
+          );
+        } else {
+          return CircularProgressIndicator();
+        }
+      });
+}
+
+class ConfigService {
+  ConfigService() {
+    init();
+  }
+  Future init() async {
+    // do your async initialisation...
+
+    GetIt.instance.signalReady(this);
+  }
+}
+
+class RestService {
+  Future<RestService> init() async {
+    Future.delayed(Duration(seconds: 1));
+    return this;
+  }
+}
+
+class DbService {
+  Future init() async {
+    return null;
+  }
+}
+
+Future<DbService> createDbServiceAsync() async {
+  return DbService();
+}
+
+// /// instead of
+// MaterialButton(
+//   child: Text("Update"),
+//   onPressed: TheViewModel.of(context).update
+//   ),
+
+// /// do
+// MaterialButton(
+//   child: Text("Update"),
+//   onPressed: sl.get<AppModel>().update
+//   ),
+
+// /// or even shorter
+// MaterialButton(
+//   child:  Text("Update"),
+//   onPressed: sl.<AppModel>().update
+//   ),
+
+class StartupPage extends StatefulWidget {
+  @override
+  _StartupPageState createState() => _StartupPageState();
+}
+
+class _StartupPageState extends State<StartupPage> {
+  @override
+  void initState() {
+    GetIt.I.allReady().then((_) => Navigator.pushReplacement(
+        context, MaterialPageRoute(builder: (context) => MainPage())));
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container();
+  }
+}
+
+class MainPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container();
+  }
+}
