@@ -11,9 +11,6 @@ Typical usage:
 
 >**V5.0 has some breaking changes** Check please check the release notes to see what's new.
 
->**Breaking Change with V4.0.0** The principle on how to synchronize your registered instances creation has been rethought and improved :smiley:.
-Please see [Synchronizing asynchronous initializations of Singletons](#synchronizing-asynchronous-initializations-of-singletons).
-
 ## Why GetIt
 
 As your App grows, at some point you will need to put your app's logic in classes that are separated from your Widgets. Keeping your widgets from having direct dependencies makes your code better organized and easier to test and maintain.
@@ -38,7 +35,9 @@ GetIt is:
 * Easy to learn/use
 * Doesn't clutter your UI tree with special Widgets to access your data like provider or Redux does.
 
-**GetIt isn't a state management solution!** It's a locator for your objects so you need some other way to notify your UI about changes like `Streams` or `ValueNotifiers`.
+### The get_it_mixin
+
+GetIt isn't a state management solution! It's a locator for your objects so you need some other way to notify your UI about changes like `Streams` or `ValueNotifiers`. But together with the [get_it_mixin](https://pub.dev/packages/get_it_mixin) it gets a full featured easy statem management solution that integrates with the Objects registered in get_it 
 
 ## Getting Started
 
