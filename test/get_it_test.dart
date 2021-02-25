@@ -22,6 +22,8 @@ class TestClass3 {}
 
 class TestClass4 {}
 
+class TestClass5 implements TestBaseClass {}
+
 class TestClassParam {
   final String param1;
   final int param2;
@@ -504,6 +506,16 @@ void main() {
     final instance = GetIt.I<Injector>();
 
     expect(instance, const TypeMatcher<Injector>());
+  });
+
+  test('register multiple implementations', () {
+    final getIt = GetIt.asNewInstance();
+    getIt.registerFactory<TestBaseClass>(() => TestClass(), inToSet: true);
+    getIt.registerSingleton<TestBaseClass>(TestClass5(), inToSet: true);
+
+    final instances = getIt<Set<TestBaseClass>>();
+
+    expect(instances.length, 2);
   });
 }
 

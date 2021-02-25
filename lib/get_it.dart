@@ -131,7 +131,7 @@ abstract class GetIt {
   /// [instanceName] if you provide a value here your factory gets registered with that
   /// name instead of a type. This should only be necessary if you need to register more
   /// than one instance of one type. Its highly not recommended
-  void registerFactory<T>(FactoryFunc<T> factoryfunc, {String instanceName});
+  void registerFactory<T>(FactoryFunc<T> factoryfunc, {String instanceName, bool inToSet});
 
   /// registers a type so that a new instance will be created on each call of [get] on that type based on
   /// up to two parameters provided to [get()]
@@ -163,7 +163,7 @@ abstract class GetIt {
   /// name instead of a type. This should only be necessary if you need to register more
   /// than one instance of one type. Its highly not recommended
   void registerFactoryAsync<T>(FactoryFuncAsync<T> factoryfunc,
-      {String instanceName});
+      {String instanceName, bool inToSet});
 
   /// registers a type so that a new instance will be created on each call of [getAsync]
   /// on that type based on up to two parameters provided to [getAsync()]
@@ -198,7 +198,7 @@ abstract class GetIt {
   /// If [signalsReady] is set to `true` it means that the future you can get from `allReady()`
   /// cannot complete until this this instance was signalled ready by calling [signalsReady(instance)].
   void registerSingleton<T>(T instance,
-      {String instanceName, bool signalsReady, DisposingFunc<T> dispose});
+      {String instanceName, bool signalsReady, DisposingFunc<T> dispose, bool inToSet});
 
   /// registers a type as Singleton by passing an factory function of that type
   /// that will be called on each call of [get] on that type
@@ -216,7 +216,8 @@ abstract class GetIt {
       {String instanceName,
       Iterable<Type> dependsOn,
       bool signalsReady,
-      DisposingFunc<T> dispose});
+      DisposingFunc<T> dispose,
+      bool inToSet});
 
   /// registers a type as Singleton by passing an asynchronous factory function which has to return the instance
   /// that will be returned on each call of [get] on that type.
@@ -238,7 +239,8 @@ abstract class GetIt {
       {String instanceName,
       Iterable<Type> dependsOn,
       bool signalsReady,
-      DisposingFunc<T> dispose});
+      DisposingFunc<T> dispose,
+      bool inToSet});
 
   /// registers a type as Singleton by passing a factory function that will be called
   /// on the first call of [get] on that type
@@ -250,7 +252,7 @@ abstract class GetIt {
   /// [registerLazySingleton] does not influence [allReady] however you can wait
   /// for and be dependent on a LazySingleton.
   void registerLazySingleton<T>(FactoryFunc<T> factoryfunc,
-      {String instanceName, DisposingFunc<T> dispose});
+      {String instanceName, DisposingFunc<T> dispose, bool inToSet});
 
   /// registers a type as Singleton by passing a async factory function that will be called
   /// on the first call of [getAsnc] on that type
@@ -268,7 +270,7 @@ abstract class GetIt {
   /// [registerLazySingletonAsync] does not influence [allReady] however you can wait
   /// for and be dependent on a LazySingleton.
   void registerLazySingletonAsync<T>(FactoryFuncAsync<T> factoryFunc,
-      {String instanceName, DisposingFunc<T> dispose});
+      {String instanceName, DisposingFunc<T> dispose, bool inToSet});
 
   /// Tests if an [instance] of an object or aType [T] or a name [instanceName]
   /// is registered inside GetIt

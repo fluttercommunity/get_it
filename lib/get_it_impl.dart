@@ -376,13 +376,14 @@ class _GetItImplementation implements GetIt {
   /// name instead of a type. This should only be necessary if you need to register more
   /// than one instance of one type. Its highly not recommended
   @override
-  void registerFactory<T>(FactoryFunc<T> func, {String instanceName}) {
+  void registerFactory<T>(FactoryFunc<T> func, {String instanceName, bool inToSet}) {
     _register<T, void, void>(
         type: _ServiceFactoryType.alwaysNew,
         instanceName: instanceName,
         factoryFunc: func,
         isAsync: false,
-        shouldSignalReady: false);
+        shouldSignalReady: false,
+        inToSet: inToSet);
   }
 
   /// registers a type so that a new instance will be created on each call of [get] on that type based on
@@ -419,13 +420,14 @@ class _GetItImplementation implements GetIt {
   /// so make the intention explicit
   @override
   void registerFactoryAsync<T>(FactoryFuncAsync<T> asyncFunc,
-      {String instanceName}) {
+      {String instanceName, bool inToSet}) {
     _register<T, void, void>(
         type: _ServiceFactoryType.alwaysNew,
         instanceName: instanceName,
         factoryFuncAsync: asyncFunc,
         isAsync: true,
-        shouldSignalReady: false);
+        shouldSignalReady: false,
+        inToSet: inToSet);
   }
 
   /// registers a type so that a new instance will be created on each call of [getAsync]
@@ -471,7 +473,7 @@ class _GetItImplementation implements GetIt {
   /// for and be dependent on a LazySingleton.
   @override
   void registerLazySingleton<T>(FactoryFunc<T> func,
-      {String instanceName, DisposingFunc<T> dispose}) {
+      {String instanceName, DisposingFunc<T> dispose, bool inToSet}) {
     _register<T, void, void>(
       type: _ServiceFactoryType.lazy,
       instanceName: instanceName,
@@ -479,6 +481,7 @@ class _GetItImplementation implements GetIt {
       isAsync: false,
       shouldSignalReady: false,
       disposeFunc: dispose,
+      inToSet: inToSet
     );
   }
 
@@ -495,7 +498,8 @@ class _GetItImplementation implements GetIt {
     T instance, {
     String instanceName,
     bool signalsReady,
-    DisposingFunc<T> dispose,
+    DisposingFunc<T> dispose, 
+    bool inToSet
   }) {
     _register<T, void, void>(
       type: _ServiceFactoryType.constant,
@@ -504,6 +508,7 @@ class _GetItImplementation implements GetIt {
       isAsync: false,
       shouldSignalReady: signalsReady ?? <T>[] is List<WillSignalReady>,
       disposeFunc: dispose,
+      inToSet: inToSet
     );
   }
 
@@ -526,6 +531,7 @@ class _GetItImplementation implements GetIt {
     Iterable<Type> dependsOn,
     bool signalsReady,
     DisposingFunc<T> dispose,
+    bool inToSet
   }) {
     _register<T, void, void>(
       type: _ServiceFactoryType.constant,
@@ -535,6 +541,7 @@ class _GetItImplementation implements GetIt {
       dependsOn: dependsOn,
       shouldSignalReady: signalsReady ?? <T>[] is List<WillSignalReady>,
       disposeFunc: dispose,
+      inToSet: inToSet
     );
   }
 
@@ -559,7 +566,8 @@ class _GetItImplementation implements GetIt {
       {String instanceName,
       Iterable<Type> dependsOn,
       bool signalsReady,
-      DisposingFunc<T> dispose}) {
+      DisposingFunc<T> dispose,
+      bool inToSet}) {
     _register<T, void, void>(
       type: _ServiceFactoryType.constant,
       instanceName: instanceName,
@@ -568,6 +576,7 @@ class _GetItImplementation implements GetIt {
       dependsOn: dependsOn,
       shouldSignalReady: signalsReady ?? <T>[] is List<WillSignalReady>,
       disposeFunc: dispose,
+      inToSet: inToSet
     );
   }
 
@@ -588,7 +597,7 @@ class _GetItImplementation implements GetIt {
   /// for and be dependent on a LazySingleton.
   @override
   void registerLazySingletonAsync<T>(FactoryFuncAsync<T> func,
-      {String instanceName, DisposingFunc<T> dispose}) {
+      {String instanceName, DisposingFunc<T> dispose, bool inToSet}) {
     _register<T, void, void>(
       isAsync: true,
       type: _ServiceFactoryType.lazy,
@@ -596,6 +605,7 @@ class _GetItImplementation implements GetIt {
       factoryFuncAsync: func,
       shouldSignalReady: false,
       disposeFunc: dispose,
+      inToSet: inToSet
     );
   }
 
@@ -686,12 +696,49 @@ class _GetItImplementation implements GetIt {
       @required bool isAsync,
       Iterable<Type> dependsOn,
       @required bool shouldSignalReady,
-      DisposingFunc<T> disposeFunc}) {
+      DisposingFunc<T> disposeFunc,
+      bool inToSet}) {
     throwIfNot(
       const Object() is! T,
       'GetIt: You have to provide type. Did you accidentally do  `var sl=GetIt.instance();` instead of var sl=GetIt.instance;',
     );
     final factoriesByName = _currentScope.factoriesByName;
+
+    if (inToSet ?? false) {
+
+      final setElementInstanceName = "${instanceName}_{inToSet}_${_currentScope.allFactories.length}";
+
+      _register<T, P1, P2>(
+          type: type,
+          factoryFunc: factoryFunc,
+          factoryFuncParam: factoryFuncParam,
+          factoryFuncAsync: factoryFuncAsync,
+          factoryFuncParamAsync: factoryFuncParamAsync,
+          instance: instance,
+          instanceName: setElementInstanceName,
+          isAsync: isAsync,
+          dependsOn: dependsOn,
+          shouldSignalReady: shouldSignalReady,
+          disposeFunc: disposeFunc,
+          inToSet: false
+      );
+
+      if (isRegistered<Set<T>>()) {
+        unregister<Set<T>>();
+      }
+
+      registerFactory<Set<T>>(() {
+        return _currentScope.factoriesByName.keys
+            .where((name) => name?.contains("{inToSet}") ?? false)
+            .where((name) => factoriesByName[name].containsKey(T))
+            .map((name) => get<T>(instanceName: name))
+            .toSet();
+
+      });
+
+      return;
+    }
+
     throwIf(
         factoriesByName.containsKey(instanceName) &&
             factoriesByName[instanceName].containsKey(T) &&
