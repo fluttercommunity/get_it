@@ -705,37 +705,19 @@ class _GetItImplementation implements GetIt {
     final factoriesByName = _currentScope.factoriesByName;
 
     if (inToSet ?? false) {
-
-      final setElementInstanceName = "${instanceName}_{inToSet}_${_currentScope.allFactories.length}";
-
-      _register<T, P1, P2>(
-          type: type,
-          factoryFunc: factoryFunc,
-          factoryFuncParam: factoryFuncParam,
-          factoryFuncAsync: factoryFuncAsync,
-          factoryFuncParamAsync: factoryFuncParamAsync,
-          instance: instance,
-          instanceName: setElementInstanceName,
-          isAsync: isAsync,
-          dependsOn: dependsOn,
-          shouldSignalReady: shouldSignalReady,
-          disposeFunc: disposeFunc,
-          inToSet: false
+      _registerAsMultibindingSet<T, P1, P2>(
+        type,
+        factoryFunc,
+        factoryFuncParam,
+        factoryFuncAsync,
+        factoryFuncParamAsync,
+        instance,
+        instanceName,
+        isAsync,
+        dependsOn,
+        shouldSignalReady,
+        disposeFunc,
       );
-
-      if (isRegistered<Set<T>>()) {
-        unregister<Set<T>>();
-      }
-
-      registerFactory<Set<T>>(() {
-        return _currentScope.factoriesByName.keys
-            .where((name) => name?.contains("{inToSet}") ?? false)
-            .where((name) => factoriesByName[name].containsKey(T))
-            .map((name) => get<T>(instanceName: name))
-            .toSet();
-
-      });
-
       return;
     }
 
@@ -849,6 +831,56 @@ class _GetItImplementation implements GetIt {
         return completedFutures.last as T;
       });
     }
+  }
+
+  void _registerAsMultibindingSet<T, P1, P2>(
+      _ServiceFactoryType type,
+      FactoryFunc<T> factoryFunc,
+      FactoryFuncParam<T, P1, P2> factoryFuncParam,
+      FactoryFuncAsync<T> factoryFuncAsync,
+      FactoryFuncParamAsync<T, P1, P2> factoryFuncParamAsync,
+      T instance,
+      String instanceName,
+      bool isAsync,
+      Iterable<Type> dependsOn,
+      bool shouldSignalReady,
+      DisposingFunc<T> disposeFunc) {
+
+    //unique instance name for type implementation
+    final setElementInstanceName = "${instanceName}_{inToSet}_${_currentScope.allFactories.length}";
+
+    //register implementation
+    _register<T, P1, P2>(
+        type: type,
+        factoryFunc: factoryFunc,
+        factoryFuncParam: factoryFuncParam,
+        factoryFuncAsync: factoryFuncAsync,
+        factoryFuncParamAsync: factoryFuncParamAsync,
+        instance: instance,
+        instanceName: setElementInstanceName,
+        isAsync: isAsync,
+        dependsOn: dependsOn,
+        shouldSignalReady: shouldSignalReady,
+        disposeFunc: disposeFunc,
+        inToSet: false
+    );
+
+
+    if (isRegistered<Set<T>>()) {
+      unregister<Set<T>>();
+    }
+
+    //register Set<T> that fetch all implementations for specific T type
+    registerFactory<Set<T>>(() {
+      final factoriesByName = _currentScope.factoriesByName;
+
+      return factoriesByName.keys
+          .where((name) => name?.contains("{inToSet}") ?? false)
+          .where((name) => factoriesByName[name].containsKey(T))
+          .map((name) => get<T>(instanceName: name))
+          .toSet();
+
+    });
   }
 
   /// Tests if an [instance] of an object or aType [T] or a name [instanceName]
