@@ -131,6 +131,7 @@ abstract class GetIt {
   /// [instanceName] if you provide a value here your factory gets registered with that
   /// name instead of a type. This should only be necessary if you need to register more
   /// than one instance of one type. Its highly not recommended
+  /// [inToSet] if you set true you enable multibinding and your instance can be retrieved by calling GetIt.instance.get<Set<T>>
   void registerFactory<T>(FactoryFunc<T> factoryfunc, {String instanceName, bool inToSet});
 
   /// registers a type so that a new instance will be created on each call of [get] on that type based on
@@ -162,6 +163,7 @@ abstract class GetIt {
   /// [instanceName] if you provide a value here your factory gets registered with that
   /// name instead of a type. This should only be necessary if you need to register more
   /// than one instance of one type. Its highly not recommended
+  /// [inToSet] if you set true you enable multibinding and your instance can be retrieved by calling GetIt.instance.get<Set<T>>
   void registerFactoryAsync<T>(FactoryFuncAsync<T> factoryfunc,
       {String instanceName, bool inToSet});
 
@@ -197,6 +199,7 @@ abstract class GetIt {
   /// than one instance of one type. Its highly not recommended
   /// If [signalsReady] is set to `true` it means that the future you can get from `allReady()`
   /// cannot complete until this this instance was signalled ready by calling [signalsReady(instance)].
+  /// [inToSet] if you set true you enable multibinding and your instance can be retrieved by calling GetIt.instance.get<Set<T>>
   void registerSingleton<T>(T instance,
       {String instanceName, bool signalsReady, DisposingFunc<T> dispose, bool inToSet});
 
@@ -212,6 +215,7 @@ abstract class GetIt {
   /// [func] is called
   /// If [signalsReady] is set to `true` it means that the future you can get from `allReady()`
   /// cannot complete until this this instance was signalled ready by calling [signalsReady(instance)].
+  /// [inToSet] if you set true you enable multibinding and your instance can be retrieved by calling GetIt.instance.get<Set<T>>
   void registerSingletonWithDependencies<T>(FactoryFunc<T> factoryFunc,
       {String instanceName,
       Iterable<Type> dependsOn,
@@ -235,6 +239,7 @@ abstract class GetIt {
   /// If [signalsReady] is set to `true` it means that the future you can get from `allReady()`  cannot complete until this
   /// this instance was signalled ready by calling [signalsReady(instance)]. In that case no automatic ready signal
   /// is made after completion of [factoryfunc]
+  /// [inToSet] if you set true you enable multibinding and your instance can be retrieved by calling GetIt.instance.get<Set<T>>
   void registerSingletonAsync<T>(FactoryFuncAsync<T> factoryfunc,
       {String instanceName,
       Iterable<Type> dependsOn,
@@ -251,6 +256,7 @@ abstract class GetIt {
   /// than one instance of one type. Its highly not recommended
   /// [registerLazySingleton] does not influence [allReady] however you can wait
   /// for and be dependent on a LazySingleton.
+  /// [inToSet] if you set true you enable multibinding and your instance can be retrieved by calling GetIt.instance.get<Set<T>>
   void registerLazySingleton<T>(FactoryFunc<T> factoryfunc,
       {String instanceName, DisposingFunc<T> dispose, bool inToSet});
 
@@ -269,6 +275,7 @@ abstract class GetIt {
   /// than one instance of one type. Its highly not recommended.
   /// [registerLazySingletonAsync] does not influence [allReady] however you can wait
   /// for and be dependent on a LazySingleton.
+  /// [inToSet] if you set true you enable multibinding and your instance can be retrieved by calling GetIt.instance.get<Set<T>>
   void registerLazySingletonAsync<T>(FactoryFuncAsync<T> factoryFunc,
       {String instanceName, DisposingFunc<T> dispose, bool inToSet});
 
