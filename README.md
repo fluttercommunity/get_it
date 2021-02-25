@@ -167,6 +167,21 @@ You can check if a certain Type or instance is already registered in GetIt with:
  bool isRegistered<T>({Object instance, String instanceName});
 ```
 
+### Multibindings
+
+If you want to bind multiple implementations of one interface into Set<T> you can use flag `intoSet: true`.
+
+```Dart
+  getIt.registerFactory<BaseInterface>(() => Implementation1(), inToSet: true);
+  getIt.registerFactory<BaseInterface>(() => Implementation2(), inToSet: true);
+```
+
+Then when you want to get all instances as Set you can call:
+
+```Dart
+  getIt<Set<BaseInterface>>();
+```
+
 ### Unregistering Singletons or Factories
 If you need to you can also unregister your registered singletons and factories and pass a optional `disposingFunction` for clean-up.
 
