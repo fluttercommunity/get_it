@@ -508,14 +508,26 @@ void main() {
     expect(instance, const TypeMatcher<Injector>());
   });
 
-  test('register multiple implementations', () {
+  test('register multiple implementations into set', () {
     final getIt = GetIt.asNewInstance();
+
     getIt.registerFactory<TestBaseClass>(() => TestClass(), inToSet: true);
     getIt.registerSingleton<TestBaseClass>(TestClass5(), inToSet: true);
 
     final instances = getIt<Set<TestBaseClass>>();
 
     expect(instances.length, 2);
+    expect(instances.any((instance) => instance is TestClass), true);
+    expect(instances.any((instance) => instance is TestClass5), true);
+  });
+
+  test('unregister multiple implementations set', () {
+    final getIt = GetIt.asNewInstance();
+
+    getIt.registerFactory<TestBaseClass>(() => TestClass(), inToSet: true);
+    getIt.registerSingleton<TestBaseClass>(TestClass5(), inToSet: true);
+
+    getIt.unregister<Set<TestBaseClass>>();
   });
 }
 

@@ -846,8 +846,11 @@ class _GetItImplementation implements GetIt {
       bool shouldSignalReady,
       DisposingFunc<T> disposeFunc) {
 
+    const inToSetNameKey = "{inToSet}";
+    final increment = _currentScope.allFactories.length;
+
     //unique instance name for type implementation
-    final setElementInstanceName = "${instanceName}_{inToSet}_${_currentScope.allFactories.length}";
+    final setElementInstanceName = "${instanceName}_${inToSetNameKey}_$increment";
 
     //register implementation
     _register<T, P1, P2>(
@@ -875,7 +878,7 @@ class _GetItImplementation implements GetIt {
       final factoriesByName = _currentScope.factoriesByName;
 
       return factoriesByName.keys
-          .where((name) => name?.contains("{inToSet}") ?? false)
+          .where((name) => name?.contains(inToSetNameKey) ?? false)
           .where((name) => factoriesByName[name].containsKey(T))
           .map((name) => get<T>(instanceName: name))
           .toSet();
