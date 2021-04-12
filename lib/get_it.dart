@@ -356,6 +356,10 @@ abstract class GetIt {
   /// it no scope with [name] exists, nothing is popped and `false` is returned
   Future<bool> popScopesTill(String name);
 
+  /// Returns the name of the current scope if it has one otherwise null
+  /// if you are already on the baseScope it returns 'baseScope'
+  String? get currentScopeName;
+
   /// Clears the instance of a lazy singleton,
   /// being able to call the factory function on the next call
   /// of [get] on that type again.

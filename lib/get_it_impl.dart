@@ -707,6 +707,9 @@ class _GetItImplementation implements GetIt {
     return true;
   }
 
+  @override
+  String? get currentScopeName => _currentScope.name;
+
   void _register<T extends Object, P1, P2>({
     required _ServiceFactoryType type,
     FactoryFunc<T>? factoryFunc,
