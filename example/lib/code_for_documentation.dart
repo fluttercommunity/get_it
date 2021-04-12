@@ -1,9 +1,3 @@
-import 'package:flutter/material.dart';
-
-/// This file only contains code snippets for the readme file.
-/// just ignore it
-import 'package:get_it/get_it.dart';
-
 class AppModel {}
 
 class AppModelImplmentation extends AppModel {
@@ -26,17 +20,17 @@ class AppModelImplmentation extends AppModel {
 
 // Future restCall() async {}
 
-Widget init() {
-  bool testing;
+// Widget init() {
+//   bool testing;
   // ambient variable to access the service locator
 
-  GetIt getIt = GetIt.instance;
+  // GetIt getIt = GetIt.instance;
 
-  getIt.registerFactory<AppModel>(() => AppModelImplmentation());
+  // getIt.registerFactory<AppModel>(() => AppModelImplmentation());
 
-  GetIt.instance.registerSingleton<AppModel>(AppModelImplmentation());
+  // GetIt.instance.registerSingleton<AppModel>(AppModelImplmentation());
 
-  GetIt.I.registerLazySingleton<AppModel>(() => AppModelImplmentation());
+  // GetIt.I.registerLazySingleton<AppModel>(() => AppModelImplmentation());
 
   //   if (testing) {
   //     sl.registerSingleton<AppModel>(AppModelMock());
@@ -157,4 +151,4 @@ Widget init() {
 //   Widget build(BuildContext context) {
 //     return Container();
 //   }
-}
+// }

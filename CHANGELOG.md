@@ -1,3 +1,9 @@
+## [6.1.0] - 12.04.2021
+
+* Exceptions that occur during an async initialisation are now forwarded to the future that `allReady()` returns instead to get swallowed https://github.com/fluttercommunity/get_it/issues/148
+* Added a property `currentScopeName` to query the name of the currently active scope https://github.com/fluttercommunity/get_it/issues/153
+* `popScope` will know throw an Exception instead just an assert if you are already on the `baseScope` and you try to pop it. 
+
 ## [6.0.0] - 15.02.2021
 
 * Official null safety release

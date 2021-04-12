@@ -129,7 +129,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "6.0.0"
+    version: "6.0.1"
   glob:
     dependency: transitive
     description:
@@ -409,4 +409,4 @@ packages:
     source: hosted
     version: "2.2.1"
 sdks:
-  dart: ">=2.12.0-0.0 <3.0.0"
+  dart: ">=2.12.0 <3.0.0"
