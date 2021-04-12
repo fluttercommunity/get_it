@@ -54,66 +54,66 @@ Widget init() {
 
   //   // sl.registerFactoryAsync<AppModel>(
   //   //     () async => AppModelImplmentation(await restCall()));
-  final getIt = GetIt.instance;
+//   final getIt = GetIt.instance;
 
-  getIt.registerSingletonAsync<ConfigService>(() async {
-    final configService = ConfigService();
-    await configService.init();
-    return configService;
-  });
+//   getIt.registerSingletonAsync<ConfigService>(() async {
+//     final configService = ConfigService();
+//     await configService.init();
+//     return configService;
+//   });
 
-  getIt.registerSingletonAsync<RestService>(() async => RestService().init());
+//   getIt.registerSingletonAsync<RestService>(() async => RestService().init());
 
-  /// this example uses an async factory function
-  getIt.registerSingletonAsync<DbService>(createDbServiceAsync,
-      dependsOn: [ConfigService]);
+//   /// this example uses an async factory function
+//   getIt.registerSingletonAsync<DbService>(createDbServiceAsync,
+//       dependsOn: [ConfigService]);
 
-  getIt.registerSingletonWithDependencies<AppModel>(
-      () => AppModelImplmentation(),
-      dependsOn: [ConfigService, DbService, RestService]);
+//   getIt.registerSingletonWithDependencies<AppModel>(
+//       () => AppModelImplmentation(),
+//       dependsOn: [ConfigService, DbService, RestService]);
 
-  return FutureBuilder(
-      future: getIt.allReady(),
-      builder: (BuildContext context, AsyncSnapshot snapshot) {
-        if (snapshot.hasData) {
-          return Scaffold(
-            body: Center(
-              child: Text('The first real Page of your App'),
-            ),
-          );
-        } else {
-          return CircularProgressIndicator();
-        }
-      });
-}
+//   return FutureBuilder(
+//       future: getIt.allReady(),
+//       builder: (BuildContext context, AsyncSnapshot snapshot) {
+//         if (snapshot.hasData) {
+//           return Scaffold(
+//             body: Center(
+//               child: Text('The first real Page of your App'),
+//             ),
+//           );
+//         } else {
+//           return CircularProgressIndicator();
+//         }
+//       });
+// }
 
-class ConfigService {
-  ConfigService() {
-    init();
-  }
-  Future init() async {
-    // do your async initialisation...
+// class ConfigService {
+//   ConfigService() {
+//     init();
+//   }
+//   Future init() async {
+//     // do your async initialisation...
 
-    GetIt.instance.signalReady(this);
-  }
-}
+//     GetIt.instance.signalReady(this);
+//   }
+// }
 
-class RestService {
-  Future<RestService> init() async {
-    Future.delayed(Duration(seconds: 1));
-    return this;
-  }
-}
+// class RestService {
+//   Future<RestService> init() async {
+//     Future.delayed(Duration(seconds: 1));
+//     return this;
+//   }
+// }
 
-class DbService {
-  Future init() async {
-    return null;
-  }
-}
+// class DbService {
+//   Future init() async {
+//     return null;
+//   }
+// }
 
-Future<DbService> createDbServiceAsync() async {
-  return DbService();
-}
+// Future<DbService> createDbServiceAsync() async {
+//   return DbService();
+// }
 
 // /// instead of
 // MaterialButton(
@@ -133,28 +133,28 @@ Future<DbService> createDbServiceAsync() async {
 //   onPressed: sl.<AppModel>().update
 //   ),
 
-class StartupPage extends StatefulWidget {
-  @override
-  _StartupPageState createState() => _StartupPageState();
-}
+// class StartupPage extends StatefulWidget {
+//   @override
+//   _StartupPageState createState() => _StartupPageState();
+// }
 
-class _StartupPageState extends State<StartupPage> {
-  @override
-  void initState() {
-    GetIt.I.allReady().then((_) => Navigator.pushReplacement(
-        context, MaterialPageRoute(builder: (context) => MainPage())));
-    super.initState();
-  }
+// class _StartupPageState extends State<StartupPage> {
+//   @override
+//   void initState() {
+//     GetIt.I.allReady().then((_) => Navigator.pushReplacement(
+//         context, MaterialPageRoute(builder: (context) => MainPage())));
+//     super.initState();
+//   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Container();
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return Container();
+//   }
+// }
 
-class MainPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container();
-  }
+// class MainPage extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     return Container();
+//   }
 }

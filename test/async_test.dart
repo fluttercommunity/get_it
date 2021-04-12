@@ -147,7 +147,7 @@ void main() {
   });
 
   test(
-      'signalReady will throw if any Singletons that has signalsReads==true '
+      'signalReady will throw if any Singletons that has signalsReady==true '
       'have not signaled completion', () async {
     final getIt = GetIt.instance;
 
@@ -222,6 +222,7 @@ void main() {
         getIt.isReadySync<TestClass2>(instanceName: 'Second Instance'), false);
 
     final timer = Stopwatch()..start();
+    final t = getIt<TestClass>();
     await getIt.allReady(timeout: const Duration(milliseconds: 20));
     expect(timer.elapsedMilliseconds, greaterThan(5));
   });
@@ -294,6 +295,27 @@ void main() {
     expect(getIt.allReady(), completes);
   });
 
+  test('allReady propagades Exceptions that occur in the factory functions',
+      () async {
+    final getIt = GetIt.instance;
+    getIt.reset();
+
+    getIt.registerSingletonAsync<TestClass>(
+      () async => TestClass(internalCompletion: false).init(),
+    );
+    getIt.registerSingletonAsync<TestClass2>(
+      () async {
+        final instance = TestClass2(internalCompletion: false);
+        await Future.delayed(const Duration(milliseconds: 500));
+        throw StateError('Intentional');
+      },
+    );
+    getIt.registerSingletonAsync(
+        () async => TestClass2(internalCompletion: false)..init(),
+        instanceName: 'Second Instance');
+
+    expect(getIt.allReady(), throwsA(isA<StateError>()));
+  });
   test('ready manual synchronisation of sequence', () async {
     final getIt = GetIt.instance;
     getIt.reset();

@@ -756,13 +756,11 @@ class _GetItImplementation implements GetIt {
     );
     factoriesByName[instanceName]![T] = serviceFactory;
 
-    // simple Singletons get creates immediately
+    // simple Singletons get are already created, nothing else has to be done
     if (type == _ServiceFactoryType.constant &&
         !shouldSignalReady &&
         !isAsync &&
-        (dependsOn?.isEmpty ?? false)) {
-      serviceFactory.instance = factoryFunc!();
-      serviceFactory._readyCompleter.complete();
+        (dependsOn?.isEmpty ?? true)) {
       return;
     }
 
@@ -1042,7 +1040,12 @@ class _GetItImplementation implements GetIt {
             !x.isReady &&
             x.factoryType == _ServiceFactoryType.constant)
         .forEach((f) {
-      futures.add(f._readyCompleter.future);
+      if (f.pendingResult != null) {
+        futures.add(f.pendingResult!);
+      } else {
+        futures.add(f._readyCompleter
+            .future); // non async singletons that have signalReady == true and not dependencies
+      }
     });
     futures.close();
     if (timeout != null) {
