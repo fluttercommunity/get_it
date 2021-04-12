@@ -680,10 +680,10 @@ class _GetItImplementation implements GetIt {
   /// As dispose functions can be async, you should await this function.
   @override
   Future<void> popScope() async {
-    assert(
-      _scopes.length > 1,
-      "You are already on the base scope. you can't pop this one",
-    );
+    throwIfNot(
+        _scopes.length > 1,
+        StateError(
+            "GetIt: You are already on the base scope. you can't pop this one"));
     await _currentScope.dispose();
     await _currentScope.reset(dispose: true);
     _scopes.removeLast();

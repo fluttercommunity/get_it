@@ -115,43 +115,30 @@ void main() {
 
     expect(disposeCounter, 3);
   });
-
-  test('popscope until', () async {
+  test('popscope with destructors', () async {
     final getIt = GetIt.instance;
-    constructorCounter = 0;
 
-    getIt.registerSingleton<TestClass>(TestClass(),
-        instanceName: 'scope0', dispose: (x) => x.dispose());
+    getIt.registerSingleton<TestClass>(TestClass('Basescope'),
+        dispose: (x) => x.dispose());
 
-    getIt.pushNewScope(scopeName: 'scope1', dispose: () => disposeCounter++);
-    getIt.registerSingleton<TestClass>(TestClass(),
-        instanceName: 'scope1', dispose: (x) => x.dispose());
+    getIt.pushNewScope(dispose: () {
+      return disposeCounter++;
+    });
 
-    getIt.pushNewScope(scopeName: 'scope2', dispose: () => disposeCounter++);
-    getIt.registerSingleton<TestClass>(TestClass(),
-        instanceName: 'scope2', dispose: (x) => x.dispose());
+    getIt.registerSingleton<TestClass>(TestClass('2. scope'),
+        dispose: (x) => x.dispose());
+    getIt.registerSingleton<TestClass2>(TestClass2('2. scope'),
+        dispose: (x) => x.dispose());
 
-    getIt.pushNewScope(scopeName: 'scope3', dispose: () => disposeCounter++);
-    getIt.registerSingleton<TestClass>(TestClass(),
-        instanceName: 'scope3', dispose: (x) => x.dispose());
+    await getIt.popScope();
 
-    expect(getIt<TestClass>(instanceName: 'scope0'), isNotNull);
-    expect(getIt<TestClass>(instanceName: 'scope1'), isNotNull);
-    expect(getIt<TestClass>(instanceName: 'scope2'), isNotNull);
-    expect(getIt<TestClass>(instanceName: 'scope3'), isNotNull);
-    expect(() => getIt.get<TestClass>(),
-        throwsA(const TypeMatcher<AssertionError>()));
+    expect(disposeCounter, 3);
+  });
 
-    await getIt.popScopesTill('scope2');
+  test('popscope throws if already on the base scope', () async {
+    final getIt = GetIt.instance;
 
-    expect(getIt<TestClass>(instanceName: 'scope0'), isNotNull);
-    expect(getIt<TestClass>(instanceName: 'scope1'), isNotNull);
-    expect(() => getIt.get<TestClass>(instanceName: 'scope2'),
-        throwsA(const TypeMatcher<AssertionError>()));
-    expect(() => getIt.get<TestClass>(instanceName: 'scope3'),
-        throwsA(const TypeMatcher<AssertionError>()));
-
-    expect(disposeCounter, 4);
+    expect(() => getIt.popScope(), throwsA(const TypeMatcher<StateError>()));
   });
 
   test('resetScope', () async {
