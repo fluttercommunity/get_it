@@ -1,3 +1,6 @@
+## [6.0.0] - 15.02.2021
+
+* Official null safety release
 ## [5.0.2] - 08.12.2020
 
 * fixed https://github.com/fluttercommunity/get_it/issues/138 when calling `unRegister` the dispose function
