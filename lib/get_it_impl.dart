@@ -918,7 +918,7 @@ class _GetItImplementation implements GetIt {
 
     if (instanceFactory.instance != null) {
       if (disposingFunction != null) {
-        disposingFunction.call(instanceFactory.instance as T /*?*/);
+        disposingFunction.call(instanceFactory.instance as T);
       } else {
         instanceFactory.dispose();
       }
