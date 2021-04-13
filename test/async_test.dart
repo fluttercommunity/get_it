@@ -575,19 +575,20 @@ void main() {
     expect(instance2.param2, 5);
   });
 
-  test('register factory with Params with wrong type', () {
-    final getIt = GetIt.instance;
-    getIt.reset();
+// this isn't currently possible to ensure because a limitation of Dart
+  // test('register factory with Params with wrong type', () {
+  //   final getIt = GetIt.instance;
+  //   getIt.reset();
 
-    constructorCounter = 0;
-    getIt.registerFactoryParamAsync<TestClassParam, String, int>(
-        (s, i) async => TestClassParam(param1: s, param2: i));
+  //   constructorCounter = 0;
+  //   getIt.registerFactoryParamAsync<TestClassParam, String, int>(
+  //       (s, i) async => TestClassParam(param1: s, param2: i));
 
-    //final instance1 = getIt.get<TestBaseClass>();
+  //   //final instance1 = getIt.get<TestBaseClass>();
 
-    expect(() => getIt.getAsync<TestClassParam>(param1: 'abc', param2: '3'),
-        throwsA(const TypeMatcher<AssertionError>()));
-  });
+  //   expect(() => getIt.getAsync<TestClassParam>(param1: 'abc', param2: '3'),
+  //       throwsA(const TypeMatcher<AssertionError>()));
+  // });
 
   test('asyncFactory called with get instead of getAsync', () async {
     final getIt = GetIt.instance;

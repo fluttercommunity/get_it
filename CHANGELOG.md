@@ -1,3 +1,6 @@
+## [6.1.1] - 13.04.2021
+
+* small fix in getAsync with parameters
 ## [6.1.0] - 12.04.2021
 
 * Exceptions that occur during an async initialisation are now forwarded to the future that `allReady()` returns instead to get swallowed https://github.com/fluttercommunity/get_it/issues/148
