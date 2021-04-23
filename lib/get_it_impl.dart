@@ -790,7 +790,7 @@ class _GetItImplementation implements GetIt {
 
         for (final type in dependsOn!) {
           final dependentFactory =
-              _findFirstFactoryByNameAndTypeOrNull(instanceName, type);
+              _findFirstFactoryByNameAndTypeOrNull(null, type);
           throwIf(dependentFactory == null,
               ArgumentError('Dependent Type $type is not registered in GetIt'));
           throwIfNot(
