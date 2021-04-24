@@ -389,13 +389,13 @@ void main() {
 
     getIt.registerSingletonWithDependencies<TestClass2>(() {
       return TestClass2(internalCompletion: false);
-    }, dependsOn: [TestClass]);
+    }, dependsOn: [GetItDep(TestClass)]);
 
     getIt.registerSingletonAsync<TestClass3>(() async {
       final instance = TestClass3(internalCompletion: false);
       await instance.init();
       return instance;
-    }, dependsOn: [TestClass, TestClass2]);
+    }, dependsOn: [GetItDep(TestClass), GetItDep(TestClass2)]);
 
     expect(getIt.isReadySync<TestClass>(), false);
     expect(getIt.isReadySync<TestClass2>(), false);
@@ -443,11 +443,11 @@ void main() {
       }
       final instance = TestClass2(internalCompletion: true, getIt: getIt);
       return instance;
-    }, dependsOn: [TestClass], signalsReady: true);
+    }, dependsOn: [GetItDep(TestClass)], signalsReady: true);
 
     getIt.registerSingletonWithDependencies<TestClass3>(
         () => TestClass3(internalCompletion: false),
-        dependsOn: [TestClass, TestClass2]);
+        dependsOn: [GetItDep(TestClass), GetItDep(TestClass2)]);
 
     expect(getIt.isReadySync<TestClass>(), false);
     expect(getIt.isReadySync<TestClass2>(), false);
@@ -490,7 +490,7 @@ void main() {
         signalsReady: true);
     getIt.registerSingletonAsync<TestClass2>(
         () async => TestClass2(internalCompletion: false)..init(),
-        dependsOn: [TestClass]);
+        dependsOn: [GetItDep(TestClass)]);
     // this here should signal internally but doesn't do it.
     getIt.registerSingletonAsync<TestClass3>(
         () async => TestClass3(internalCompletion: false),
@@ -656,20 +656,40 @@ void main() {
     expect(instance, const TypeMatcher<TestClass>());
   });
 
-  test('Register singleton with dependency and instanceName', () async {
-    final getIt = GetIt.instance;
-    await getIt.reset();
-    getIt.registerSingletonAsync<TestClass>(
+  group("dependency", () {
+    test('Register singleton with dependency and instanceName', () async {
+      final getIt = GetIt.instance;
+      await getIt.reset();
+      getIt.registerSingletonAsync<TestClass>(
         () async => TestClass(internalCompletion: false),
-    );
+      );
 
-    getIt.registerSingletonAsync<TestClass2>(
-        () async => TestClass2(internalCompletion: false),
-        instanceName: "test2InstanceName",
-        dependsOn: [TestClass]);
+      getIt.registerSingletonAsync<TestClass2>(
+          () async => TestClass2(internalCompletion: false),
+          instanceName: "test2InstanceName",
+          dependsOn: [GetItDep(TestClass)]);
 
-    await getIt.allReady();
-    expect(getIt.get<TestClass2>(instanceName: "test2InstanceName"), isA<TestClass2>());
+      await getIt.allReady();
+      expect(getIt.get<TestClass2>(instanceName: "test2InstanceName"),
+          isA<TestClass2>());
+    });
+
+    test('Register two dependent singleton with instanceNames', () async {
+      final getIt = GetIt.instance;
+      await getIt.reset();
+      getIt.registerSingletonAsync<TestClass>(
+          () async => TestClass(internalCompletion: false),
+          instanceName: "test1InstanceName");
+
+      getIt.registerSingletonAsync<TestClass2>(
+          () async => TestClass2(internalCompletion: false),
+          instanceName: "test2InstanceName",
+          dependsOn: [GetItDep(TestClass, instanceName: "test1InstanceName")]);
+
+      await getIt.allReady();
+      expect(getIt.get<TestClass2>(instanceName: "test2InstanceName"),
+          isA<TestClass2>());
+    });
   });
 
   test('Code for ReadMe', () async {

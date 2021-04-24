@@ -17,7 +17,7 @@ As your App grows, at some point you will need to put your app's logic in classe
 But now you need a way to access these objects from your UI code. When I came to Flutter from the .Net world, the only way to do this was the use of InheritedWidgets. I found the way to use them by wrapping them in a StatefulWidget; quite cumbersome and has problems working consistently. Also:
 
 * I missed the ability to easily switch the implementation for a mocked version without changing the UI.
-* The fact that you need a `BuildContext` to access your objects made it inaccessible from the Business layer. 
+* The fact that you need a `BuildContext` to access your objects made it inaccessible from the Business layer.
 
 
 Accessing an object from anywhere in an App can be done by other ways, but:
@@ -37,7 +37,7 @@ GetIt is:
 
 ### The get_it_mixin
 
-GetIt isn't a state management solution! It's a locator for your objects so you need some other way to notify your UI about changes like `Streams` or `ValueNotifiers`. But together with the [get_it_mixin](https://pub.dev/packages/get_it_mixin) it gets a full featured easy statem management solution that integrates with the Objects registered in get_it 
+GetIt isn't a state management solution! It's a locator for your objects so you need some other way to notify your UI about changes like `Streams` or `ValueNotifiers`. But together with the [get_it_mixin](https://pub.dev/packages/get_it_mixin) it gets a full featured easy statem management solution that integrates with the Objects registered in get_it
 
 ## Getting Started
 
@@ -88,7 +88,7 @@ GetIt getIt = GetIt.instance;
 ```
 
 
-> You can use any name you want which makes Brian :smiley: happy like (`sl, backend, services...`) ;-) 
+> You can use any name you want which makes Brian :smiley: happy like (`sl, backend, services...`) ;-)
 
 
 Before you can access your objects you have to register them within `GetIt` typically direct in your start-up code.
@@ -155,7 +155,7 @@ You have to pass a factory function `func` that returns an instance of an implem
 ### Overwriting registrations
 
 If you try to register a type more than once you will fail with an assertion in debug mode because normally this is not needed and probably a bug.
-If you really have to overwrite a registration, then you can by setting the property `allowReassignment==true`. 
+If you really have to overwrite a registration, then you can by setting the property `allowReassignment==true`.
 
 ### Testing if a Singleton is already registered
 You can check if a certain Type or instance is already registered in GetIt with:
@@ -208,7 +208,7 @@ Future<void> reset({bool dispose = true});
 ```
 ## Scopes
 With V5.0 of GetIt it now supports hierarchical scoping of registration. What does this mean?
-You can push a new registration scope like you push a new page on the Navigator. Any registration after that will be registered in this new scope. When accessing an object with `get` GetIt first checks the topmost scope for an registration and then the ones below. This means you can register the same type that was already registered in a lower scope again in a scope above and you will always get the latest registered object. 
+You can push a new registration scope like you push a new page on the Navigator. Any registration after that will be registered in this new scope. When accessing an object with `get` GetIt first checks the topmost scope for an registration and then the ones below. This means you can register the same type that was already registered in a lower scope again in a scope above and you will always get the latest registered object.
 
 Imagine an app that can be used with or without a login. On App start-up a `DefaultUser` object is registered with the abstract type `User` as singleton. As soon as the user logs in, a new scope is pushed and a new `LoggedInUser` object again with the `User` type is registered that allows more functions. For the rest of the App nothing has changed as it still accesses `User` objects through GetIt.
 As soon as the user Logs off all you have to do is pop the Scope and automatically the `DefaultUser` is used again.
@@ -220,8 +220,8 @@ From V5.0 on you can pass a `dispose` function when registering any Singletons. 
 
 ```Dart
 DisposingFunc<T> dispose
-``` 
-where `DisposingFunc` is defined as 
+```
+where `DisposingFunc` is defined as
 
 ```Dart
 typedef DisposingFunc<T> = FutureOr Function(T param);
@@ -229,7 +229,7 @@ typedef DisposingFunc<T> = FutureOr Function(T param);
 
 So you can pass simple and async functions as this parameter. This function is called when you pop or reset the scope or when you reset GetIt completely.
 
-When you push a new scope you can also pass a `dispose` function that is called when a scope is popped or reset but before the dispose functions of the registered objects is called which mean it can still access the objects that were registered in that scope. 
+When you push a new scope you can also pass a `dispose` function that is called when a scope is popped or reset but before the dispose functions of the registered objects is called which mean it can still access the objects that were registered in that scope.
 
 
 ### Scope functions
@@ -300,13 +300,13 @@ You create an Singleton with an asynchronous creation function
 ```Dart
   void registerSingletonAsync<T>(FactoryFuncAsync<T> factoryfunc,
       {String instanceName,
-      Iterable<Type> dependsOn,
+      Iterable<GetItDep> dependsOn,
       bool signalsReady = false});
 ```
 
 The difference to a normal Singleton is that you don't pass an existing instance but provide an factory function
 that returns a `Future` that completes at the end of `factoryFunc` and signals that the Singleton is ready to use unless `true` is passed for `signalsReady`. (see next chapter)
-To synchronize with other "async Singletons" you can pass a list of `Type`s in `dependsOn` that have to be ready before the passed factory is executed.
+To synchronize with other "async Singletons" you can pass a list of `GetItDep`s in `dependsOn` that have to be ready before the passed factory is executed.
 
 There are two ways to signal the system that an instance is ready.
 
@@ -381,11 +381,11 @@ In case that this services have to be initialized in a certain order because the
   getIt.registerSingletonAsync<RestService>(() async => RestService().init());
 
   getIt.registerSingletonAsync<DbService>(createDbServiceAsync,
-      dependsOn: [ConfigService]);
+      dependsOn: [GetItDep(ConfigService)]);
 
   getIt.registerSingletonWithDependencies<AppModel>(
       () => AppModelImplmentation(),
-      dependsOn: [ConfigService, DbService, RestService]);
+      dependsOn: [GetItDep(ConfigService), GetItDep(DbService), GetItDep(RestService)]);
 ```
 
 When using `dependsOn` you ensure that the registration waits with creating its singleton on the completion of the type defined in `dependsOn`.
@@ -432,8 +432,8 @@ class ConfigService {
   }
 }
 ```
-### Using `allReady` repeatedly 
-Even if you already have awaited `allReady`, the moment you register new async singletons or singletons with dependencies you can use `allReady` again. This makes especially sense if you uses scopes where every scope needs to get initialized. 
+### Using `allReady` repeatedly
+Even if you already have awaited `allReady`, the moment you register new async singletons or singletons with dependencies you can use `allReady` again. This makes especially sense if you uses scopes where every scope needs to get initialized.
 
 ### Manual triggering **allReady** (almost deprecated)
 
@@ -530,7 +530,7 @@ If you have a mocked version of a Service, you can easily switch between that an
 Ok you have been warned! All registration functions have an optional named parameter `instanceName`. Providing a name with factory/singleton here registers that instance with that name and a type. Consequently `get()` has also an optional parameter `instanceName` to access
 factories/singletons that were registered by name.
 
-**IMPORTANT:** Each name must be unique per type.  
+**IMPORTANT:** Each name must be unique per type.
 
 ### More than one instance of GetIt
 While not recommended, you can create your own independent instance of `GetIt`if you don't want to share your locator with some

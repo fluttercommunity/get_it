@@ -40,6 +40,17 @@ typedef FactoryFuncParamAsync<T, P1, P2> = Future<T> Function(
   P2 param2,
 );
 
+/// Data structure used to identify a dependency by type and instanceName
+class GetItDep {
+  final Type type;
+  final String? instanceName;
+
+  GetItDep(this.type, {this.instanceName});
+
+  @override
+  String toString() => "GetItDep(type:$type, instanceName:$instanceName)";
+}
+
 class WaitingTimeOutException implements Exception {
   /// In case of an timeout while waiting for an instance to get ready
   /// This exception is thrown with information about who is still waiting.
@@ -59,6 +70,7 @@ class WaitingTimeOutException implements Exception {
     this.notReadyYet,
     this.areReady,
   );
+
   // todo : assert(areWaitedBy != null && notReadyYet != null && areReady != null);
 
   @override
@@ -245,7 +257,7 @@ abstract class GetIt {
   void registerSingletonWithDependencies<T extends Object>(
     FactoryFunc<T> factoryFunc, {
     String? instanceName,
-    Iterable<Type>? dependsOn,
+    Iterable<GetItDep>? dependsOn,
     bool? signalsReady,
     DisposingFunc<T>? dispose,
   });
@@ -270,7 +282,7 @@ abstract class GetIt {
   void registerSingletonAsync<T extends Object>(
     FactoryFuncAsync<T> factoryFunc, {
     String? instanceName,
-    Iterable<Type>? dependsOn,
+    Iterable<GetItDep>? dependsOn,
     bool? signalsReady,
     DisposingFunc<T>? dispose,
   });

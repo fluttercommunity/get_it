@@ -1,3 +1,5 @@
+import 'package:get_it/get_it.dart';
+
 class AppModel {}
 
 class AppModelImplmentation extends AppModel {
@@ -60,11 +62,11 @@ class AppModelImplmentation extends AppModel {
 
 //   /// this example uses an async factory function
 //   getIt.registerSingletonAsync<DbService>(createDbServiceAsync,
-//       dependsOn: [ConfigService]);
+//       dependsOn: [GetItDep(ConfigService)]);
 
 //   getIt.registerSingletonWithDependencies<AppModel>(
 //       () => AppModelImplmentation(),
-//       dependsOn: [ConfigService, DbService, RestService]);
+//       dependsOn: [GetItDep(ConfigService), GetItDep(DbService), GetItDep(RestService)]);
 
 //   return FutureBuilder(
 //       future: getIt.allReady(),

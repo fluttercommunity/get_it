@@ -553,7 +553,7 @@ class _GetItImplementation implements GetIt {
   void registerSingletonWithDependencies<T extends Object>(
     FactoryFunc<T> factoryFunc, {
     String? instanceName,
-    Iterable<Type>? dependsOn,
+    Iterable<GetItDep>? dependsOn,
     bool? signalsReady,
     DisposingFunc<T>? dispose,
   }) {
@@ -589,7 +589,7 @@ class _GetItImplementation implements GetIt {
   void registerSingletonAsync<T extends Object>(
     FactoryFuncAsync<T> factoryFunc, {
     String? instanceName,
-    Iterable<Type>? dependsOn,
+    Iterable<GetItDep>? dependsOn,
     bool? signalsReady,
     DisposingFunc<T>? dispose,
   }) {
@@ -722,7 +722,7 @@ class _GetItImplementation implements GetIt {
     T? instance,
     required String? instanceName,
     required bool isAsync,
-    Iterable<Type>? dependsOn,
+    Iterable<GetItDep>? dependsOn,
     required bool shouldSignalReady,
     DisposingFunc<T>? disposeFunc,
   }) {
@@ -788,14 +788,14 @@ class _GetItImplementation implements GetIt {
         /// before we start to create itself we use [dependentFutureGroup]
         final dependentFutureGroup = FutureGroup();
 
-        for (final type in dependsOn!) {
+        for (final dependency in dependsOn!) {
           final dependentFactory =
-              _findFirstFactoryByNameAndTypeOrNull(null, type);
+              _findFirstFactoryByNameAndTypeOrNull(dependency.instanceName, dependency.type);
           throwIf(dependentFactory == null,
-              ArgumentError('Dependent Type $type is not registered in GetIt'));
+              ArgumentError('Dependent Type $dependency is not registered in GetIt'));
           throwIfNot(
             dependentFactory!.canBeWaitedFor,
-            ArgumentError('Dependent Type $type is not an async Singleton'),
+            ArgumentError('Dependent Type $dependency is not an async Singleton'),
           );
           dependentFactory.objectsWaiting.add(serviceFactory.registrationType);
           dependentFutureGroup.add(dependentFactory._readyCompleter.future);
