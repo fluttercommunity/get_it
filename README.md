@@ -300,13 +300,13 @@ You create an Singleton with an asynchronous creation function
 ```Dart
   void registerSingletonAsync<T>(FactoryFuncAsync<T> factoryfunc,
       {String instanceName,
-      Iterable<GetItDep> dependsOn,
+      Iterable<Type> dependsOn,
       bool signalsReady = false});
 ```
 
 The difference to a normal Singleton is that you don't pass an existing instance but provide an factory function
 that returns a `Future` that completes at the end of `factoryFunc` and signals that the Singleton is ready to use unless `true` is passed for `signalsReady`. (see next chapter)
-To synchronize with other "async Singletons" you can pass a list of `GetItDep`s in `dependsOn` that have to be ready before the passed factory is executed.
+To synchronize with other "async Singletons" you can pass a list of `Type`s in `dependsOn` that have to be ready before the passed factory is executed.
 
 There are two ways to signal the system that an instance is ready.
 
@@ -381,11 +381,11 @@ In case that this services have to be initialized in a certain order because the
   getIt.registerSingletonAsync<RestService>(() async => RestService().init());
 
   getIt.registerSingletonAsync<DbService>(createDbServiceAsync,
-      dependsOn: [GetItDep(ConfigService)]);
+      dependsOn: [ConfigService]);
 
   getIt.registerSingletonWithDependencies<AppModel>(
       () => AppModelImplmentation(),
-      dependsOn: [GetItDep(ConfigService), GetItDep(DbService), GetItDep(RestService)]);
+      dependsOn: [ConfigService, DbService, RestService]);
 ```
 
 When using `dependsOn` you ensure that the registration waits with creating its singleton on the completion of the type defined in `dependsOn`.

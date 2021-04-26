@@ -41,7 +41,7 @@ typedef FactoryFuncParamAsync<T, P1, P2> = Future<T> Function(
 );
 
 /// Data structure used to identify a dependency by type and instanceName
-class GetItDep {
+class GetItDep extends Type {
   final Type type;
   final String? instanceName;
 
@@ -257,7 +257,7 @@ abstract class GetIt {
   void registerSingletonWithDependencies<T extends Object>(
     FactoryFunc<T> factoryFunc, {
     String? instanceName,
-    Iterable<GetItDep>? dependsOn,
+    Iterable<Type>? dependsOn,
     bool? signalsReady,
     DisposingFunc<T>? dispose,
   });
@@ -282,7 +282,7 @@ abstract class GetIt {
   void registerSingletonAsync<T extends Object>(
     FactoryFuncAsync<T> factoryFunc, {
     String? instanceName,
-    Iterable<GetItDep>? dependsOn,
+    Iterable<Type>? dependsOn,
     bool? signalsReady,
     DisposingFunc<T>? dispose,
   });

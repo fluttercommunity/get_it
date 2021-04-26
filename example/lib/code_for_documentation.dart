@@ -62,11 +62,11 @@ class AppModelImplmentation extends AppModel {
 
 //   /// this example uses an async factory function
 //   getIt.registerSingletonAsync<DbService>(createDbServiceAsync,
-//       dependsOn: [GetItDep(ConfigService)]);
+//       dependsOn: [ConfigService]);
 
 //   getIt.registerSingletonWithDependencies<AppModel>(
 //       () => AppModelImplmentation(),
-//       dependsOn: [GetItDep(ConfigService), GetItDep(DbService), GetItDep(RestService)]);
+//       dependsOn: [ConfigService, DbService, RestService]);
 
 //   return FutureBuilder(
 //       future: getIt.allReady(),
