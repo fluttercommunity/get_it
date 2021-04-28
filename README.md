@@ -37,7 +37,7 @@ GetIt is:
 
 ### The get_it_mixin
 
-GetIt isn't a state management solution! It's a locator for your objects so you need some other way to notify your UI about changes like `Streams` or `ValueNotifiers`. But together with the [get_it_mixin](https://pub.dev/packages/get_it_mixin) it gets a full featured easy state management solution that integrates with the Objects registered in get_it 
+GetIt isn't a state management solution! It's a locator for your objects so you need some other way to notify your UI about changes like `Streams` or `ValueNotifiers`. But together with the [get_it_mixin](https://pub.dev/packages/get_it_mixin) it gets a full featured easy state management solution that integrates with the Objects registered in get_it
 
 ## Getting Started
 
@@ -538,8 +538,8 @@ factories/singletons that were registered by name.
   class RestService1 implements RestService{}
   class RestService2 implements RestService{}
 
-  getIt.registerSingletonAsync<RestService>(() async => RestService1().init(), instanceName : "restService1");
-  getIt.registerSingletonAsync<RestService>(() async => RestService2().init(), instanceName : "restService2");
+  getIt.registerSingletonAsync<RestService>(() async => RestService1(), instanceName : "restService1");
+  getIt.registerSingletonAsync<RestService>(() async => RestService2(), instanceName : "restService2");
 
   getIt.registerSingletonWithDependencies<AppModel>(
       () {
