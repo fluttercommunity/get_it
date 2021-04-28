@@ -37,7 +37,7 @@ GetIt is:
 
 ### The get_it_mixin
 
-GetIt isn't a state management solution! It's a locator for your objects so you need some other way to notify your UI about changes like `Streams` or `ValueNotifiers`. But together with the [get_it_mixin](https://pub.dev/packages/get_it_mixin) it gets a full featured easy statem management solution that integrates with the Objects registered in get_it 
+GetIt isn't a state management solution! It's a locator for your objects so you need some other way to notify your UI about changes like `Streams` or `ValueNotifiers`. But together with the [get_it_mixin](https://pub.dev/packages/get_it_mixin) it gets a full featured easy state management solution that integrates with the Objects registered in get_it 
 
 ## Getting Started
 
