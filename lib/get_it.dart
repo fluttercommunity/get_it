@@ -41,14 +41,14 @@ typedef FactoryFuncParamAsync<T, P1, P2> = Future<T> Function(
 );
 
 /// Data structure used to identify a dependency by type and instanceName
-class GetItDep extends Type {
+class InitDependency extends Type {
   final Type type;
   final String? instanceName;
 
-  GetItDep(this.type, {this.instanceName});
+  InitDependency(this.type, {this.instanceName});
 
   @override
-  String toString() => "GetItDep(type:$type, instanceName:$instanceName)";
+  String toString() => "InitDependency(type:$type, instanceName:$instanceName)";
 }
 
 class WaitingTimeOutException implements Exception {

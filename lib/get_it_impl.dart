@@ -791,7 +791,7 @@ class _GetItImplementation implements GetIt {
         for (final dependency in dependsOn!) {
           late final _ServiceFactory<Object, dynamic, dynamic>?
               dependentFactory;
-          if (dependency is GetItDep) {
+          if (dependency is InitDependency) {
             dependentFactory = _findFirstFactoryByNameAndTypeOrNull(
                 dependency.instanceName, dependency.type);
           } else {

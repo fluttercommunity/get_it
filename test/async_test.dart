@@ -684,7 +684,7 @@ void main() {
       getIt.registerSingletonAsync<TestClass2>(
           () async => TestClass2(internalCompletion: false),
           instanceName: "test2InstanceName",
-          dependsOn: [GetItDep(TestClass, instanceName: "test1InstanceName")]);
+          dependsOn: [InitDependency(TestClass, instanceName: "test1InstanceName")]);
 
       await getIt.allReady();
       expect(getIt.get<TestClass2>(instanceName: "test2InstanceName"),
