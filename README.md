@@ -532,6 +532,24 @@ factories/singletons that were registered by name.
 
 **IMPORTANT:** Each name must be unique per type.
 
+
+```Dart
+  abstract class RestService {}
+  class RestService1 implements RestService{}
+  class RestService2 implements RestService{}
+
+  getIt.registerSingletonAsync<RestService>(() async => RestService1().init(), instanceName : "restService1");
+  getIt.registerSingletonAsync<RestService>(() async => RestService2().init(), instanceName : "restService2");
+
+  getIt.registerSingletonWithDependencies<AppModel>(
+      () {
+          RestService restService1 = GetIt.I.get<RestService>(instanceName: "restService1");
+          return AppModelImplmentation(restService1);
+      },
+      dependsOn: [InitDependency(RestService, instanceName:"restService1")],
+  );
+```
+
 ### More than one instance of GetIt
 While not recommended, you can create your own independent instance of `GetIt`if you don't want to share your locator with some
 other package or because the physics of your planet demands it :-)
