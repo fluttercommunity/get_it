@@ -390,6 +390,15 @@ In case that this services have to be initialized in a certain order because the
 
 When using `dependsOn` you ensure that the registration waits with creating its singleton on the completion of the type defined in `dependsOn`.
 
+The `dependsOn` field also accepts `InitDependency` classes that allow specifying the dependency by type and `instanceName`.
+
+```Dart
+  getIt.registerSingletonAsync<RestService>(() async => RestService().init(), instanceName:"rest1");
+
+  getIt.registerSingletonWithDependencies<AppModel>(
+      () => AppModelImplmentation(),
+      dependsOn: [InitDependency(RestService, instanceName:"rest1")]);
+```
 
 ### Manually signalling the ready state of a Singleton
 Sometimes the mechanism of `dependsOn` might not give you enough control. For this case you can use `isReady` to wait for a certain singleton:
