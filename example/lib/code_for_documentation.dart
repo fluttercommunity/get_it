@@ -1,3 +1,5 @@
+import 'package:get_it/get_it.dart';
+
 class AppModel {}
 
 class AppModelImplmentation extends AppModel {

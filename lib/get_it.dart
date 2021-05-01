@@ -40,6 +40,17 @@ typedef FactoryFuncParamAsync<T, P1, P2> = Future<T> Function(
   P2 param2,
 );
 
+/// Data structure used to identify a dependency by type and instanceName
+class InitDependency extends Type {
+  final Type type;
+  final String? instanceName;
+
+  InitDependency(this.type, {this.instanceName});
+
+  @override
+  String toString() => "InitDependency(type:$type, instanceName:$instanceName)";
+}
+
 class WaitingTimeOutException implements Exception {
   /// In case of an timeout while waiting for an instance to get ready
   /// This exception is thrown with information about who is still waiting.
@@ -59,6 +70,7 @@ class WaitingTimeOutException implements Exception {
     this.notReadyYet,
     this.areReady,
   );
+
   // todo : assert(areWaitedBy != null && notReadyYet != null && areReady != null);
 
   @override

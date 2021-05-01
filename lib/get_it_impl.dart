@@ -788,14 +788,24 @@ class _GetItImplementation implements GetIt {
         /// before we start to create itself we use [dependentFutureGroup]
         final dependentFutureGroup = FutureGroup();
 
-        for (final type in dependsOn!) {
-          final dependentFactory =
-              _findFirstFactoryByNameAndTypeOrNull(instanceName, type);
-          throwIf(dependentFactory == null,
-              ArgumentError('Dependent Type $type is not registered in GetIt'));
+        for (final dependency in dependsOn!) {
+          late final _ServiceFactory<Object, dynamic, dynamic>?
+              dependentFactory;
+          if (dependency is InitDependency) {
+            dependentFactory = _findFirstFactoryByNameAndTypeOrNull(
+                dependency.instanceName, dependency.type);
+          } else {
+            dependentFactory =
+                _findFirstFactoryByNameAndTypeOrNull(null, dependency);
+          }
+          throwIf(
+              dependentFactory == null,
+              ArgumentError(
+                  'Dependent Type $dependency is not registered in GetIt'));
           throwIfNot(
             dependentFactory!.canBeWaitedFor,
-            ArgumentError('Dependent Type $type is not an async Singleton'),
+            ArgumentError(
+                'Dependent Type $dependency is not an async Singleton'),
           );
           dependentFactory.objectsWaiting.add(serviceFactory.registrationType);
           dependentFutureGroup.add(dependentFactory._readyCompleter.future);

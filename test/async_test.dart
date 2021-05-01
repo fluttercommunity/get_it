@@ -656,6 +656,42 @@ void main() {
     expect(instance, const TypeMatcher<TestClass>());
   });
 
+  group("dependency", () {
+    test('Register singleton with dependency and instanceName', () async {
+      final getIt = GetIt.instance;
+      await getIt.reset();
+      getIt.registerSingletonAsync<TestClass>(
+        () async => TestClass(internalCompletion: false),
+      );
+
+      getIt.registerSingletonAsync<TestClass2>(
+          () async => TestClass2(internalCompletion: false),
+          instanceName: "test2InstanceName",
+          dependsOn: [TestClass]);
+
+      await getIt.allReady();
+      expect(getIt.get<TestClass2>(instanceName: "test2InstanceName"),
+          isA<TestClass2>());
+    });
+
+    test('Register two dependent singleton with instanceNames', () async {
+      final getIt = GetIt.instance;
+      await getIt.reset();
+      getIt.registerSingletonAsync<TestClass>(
+          () async => TestClass(internalCompletion: false),
+          instanceName: "test1InstanceName");
+
+      getIt.registerSingletonAsync<TestClass2>(
+          () async => TestClass2(internalCompletion: false),
+          instanceName: "test2InstanceName",
+          dependsOn: [InitDependency(TestClass, instanceName: "test1InstanceName")]);
+
+      await getIt.allReady();
+      expect(getIt.get<TestClass2>(instanceName: "test2InstanceName"),
+          isA<TestClass2>());
+    });
+  });
+
   test('Code for ReadMe', () async {
     final sl = GetIt.instance;
 
