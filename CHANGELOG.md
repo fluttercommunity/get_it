@@ -1,3 +1,55 @@
+## [7.0.0] - 02.05.2021
+
+This is a breaking change because there were some inconsistencies in the handling of the disposal functions that you can pass when registering an Object, pop a Scope or use `unregister()`  `resetLazySingleton()`´.  Some of accepted a `FutureOr` method type, others just a `void` which meant you couldn't use async functions consistently. With this release you can use async functions in all disposal functions which unfortunately also required to change the signatures of the following functions:
+
+```dart
+  Future<void> reset({bool dispose = true});
+
+  Future<void> resetScope({bool dispose = true});
+
+  Future<void> popScope();
+
+  Future<bool> popScopesTill(String name);
+
+  FutureOr resetLazySingleton<T extends Object>({
+    Object? instance,
+    String? instanceName,
+    FutureOr Function(T)? disposingFunction,
+  });
+
+  FutureOr unregister<T extends Object>({
+    Object? instance,
+    String? instanceName,
+    FutureOr Function(T)? disposingFunction,
+  });
+```
+
+Basically all functions that can possibly call a disposal functions should be awaited. 
+#### Implementing the `Disposable` interface
+
+Instead of passing a disposing function on registration or when pushing a Scope from V7.0 on your objects `onDispose()` method will be called
+if the object that you register implements the `Disposable`´interface:
+
+```Dart
+abstract class Disposable {
+  FutureOr ondDispose();
+}
+```
+#### Getting notified about the shadowing state of an object
+In some cases it might be helpful to know if an Object gets shadowed by another one e.g. if it has some Stream subscriptions that it want to cancel before the shadowing object creates a new subscription. Also the other way round so that a shadowed Object gets notified when it's "active" again meaning when a shadowing object is removed.
+
+For this a class had to implement the `ShadowChangeHandlers` interface:
+
+```Dart
+abstract class ShadowChangeHandlers {
+  void onGetShadowed(Object shadowing);
+  void onLeaveShadow(Object shadowing);
+}
+```
+When the Object is shadowed its `onGetShadowed()` method is called with the object that is shadowing it. When this object is removed from GetIt `onLeaveShadow()` will be called. 
+
+
+ * Thanks to this PR https://github.com/fluttercommunity/get_it/pull/181 by @n3wtron you can now also make objects depend on other objects not only by type but also by type and name if you used a named registration
 ## [6.1.1] - 13.04.2021
 
 * small fix in getAsync with parameters

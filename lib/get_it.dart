@@ -13,11 +13,20 @@ part 'get_it_impl.dart';
 /// (you don't really have to implement much ;-) )
 abstract class WillSignalReady {}
 
-abstract class ShadowChangeHandler {
+/// If an object implements the [ShadowChangeHandler] if will get notified if
+/// an Object with the same registration type and name is registered on a
+/// higher scope which will shadow it.
+/// It also will get notified if the shadowing object is removed from GetIt
+///
+/// This can be helpful to unsubscibe / resubscribe from Streams or Listenables
+abstract class ShadowChangeHandlers {
   void onGetShadowed(Object shadowing);
   void onLeaveShadow(Object shadowing);
 }
 
+///If objects that are registered inside GetIt implements [Disposable] the
+/// [ondDispose] method will be called whenever that Object is unregistered,
+/// resetted or its enclosing Scope is popped
 abstract class Disposable {
   FutureOr ondDispose();
 }

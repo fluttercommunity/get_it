@@ -33,6 +33,8 @@ enum _ServiceFactoryType {
 class _ServiceFactory<T extends Object, P1, P2> {
   final _ServiceFactoryType factoryType;
 
+  final _GetItImplementation _getItInstance;
+
   late final Type param1Type;
   late final Type param2Type;
 
@@ -81,6 +83,7 @@ class _ServiceFactory<T extends Object, P1, P2> {
   final bool shouldSignalReady;
 
   _ServiceFactory(
+    this._getItInstance,
     this.factoryType, {
     this.creationFunction,
     this.asyncCreationFunction,
@@ -104,6 +107,17 @@ class _ServiceFactory<T extends Object, P1, P2> {
   }
 
   FutureOr dispose() {
+    /// check if we are shadowing an existing Object
+    final factoryThatWouldbeShadowed =
+        _getItInstance._findFirstFactoryByNameAndTypeOrNull(instanceName,
+            type: T, lookInScopeBelow: true);
+
+    final objectThatWouldbeShadowed = factoryThatWouldbeShadowed?.instance;
+    if (objectThatWouldbeShadowed != null &&
+        objectThatWouldbeShadowed is ShadowChangeHandlers) {
+      objectThatWouldbeShadowed.onLeaveShadow(instance!);
+    }
+
     if (instance is Disposable) {
       return (instance as Disposable).ondDispose();
     }
@@ -142,6 +156,18 @@ class _ServiceFactory<T extends Object, P1, P2> {
           if (instance == null) {
             instance = creationFunction!();
             _readyCompleter.complete();
+
+            /// check if we are shadowing an existing Object
+            final factoryThatWouldbeShadowed = _getItInstance
+                ._findFirstFactoryByNameAndTypeOrNull(instanceName,
+                    type: T, lookInScopeBelow: true);
+
+            final objectThatWouldbeShadowed =
+                factoryThatWouldbeShadowed?.instance;
+            if (objectThatWouldbeShadowed != null &&
+                objectThatWouldbeShadowed is ShadowChangeHandlers) {
+              objectThatWouldbeShadowed.onGetShadowed(instance!);
+            }
           }
           return instance as T;
         default:
@@ -217,6 +243,18 @@ class _ServiceFactory<T extends Object, P1, P2> {
                 _readyCompleter.complete();
               }
               instance = newInstance;
+
+              /// check if we are shadowing an existing Object
+              final factoryThatWouldbeShadowed = _getItInstance
+                  ._findFirstFactoryByNameAndTypeOrNull(instanceName,
+                      type: T, lookInScopeBelow: true);
+
+              final objectThatWouldbeShadowed =
+                  factoryThatWouldbeShadowed?.instance;
+              if (objectThatWouldbeShadowed != null &&
+                  objectThatWouldbeShadowed is ShadowChangeHandlers) {
+                objectThatWouldbeShadowed.onGetShadowed(instance!);
+              }
               return newInstance;
             });
             return pendingResult as Future<R>;
@@ -277,9 +315,9 @@ class _GetItImplementation implements GetIt {
   /// Is used by several other functions to retrieve the correct [_ServiceFactory]
   _ServiceFactory<T, dynamic, dynamic>?
       _findFirstFactoryByNameAndTypeOrNull<T extends Object>(
-    String? instanceName, [
-    Type? type,
-  ]) {
+          String? instanceName,
+          {Type? type,
+          bool lookInScopeBelow = false}) {
     /// We use an assert here instead of an `if..throw` because it gets called on every call
     /// of [get]
     /// `(const Object() is! T)` tests if [T] is a real type and not Object or dynamic
@@ -292,7 +330,8 @@ class _GetItImplementation implements GetIt {
 
     _ServiceFactory<T, dynamic, dynamic>? instanceFactory;
 
-    int scopeLevel = _scopes.length - 1;
+    int scopeLevel = _scopes.length - (lookInScopeBelow ? 2 : 1);
+
     while (instanceFactory == null && scopeLevel >= 0) {
       final factoryByTypes = _scopes[scopeLevel].factoriesByName[instanceName];
       if (type == null) {
@@ -319,7 +358,7 @@ class _GetItImplementation implements GetIt {
     Type? type,
   ]) {
     final instanceFactory =
-        _findFirstFactoryByNameAndTypeOrNull<T>(instanceName, type);
+        _findFirstFactoryByNameAndTypeOrNull<T>(instanceName, type: type);
 
     assert(
       instanceFactory != null,
@@ -741,6 +780,7 @@ class _GetItImplementation implements GetIt {
       'GetIt: You have to provide type. Did you accidentally do `var sl=GetIt.instance();` '
       'instead of var sl=GetIt.instance;',
     );
+
     final factoriesByName = _currentScope.factoriesByName;
     throwIf(
       factoriesByName.containsKey(instanceName) &&
@@ -753,7 +793,20 @@ class _GetItImplementation implements GetIt {
       ),
     );
 
+    if (instance != null) {
+      /// check if we are shadowing an existing Object
+      final factoryThatWouldbeShadowed =
+          _findFirstFactoryByNameAndTypeOrNull(instanceName, type: T);
+
+      final objectThatWouldbeShadowed = factoryThatWouldbeShadowed?.instance;
+      if (objectThatWouldbeShadowed != null &&
+          objectThatWouldbeShadowed is ShadowChangeHandlers) {
+        objectThatWouldbeShadowed.onGetShadowed(instance);
+      }
+    }
+
     final serviceFactory = _ServiceFactory<T, P1, P2>(
+      this,
       type,
       creationFunction: factoryFunc,
       creationFunctionParam: factoryFuncParam,
@@ -803,10 +856,11 @@ class _GetItImplementation implements GetIt {
               dependentFactory;
           if (dependency is InitDependency) {
             dependentFactory = _findFirstFactoryByNameAndTypeOrNull(
-                dependency.instanceName, dependency.type);
+                dependency.instanceName,
+                type: dependency.type);
           } else {
             dependentFactory =
-                _findFirstFactoryByNameAndTypeOrNull(null, dependency);
+                _findFirstFactoryByNameAndTypeOrNull(null, type: dependency);
           }
           throwIf(
               dependentFactory == null,
@@ -838,6 +892,19 @@ class _GetItImplementation implements GetIt {
         if (!isAsync) {
           /// SingletonWithDependencies
           serviceFactory.instance = factoryFunc!();
+
+          /// check if we are shadowing an existing Object
+          final factoryThatWouldbeShadowed =
+              _findFirstFactoryByNameAndTypeOrNull(instanceName,
+                  type: T, lookInScopeBelow: true);
+
+          final objectThatWouldbeShadowed =
+              factoryThatWouldbeShadowed?.instance;
+          if (objectThatWouldbeShadowed != null &&
+              objectThatWouldbeShadowed is ShadowChangeHandlers) {
+            objectThatWouldbeShadowed.onGetShadowed(serviceFactory.instance!);
+          }
+
           isReadyFuture = Future<T>.value(serviceFactory.instance as T);
           if (!serviceFactory.shouldSignalReady) {
             /// As this isn't an asnc function we declare it as ready here
@@ -851,9 +918,22 @@ class _GetItImplementation implements GetIt {
           isReadyFuture = asyncResult.then((instance) {
             serviceFactory.instance = instance;
 
+            /// check if we are shadowing an existing Object
+            final factoryThatWouldbeShadowed =
+                _findFirstFactoryByNameAndTypeOrNull(instanceName,
+                    type: T, lookInScopeBelow: true);
+
+            final objectThatWouldbeShadowed =
+                factoryThatWouldbeShadowed?.instance;
+            if (objectThatWouldbeShadowed != null &&
+                objectThatWouldbeShadowed is ShadowChangeHandlers) {
+              objectThatWouldbeShadowed.onGetShadowed(instance);
+            }
+
             if (!serviceFactory.shouldSignalReady && !serviceFactory.isReady) {
               serviceFactory._readyCompleter.complete();
             }
+
             return instance;
           });
         }

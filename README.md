@@ -9,7 +9,7 @@ Typical usage:
 * Accessing service objects like REST API clients or databases so that they easily can be mocked.
 * Accessing View/AppModels/Managers/BLoCs from Flutter Views
 
->**V5.0 has some breaking changes** Check please check the release notes to see what's new.
+>**V7.0 has some breaking changes** Check please check the release notes to see what's new.
 
 ## Why GetIt
 
@@ -214,33 +214,6 @@ As soon as the user Logs off all you have to do is pop the Scope and automatical
 
 Another example could be a shopping basket where you want to ensure that not a cart from a previous session is used again. So at the beginning of a new session you push a new scope and register a new cart object. At the end of the session you pop this scope again.
 
-### Disposing Singletons and Scopes
-From V5.0 on you can pass a `dispose` function when registering any Singletons. For this the registration functions have a optional parameter:
-
-```Dart
-DisposingFunc<T> dispose
-```
-where `DisposingFunc` is defined as
-
-```Dart
-typedef DisposingFunc<T> = FutureOr Function(T param);
-```
-
-So you can pass simple or async functions as this parameter. This function is called when you pop or reset the scope or when you reset GetIt completely.
-
-When you push a new scope you can also pass a `dispose` function that is called when a scope is popped or reset but before the dispose functions of the registered objects is called which mean it can still access the objects that were registered in that scope.
-
-#### Implementing the `Disposable` interface
-
-Instead of passing a disposing function on registration or when pushing a Scope from V7.0 on your objects `onDispose()` method will be called
-if the object that you register implements the `Disposable`´interface:
-
-```Dart
-abstract class Disposable {
-  FutureOr ondDispose();
-}
-```
-
 ### Scope functions
 
 ```Dart
@@ -275,6 +248,46 @@ abstract class Disposable {
   /// As dispose funcions can be async, you should await this function.
   Future<void> resetScope({bool dispose = true});
   ```
+
+#### Getting notified about the shadowing state of an object
+In some cases it might be helpful to know if an Object gets shadowed by another one e.g. if it has some Stream subscriptions that it want to cancel before the shadowing object creates a new subscription. Also the other way round so that a shadowed Object gets notified when it's "active" again meaning when a shadowing object is removed.
+
+For this a class had to implement the `ShadowChangeHandlers` interface:
+
+```Dart
+abstract class ShadowChangeHandlers {
+  void onGetShadowed(Object shadowing);
+  void onLeaveShadow(Object shadowing);
+}
+```
+When the Object is shadowed its `onGetShadowed()` method is called with the object that is shadowing it. When this object is removed from GetIt `onLeaveShadow()` will be called. 
+
+### Disposing Singletons and Scopes
+From V5.0 on you can pass a `dispose` function when registering any Singletons. For this the registration functions have a optional parameter:
+
+```Dart
+DisposingFunc<T> dispose
+```
+where `DisposingFunc` is defined as
+
+```Dart
+typedef DisposingFunc<T> = FutureOr Function(T param);
+```
+
+So you can pass simple or async functions as this parameter. This function is called when you pop or reset the scope or when you reset GetIt completely.
+
+When you push a new scope you can also pass a `dispose` function that is called when a scope is popped or reset but before the dispose functions of the registered objects is called which mean it can still access the objects that were registered in that scope.
+
+#### Implementing the `Disposable` interface
+
+Instead of passing a disposing function on registration or when pushing a Scope from V7.0 on your objects `onDispose()` method will be called
+if the object that you register implements the `Disposable`´interface:
+
+```Dart
+abstract class Disposable {
+  FutureOr ondDispose();
+}
+```
 
 
 ## Asynchronous Factories
