@@ -151,7 +151,6 @@ void registerLazySingleton<T>(FactoryFunc<T> func)
 
 You have to pass a factory function `func` that returns an instance of an implementation of `T`. Only the first time you call `get<T>()` this factory function will be called to create a new instance. After that you will always get the same instance returned.
 
-
 ### Overwriting registrations
 
 If you try to register a type more than once you will fail with an assertion in debug mode because normally this is not needed and probably a bug.
@@ -227,10 +226,20 @@ where `DisposingFunc` is defined as
 typedef DisposingFunc<T> = FutureOr Function(T param);
 ```
 
-So you can pass simple and async functions as this parameter. This function is called when you pop or reset the scope or when you reset GetIt completely.
+So you can pass simple or async functions as this parameter. This function is called when you pop or reset the scope or when you reset GetIt completely.
 
 When you push a new scope you can also pass a `dispose` function that is called when a scope is popped or reset but before the dispose functions of the registered objects is called which mean it can still access the objects that were registered in that scope.
 
+#### Implementing the `Disposable` interface
+
+Instead of passing a disposing function on registration or when pushing a Scope from V7.0 on your objects `onDispose()` method will be called
+if the object that you register implements the `Disposable`´interface:
+
+```Dart
+abstract class Disposable {
+  FutureOr ondDispose();
+}
+```
 
 ### Scope functions
 

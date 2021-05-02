@@ -13,6 +13,15 @@ part 'get_it_impl.dart';
 /// (you don't really have to implement much ;-) )
 abstract class WillSignalReady {}
 
+abstract class ShadowChangeHandler {
+  void onGetShadowed(Object shadowing);
+  void onLeaveShadow(Object shadowing);
+}
+
+abstract class Disposable {
+  FutureOr ondDispose();
+}
+
 /// Signature of the factory function used by non async factories
 typedef FactoryFunc<T> = T Function();
 
@@ -380,20 +389,20 @@ abstract class GetIt {
   /// if you need to dispose some resources before the reset, you can
   /// provide a [disposingFunction]. This function overrides the disposing
   /// you might have provided when registering.
-  void resetLazySingleton<T extends Object>({
+  FutureOr resetLazySingleton<T extends Object>({
     Object? instance,
     String? instanceName,
-    void Function(T)? disposingFunction,
+    FutureOr Function(T)? disposingFunction,
   });
 
   /// Unregister an [instance] of an object or a factory/singleton by Type [T] or by name
   /// [instanceName] if you need to dispose any resources you can do it using
   /// [disposingFunction] function that provides a instance of your class to be disposed.
   /// This function overrides the disposing you might have provided when registering.
-  void unregister<T extends Object>({
+  FutureOr unregister<T extends Object>({
     Object? instance,
     String? instanceName,
-    void Function(T)? disposingFunction,
+    FutureOr Function(T)? disposingFunction,
   });
 
   /// returns a Future that completes if all asynchronously created Singletons and any

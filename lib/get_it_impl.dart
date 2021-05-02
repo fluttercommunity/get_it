@@ -80,16 +80,23 @@ class _ServiceFactory<T extends Object, P1, P2> {
 
   final bool shouldSignalReady;
 
-  _ServiceFactory(this.factoryType,
-      {this.creationFunction,
-      this.asyncCreationFunction,
-      this.creationFunctionParam,
-      this.asyncCreationFunctionParam,
-      this.instance,
-      this.isAsync = false,
-      this.instanceName,
-      required this.shouldSignalReady,
-      this.disposeFunction}) {
+  _ServiceFactory(
+    this.factoryType, {
+    this.creationFunction,
+    this.asyncCreationFunction,
+    this.creationFunctionParam,
+    this.asyncCreationFunctionParam,
+    this.instance,
+    this.isAsync = false,
+    this.instanceName,
+    required this.shouldSignalReady,
+    this.disposeFunction,
+  }) : assert(
+            !(disposeFunction != null &&
+                instance != null &&
+                instance is Disposable),
+            ' You are trying to register type ${instance.runtimeType.toString()} '
+            'that implements "Disposable" but you also provide a disposing function') {
     registrationType = T;
     param1Type = P1;
     param2Type = P2;
@@ -97,6 +104,9 @@ class _ServiceFactory<T extends Object, P1, P2> {
   }
 
   FutureOr dispose() {
+    if (instance is Disposable) {
+      return (instance as Disposable).ondDispose();
+    }
     return disposeFunction?.call(instance as T);
   }
 
@@ -879,11 +889,11 @@ class _GetItImplementation implements GetIt {
   /// if you need to dispose any resources you can do it using [disposingFunction] function
   /// that provides a instance of your class to be disposed
   @override
-  void unregister<T extends Object>({
+  FutureOr unregister<T extends Object>({
     Object? instance,
     String? instanceName,
-    void Function(T)? disposingFunction,
-  }) {
+    FutureOr Function(T)? disposingFunction,
+  }) async {
     final factoryToRemove = instance != null
         ? _findFactoryByInstance(instance)
         : _findFactoryByNameAndType<T>(instanceName);
@@ -898,9 +908,11 @@ class _GetItImplementation implements GetIt {
         .remove(factoryToRemove.registrationType);
 
     if (factoryToRemove.instance != null) {
-      disposingFunction?.call(factoryToRemove.instance as T);
-    } else {
-      factoryToRemove.dispose();
+      if (disposingFunction != null) {
+        await disposingFunction.call(factoryToRemove.instance as T);
+      } else {
+        await factoryToRemove.dispose();
+      }
     }
   }
 
@@ -912,11 +924,11 @@ class _GetItImplementation implements GetIt {
   /// if you need to dispose some resources before the reset, you can
   /// provide a [disposingFunction]
   @override
-  void resetLazySingleton<T extends Object>({
+  FutureOr resetLazySingleton<T extends Object>({
     Object? instance,
     String? instanceName,
-    void Function(T)? disposingFunction,
-  }) {
+    FutureOr Function(T)? disposingFunction,
+  }) async {
     _ServiceFactory instanceFactory;
 
     if (instance != null) {
@@ -932,9 +944,9 @@ class _GetItImplementation implements GetIt {
 
     if (instanceFactory.instance != null) {
       if (disposingFunction != null) {
-        disposingFunction.call(instanceFactory.instance as T);
+        await disposingFunction.call(instanceFactory.instance as T);
       } else {
-        instanceFactory.dispose();
+        await instanceFactory.dispose();
       }
     }
 
