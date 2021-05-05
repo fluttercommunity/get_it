@@ -119,7 +119,7 @@ class _ServiceFactory<T extends Object, P1, P2> {
     }
 
     if (instance is Disposable) {
-      return (instance as Disposable).ondDispose();
+      return (instance as Disposable).onDispose();
     }
     return disposeFunction?.call(instance as T);
   }
@@ -302,6 +302,9 @@ class _GetItImplementation implements GetIt {
   final _scopes = [_Scope(name: _baseScopeName)];
 
   _Scope get _currentScope => _scopes.last;
+
+  @override
+  void Function(bool pushed)? onScopeChanged;
 
   /// We still support a global ready signal mechanism for that we use this
   /// Completer.
@@ -713,8 +716,13 @@ class _GetItImplementation implements GetIt {
   /// by using the name.
   /// [dispose] function that will be called when you pop this scope. The scope
   /// is still valid while it is executed
+  /// [init] optional function to register Objects immediately after the new scope is
+  /// pushed. This ensures that [onScopeChanged] will be called after their registration
   @override
-  void pushNewScope({String? scopeName, ScopeDisposeFunc? dispose}) {
+  void pushNewScope(
+      {void Function(GetIt getIt)? init,
+      String? scopeName,
+      ScopeDisposeFunc? dispose}) {
     assert(scopeName != _baseScopeName,
         'This name is reserved for the real base scope.');
     assert(
@@ -722,6 +730,8 @@ class _GetItImplementation implements GetIt {
       'You already have used the scope name $scopeName',
     );
     _scopes.add(_Scope(name: scopeName, disposeFunc: dispose));
+    init?.call(this);
+    onScopeChanged?.call(true);
   }
 
   /// Disposes all factories/Singletons that have ben registered in this scope
@@ -739,6 +749,7 @@ class _GetItImplementation implements GetIt {
     await _currentScope.dispose();
     await _currentScope.reset(dispose: true);
     _scopes.removeLast();
+    onScopeChanged?.call(false);
   }
 
   /// if you have a lot of scopes with names you can pop (see [popScope]) all scopes above
@@ -756,6 +767,7 @@ class _GetItImplementation implements GetIt {
       _scopeName = _currentScope.name;
       await popScope();
     } while (_scopeName != scopeName);
+    onScopeChanged?.call(false);
     return true;
   }
 

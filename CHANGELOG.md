@@ -1,3 +1,20 @@
+## [7.1.0] - 05.05.2021
+
+* The new `Disposable` interface had a typo that now got corrected. You could call this a breaking change but as the last version change is just three days old I guess not many people will be affected by this correction.
+
+#### Getting notified when a scope change happens
+
+When using scopes with objects that shadow other objects its important to give the UI a chance to rebuild and acquire references to the now active objects. For this you can register an call-back function in GetIt
+The getit_mixin has a matching `rebuiltOnScopeChange` method.
+
+```Dart
+  /// Optional call-back that will get call whenever a change in the current scope happens
+  /// This can be very helpful to update the UI in such a case to make sure it uses
+  /// the correct Objects after a scope change
+  void Function(bool pushed)? onScopeChanged;
+```
+* `pushNewScope()` now got an optional `init` parameter where you can pass a function that registers new objects inside the newly pushed Scope. Doing the registration in this function ensures that the `onScopeChanged` call-back is called after the objects are registered.
+
 ## [7.0.0] - 02.05.2021
 
 This is a breaking change because there were some inconsistencies in the handling of the disposal functions that you can pass when registering an Object, pop a Scope or use `unregister()`  `resetLazySingleton()`´.  Some of accepted a `FutureOr` method type, others just a `void` which meant you couldn't use async functions consistently. With this release you can use async functions in all disposal functions which unfortunately also required to change the signatures of the following functions:
@@ -32,7 +49,7 @@ if the object that you register implements the `Disposable`´interface:
 
 ```Dart
 abstract class Disposable {
-  FutureOr ondDispose();
+  FutureOr onDispose();
 }
 ```
 #### Getting notified about the shadowing state of an object

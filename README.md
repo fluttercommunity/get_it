@@ -262,6 +262,18 @@ abstract class ShadowChangeHandlers {
 ```
 When the Object is shadowed its `onGetShadowed()` method is called with the object that is shadowing it. When this object is removed from GetIt `onLeaveShadow()` will be called. 
 
+#### Getting notified when a scope change happens
+
+When using scopes with objects that shadow other objects its important to give the UI a chance to rebuild and acquire references to the now active objects. For this you can register an call-back function in GetIt
+The getit_mixin has a matching `rebuiltOnScopeChange` method.
+
+```Dart
+  /// Optional call-back that will get call whenever a change in the current scope happens
+  /// This can be very helpful to update the UI in such a case to make sure it uses
+  /// the correct Objects after a scope change
+  void Function(bool pushed)? onScopeChanged;
+```
+
 ### Disposing Singletons and Scopes
 From V5.0 on you can pass a `dispose` function when registering any Singletons. For this the registration functions have a optional parameter:
 

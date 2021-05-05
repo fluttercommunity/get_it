@@ -25,10 +25,10 @@ abstract class ShadowChangeHandlers {
 }
 
 ///If objects that are registered inside GetIt implements [Disposable] the
-/// [ondDispose] method will be called whenever that Object is unregistered,
+/// [onDispose] method will be called whenever that Object is unregistered,
 /// resetted or its enclosing Scope is popped
 abstract class Disposable {
-  FutureOr ondDispose();
+  FutureOr onDispose();
 }
 
 /// Signature of the factory function used by non async factories
@@ -127,6 +127,12 @@ class WaitingTimeOutException implements Exception {
 /// the async initialization of multiple Singletons
 abstract class GetIt {
   static final GetIt _instance = _GetItImplementation();
+
+  /// Optional call-back that will get call whenever a change in the current scope happens
+  /// This can be very helpful to update the UI in such a case to make sure it uses
+  /// the correct Objects after a scope change
+  /// The getit_mixin has an matching `rebuiltOnScopeChange` method
+  void Function(bool pushed)? onScopeChanged;
 
   /// access to the Singleton instance of GetIt
   static GetIt get instance => _instance;

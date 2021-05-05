@@ -1,11 +1,13 @@
 {
     "spellright.language": [
+        "de",
         "en"
     ],
     "spellright.documentTypes": [
         "markdown",
         "latex",
-        "plaintext"
+        "plaintext",
+        "dart"
     ],
     "spellright.parserByClass": {
         "dart": {

@@ -25,7 +25,7 @@ class TestClassDisposable extends TestBaseClass with Disposable {
   }
 
   @override
-  void ondDispose() {
+  void onDispose() {
     dispose();
   }
 }
