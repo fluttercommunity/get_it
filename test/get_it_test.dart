@@ -312,10 +312,87 @@ void main() {
     GetIt.I.reset();
   });
 
-  test('reset lazySingleton', () async {
+  test('reset lazy Singleton when the disposing function is a future',
+      () async {
     final getIt = GetIt.instance;
+    disposeCounter = 0;
     constructorCounter = 0;
     getIt.registerLazySingleton<TestBaseClass>(() => TestClass());
+
+    expect(constructorCounter, 0);
+
+    final instance1 = getIt.get<TestBaseClass>();
+
+    expect(instance1 is TestClass, true);
+    expect(constructorCounter, 1);
+
+    final instance2 = getIt.get<TestBaseClass>();
+
+    expect(instance1, instance2);
+
+    expect(constructorCounter, 1);
+
+    await GetIt.I.resetLazySingleton<TestBaseClass>(
+        disposingFunction: (dynamic testClass) async {
+      await Future.value(testClass.dispose());
+    });
+
+    final instance3 = getIt.get<TestBaseClass>();
+
+    expect(instance3 is TestClass, true);
+
+    expect(instance1, isNot(instance3));
+
+    expect(constructorCounter, 2);
+
+    GetIt.I.reset();
+  });
+
+  test('reset lazy Singleton when the disposing function is not a future',
+      () async {
+    final getIt = GetIt.instance;
+
+    disposeCounter = 0;
+    constructorCounter = 0;
+    getIt.registerLazySingleton<TestBaseClass>(() => TestClass());
+
+    expect(constructorCounter, 0);
+
+    final instance1 = getIt.get<TestBaseClass>();
+
+    expect(instance1 is TestClass, true);
+    expect(constructorCounter, 1);
+
+    final instance2 = getIt.get<TestBaseClass>();
+
+    expect(instance1, instance2);
+
+    expect(constructorCounter, 1);
+
+    GetIt.I.resetLazySingleton<TestBaseClass>();
+
+    final instance3 = getIt.get<TestBaseClass>();
+
+    expect(disposeCounter, 1);
+
+    expect(instance3 is TestClass, true);
+
+    expect(instance1, isNot(instance3));
+
+    expect(constructorCounter, 2);
+
+    GetIt.I.reset();
+  });
+
+  test('reset lazy Singleton when the dispose of the register is a future',
+      () async {
+    final getIt = GetIt.instance;
+    disposeCounter = 0;
+    constructorCounter = 0;
+    getIt.registerLazySingleton<TestBaseClass>(() => TestClass(),
+        dispose: (dynamic testClassBase) async {
+      await Future.value(testClassBase.dispose());
+    });
 
     expect(constructorCounter, 0);
 
@@ -334,6 +411,8 @@ void main() {
 
     final instance3 = getIt.get<TestBaseClass>();
 
+    expect(disposeCounter, 1);
+
     expect(instance3 is TestClass, true);
 
     expect(instance1, isNot(instance3));
@@ -343,7 +422,130 @@ void main() {
     GetIt.I.reset();
   });
 
-  test('unregister by instance', () async {
+  test('reset lazy Singleton when the dispose of the register is not a future',
+      () async {
+    final getIt = GetIt.instance;
+    disposeCounter = 0;
+    constructorCounter = 0;
+    getIt.registerLazySingleton<TestBaseClass>(() => TestClass(),
+        dispose: (dynamic testClassBase) => testClassBase.dispose());
+
+    expect(constructorCounter, 0);
+
+    final instance1 = getIt.get<TestBaseClass>();
+
+    expect(instance1 is TestClass, true);
+    expect(constructorCounter, 1);
+
+    final instance2 = getIt.get<TestBaseClass>();
+
+    expect(instance1, instance2);
+
+    expect(constructorCounter, 1);
+
+    GetIt.I.resetLazySingleton<TestBaseClass>();
+
+    final instance3 = getIt.get<TestBaseClass>();
+
+    expect(disposeCounter, 1);
+
+    expect(instance3 is TestClass, true);
+
+    expect(instance1, isNot(instance3));
+
+    expect(constructorCounter, 2);
+
+    GetIt.I.reset();
+  });
+
+  test('unregister by instance when the dispose of the register is a future',
+      () async {
+    final getIt = GetIt.instance;
+    disposeCounter = 0;
+    constructorCounter = 0;
+
+    getIt.registerSingleton<TestClass>(TestClass(),
+        dispose: (dynamic testClass) async =>
+            Future.value(testClass.dispose()));
+
+    final instance1 = getIt.get<TestClass>();
+
+    expect(instance1 is TestClass, true);
+
+    final instance2 = getIt.get<TestClass>();
+
+    expect(instance1, instance2);
+
+    expect(constructorCounter, 1);
+
+    await getIt.unregister(instance: instance2);
+
+    expect(disposeCounter, 1);
+
+    expect(() => getIt.get<TestClass>(),
+        throwsA(const TypeMatcher<AssertionError>()));
+  });
+
+  test(
+      'unregister by instance when the dispose of the register is not a future',
+      () async {
+    final getIt = GetIt.instance;
+    disposeCounter = 0;
+    constructorCounter = 0;
+
+    getIt.registerSingleton<TestClass>(TestClass(),
+        dispose: (dynamic testClass) => testClass.dispose());
+
+    final instance1 = getIt.get<TestClass>();
+
+    expect(instance1 is TestClass, true);
+
+    final instance2 = getIt.get<TestClass>();
+
+    expect(instance1, instance2);
+
+    expect(constructorCounter, 1);
+
+    getIt.unregister(instance: instance2);
+
+    expect(disposeCounter, 1);
+
+    expect(() => getIt.get<TestClass>(),
+        throwsA(const TypeMatcher<AssertionError>()));
+  });
+
+  test('unregister by instance when the disposing function is not a future',
+      () async {
+    final getIt = GetIt.instance;
+    disposeCounter = 0;
+    constructorCounter = 0;
+
+    getIt.registerSingleton<TestClass>(TestClass());
+
+    final instance1 = getIt.get<TestClass>();
+
+    expect(instance1 is TestClass, true);
+
+    final instance2 = getIt.get<TestClass>();
+
+    expect(instance1, instance2);
+
+    expect(constructorCounter, 1);
+
+    getIt.unregister(
+        instance: instance2,
+        disposingFunction: (dynamic testClass) {
+          testClass.dispose();
+        });
+
+    expect(disposeCounter, 1);
+
+    expect(() => getIt.get<TestClass>(),
+        throwsA(const TypeMatcher<AssertionError>()));
+  });
+
+  test('unregister by instance when the disposing function is a future',
+      () async {
     final getIt = GetIt.instance;
     disposeCounter = 0;
     constructorCounter = 0;
@@ -362,8 +564,8 @@ void main() {
 
     await getIt.unregister(
         instance: instance2,
-        disposingFunction: (dynamic testClass) {
-          testClass.dispose();
+        disposingFunction: (dynamic testClass) async {
+          await Future.value(testClass.dispose());
         });
 
     expect(disposeCounter, 1);
