@@ -224,7 +224,9 @@ Another example could be a shopping basket where you want to ensure that not a c
   /// by using the name.
   /// [dispose] function that will be called when you pop this scope. The scope
   /// is still valied while it is executed
-  void pushNewScope({String scopeName, ScopeDisposeFunc dispose});
+  /// [init] optional function to register Objects immediately after the new scope is
+  /// pushed. This ensures that [onScopeChanged] will be called after their registration
+  void pushNewScope({void Function(GetIt getIt)? init,String scopeName, ScopeDisposeFunc dispose});
 
   /// Disposes all factories/Singletons that have ben registered in this scope
   /// and pops (destroys) the scope so that the previous scope gets active again.

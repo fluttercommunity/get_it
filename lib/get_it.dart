@@ -372,7 +372,10 @@ abstract class GetIt {
   /// by using the name.
   /// [dispose] function that will be called when you pop this scope. The scope
   /// is still valied while it is executed
+  /// [init] optional function to register Objects immediately after the new scope is
+  /// pushed. This ensures that [onScopeChanged] will be called after their registration
   void pushNewScope({
+    void Function(GetIt getIt)? init,
     String? scopeName,
     ScopeDisposeFunc? dispose,
   });
