@@ -6,8 +6,7 @@
     "spellright.documentTypes": [
         "markdown",
         "latex",
-        "plaintext",
-        "dart"
+        "plaintext"
     ],
     "spellright.parserByClass": {
         "dart": {

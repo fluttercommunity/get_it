@@ -1,3 +1,6 @@
+## [7.1.2] - 06.05.2021
+
+* Thanks to the clever PR https://github.com/fluttercommunity/get_it/pull/185 by @kmartins `unregister` and `resetLazySingleton` now only have to be awaited if you use an async disposal function.
 ## [7.1.1] - 05.05.2021
 
 * `pushNewScope()` now got an optional `init` parameter where you can pass a function that registers new objects inside the newly pushed Scope. Doing the registration in this function ensures that the `onScopeChanged` call-back is called after the objects are registered.

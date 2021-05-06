@@ -354,24 +354,25 @@ void main() {
 
     disposeCounter = 0;
     constructorCounter = 0;
-    getIt.registerLazySingleton<TestBaseClass>(() => TestClass());
+    getIt.registerLazySingleton<TestClass>(() => TestClass());
 
     expect(constructorCounter, 0);
 
-    final instance1 = getIt.get<TestBaseClass>();
+    final instance1 = getIt.get<TestClass>();
 
     expect(instance1 is TestClass, true);
     expect(constructorCounter, 1);
 
-    final instance2 = getIt.get<TestBaseClass>();
+    final instance2 = getIt.get<TestClass>();
 
     expect(instance1, instance2);
 
     expect(constructorCounter, 1);
 
-    GetIt.I.resetLazySingleton<TestBaseClass>();
+    GetIt.I
+        .resetLazySingleton<TestClass>(disposingFunction: (x) => x.dispose());
 
-    final instance3 = getIt.get<TestBaseClass>();
+    final instance3 = getIt.get<TestClass>();
 
     expect(disposeCounter, 1);
 
