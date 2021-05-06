@@ -1001,9 +1001,15 @@ class _GetItImplementation implements GetIt {
 
     if (factoryToRemove.instance != null) {
       if (disposingFunction != null) {
-        await disposingFunction.call(factoryToRemove.instance as T);
+        final dispose = disposingFunction.call(factoryToRemove.instance as T);
+        if (dispose is Future) {
+          await dispose;
+        }
       } else {
-        await factoryToRemove.dispose();
+        final dispose = factoryToRemove.dispose();
+        if (dispose is Future) {
+          await dispose;
+        }
       }
     }
   }
@@ -1036,9 +1042,15 @@ class _GetItImplementation implements GetIt {
 
     if (instanceFactory.instance != null) {
       if (disposingFunction != null) {
-        await disposingFunction.call(instanceFactory.instance as T);
+        final dispose = disposingFunction.call(instanceFactory.instance as T);
+        if (dispose is Future) {
+          await dispose;
+        }
       } else {
-        await instanceFactory.dispose();
+        final dispose = instanceFactory.dispose();
+        if (dispose is Future) {
+          await dispose;
+        }
       }
     }
 
