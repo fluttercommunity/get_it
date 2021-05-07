@@ -1,3 +1,6 @@
+## [7.1.3] - 07.05.2021
+
+* Fix for https://github.com/fluttercommunity/get_it/issues/186
 ## [7.1.2] - 06.05.2021
 
 * Thanks to the clever PR https://github.com/fluttercommunity/get_it/pull/185 by @kmartins `unregister` and `resetLazySingleton` now only have to be awaited if you use an async disposal function.

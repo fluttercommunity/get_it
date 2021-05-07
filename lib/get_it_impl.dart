@@ -121,7 +121,10 @@ class _ServiceFactory<T extends Object, P1, P2> {
     if (instance is Disposable) {
       return (instance as Disposable).onDispose();
     }
-    return disposeFunction?.call(instance as T);
+    if (instance != null) {
+      // this can happen with LazySingletons that were never be used
+      return disposeFunction?.call(instance as T);
+    }
   }
 
   /// returns an instance depending on the type of the registration if [async==false]
