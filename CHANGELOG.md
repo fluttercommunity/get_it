@@ -1,3 +1,7 @@
+## [7.1.4]
+
+* fixed bug with manual synchronization of SingletonsWithDependencies 
+https://github.com/fluttercommunity/get_it/issues/196
 ## [7.1.3] - 07.05.2021
 
 * Fix for https://github.com/fluttercommunity/get_it/issues/186

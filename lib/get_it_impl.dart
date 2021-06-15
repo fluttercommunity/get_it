@@ -62,7 +62,7 @@ class _ServiceFactory<T extends Object, P1, P2> {
   late final Type registrationType;
 
   /// to enable Singletons to signal that they are ready (their initialization is finished)
-  late Completer _readyCompleter;
+  late Completer<T> _readyCompleter;
 
   /// the returned future of pending async factory calls or factory call with dependencies
   Future<T>? pendingResult;
@@ -158,7 +158,7 @@ class _ServiceFactory<T extends Object, P1, P2> {
         case _ServiceFactoryType.lazy:
           if (instance == null) {
             instance = creationFunction!();
-            _readyCompleter.complete();
+            _readyCompleter.complete(instance as T);
 
             /// check if we are shadowing an existing Object
             final factoryThatWouldbeShadowed = _getItInstance
@@ -243,7 +243,7 @@ class _ServiceFactory<T extends Object, P1, P2> {
               if (!shouldSignalReady) {
                 /// only complete automatically if the registration wasn't marked with
                 /// [signalsReady==true]
-                _readyCompleter.complete();
+                _readyCompleter.complete(newInstance);
               }
               instance = newInstance;
 
@@ -920,11 +920,14 @@ class _GetItImplementation implements GetIt {
             objectThatWouldbeShadowed.onGetShadowed(serviceFactory.instance!);
           }
 
-          isReadyFuture = Future<T>.value(serviceFactory.instance as T);
           if (!serviceFactory.shouldSignalReady) {
             /// As this isn't an asnc function we declare it as ready here
             /// if is wasn't marked that it will signalReady
-            serviceFactory._readyCompleter.complete();
+            isReadyFuture = Future<T>.value(serviceFactory.instance as T);
+            serviceFactory._readyCompleter
+                .complete(serviceFactory.instance as T);
+          } else {
+            isReadyFuture = serviceFactory._readyCompleter.future;
           }
         } else {
           /// Async Singleton with dependencies
@@ -946,7 +949,7 @@ class _GetItImplementation implements GetIt {
             }
 
             if (!serviceFactory.shouldSignalReady && !serviceFactory.isReady) {
-              serviceFactory._readyCompleter.complete();
+              serviceFactory._readyCompleter.complete(instance);
             }
 
             return instance;
@@ -1059,7 +1062,7 @@ class _GetItImplementation implements GetIt {
 
     instanceFactory.instance = null;
     instanceFactory.pendingResult = null;
-    instanceFactory._readyCompleter = Completer();
+    instanceFactory._readyCompleter = Completer<T>();
   }
 
   List<_ServiceFactory> get _allFactories =>
@@ -1128,7 +1131,7 @@ class _GetItImplementation implements GetIt {
             'This instance of type ${instance.runtimeType} was already signalled'),
       );
 
-      registeredInstance._readyCompleter.complete();
+      registeredInstance._readyCompleter.complete(instance);
       registeredInstance.objectsWaiting.clear();
     } else {
       /// Manual signalReady without an instance
@@ -1184,7 +1187,8 @@ class _GetItImplementation implements GetIt {
     });
     futures.close();
     if (timeout != null) {
-      return futures.future.timeout(timeout, onTimeout: _throwTimeoutError);
+      return futures.future
+          .timeout(timeout, onTimeout: () async => throw _createTimeoutError());
     } else {
       return futures.future;
     }
@@ -1227,10 +1231,7 @@ class _GetItImplementation implements GetIt {
     return notReadyTypes.isEmpty;
   }
 
-  /// we use dynamic here because this functoin is used at two places, one that expects a Future
-  /// the other a List. As this function just throws an exception and doesn't return anything
-  /// this is save
-  List _throwTimeoutError() {
+  WaitingTimeOutException _createTimeoutError() {
     final allFactories = _allFactories;
     final waitedBy = Map.fromEntries(
       allFactories
@@ -1258,7 +1259,7 @@ class _GetItImplementation implements GetIt {
         .map((f) => f.debugName)
         .toList();
 
-    throw WaitingTimeOutException(waitedBy, notReady, areReady);
+    return WaitingTimeOutException(waitedBy, notReady, areReady);
   }
 
   /// Returns a Future that completes if the instance of an Singleton, defined by Type [T] or
@@ -1294,8 +1295,7 @@ class _GetItImplementation implements GetIt {
       if (timeout != null) {
         return factoryToCheck.getObjectAsync(null, null).timeout(timeout,
             onTimeout: () {
-          _throwTimeoutError();
-          return null;
+          throw _createTimeoutError();
         });
       } else {
         return factoryToCheck.getObjectAsync(null, null);
@@ -1303,7 +1303,7 @@ class _GetItImplementation implements GetIt {
     }
     if (timeout != null) {
       return factoryToCheck._readyCompleter.future
-          .timeout(timeout, onTimeout: _throwTimeoutError);
+          .timeout(timeout, onTimeout: () => throw _createTimeoutError());
     } else {
       return factoryToCheck._readyCompleter.future;
     }

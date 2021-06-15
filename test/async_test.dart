@@ -16,6 +16,7 @@ class TestClassParam {
 
 class TestClass extends TestBaseClass {
   GetIt? getIt;
+  bool initCompleted = false;
 
   /// if we do the initialisation from inside the constructor the init function has to signal GetIt
   /// that it has finished. For that we need to pass in the completer that we got from the factory call
@@ -30,13 +31,16 @@ class TestClass extends TestBaseClass {
 
   /// This one signals after a delay
   Future initWithSignal() {
-    return Future.delayed(const Duration(milliseconds: 10))
-        .then((_) => getIt!.signalReady(this));
+    return Future.delayed(const Duration(milliseconds: 10)).then((_) {
+      getIt!.signalReady(this);
+      initCompleted = true;
+    });
   }
 
   // We use this as dummy init that will return a future
   Future<TestClass> init() async {
     await Future.delayed(const Duration(milliseconds: 10));
+    initCompleted = true;
     return this;
   }
 
@@ -476,10 +480,11 @@ void main() {
         signalsReady: true);
 
     getIt.registerSingletonWithDependencies<TestClass3>(
-        () => TestClass3(internalCompletion: false),
+        () => TestClass3(internalCompletion: true, getIt: getIt),
         dependsOn: [
           TestClass,
-        ]);
+        ],
+        signalsReady: true);
 
     expect(getIt.isReadySync<TestClass>(), false);
     expect(getIt.isReadySync<TestClass3>(), false);
@@ -487,16 +492,11 @@ void main() {
     await getIt<TestClass>().initWithSignal();
     await getIt.allReady();
 
+    final o = getIt<TestClass3>();
+
     expect(getIt.isReady<TestClass>(), completes);
-    expect(getIt.isReadySync<TestClass3>(), false);
-    expect(getIt.allReadySync(), false);
-
-    expect(getIt.isReady<TestClass>(timeout: const Duration(seconds: 5)),
-        completes);
-
-    final instance = await getIt.getAsync<TestClass3>();
-
-    expect(instance, const TypeMatcher<TestClass3>());
+    expect(getIt.isReadySync<TestClass3>(), true);
+    expect(getIt.allReadySync(), true);
   });
 
   test('allReady will throw after timeout', () async {
