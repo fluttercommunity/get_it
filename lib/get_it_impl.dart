@@ -1100,7 +1100,9 @@ class _GetItImplementation implements GetIt {
           'You only can use this function on Singletons that are async, that are marked as dependen '
           'or that are marked with "signalsReady==true"'),
     );
-    factoryToCheck.objectsWaiting.add(callee.runtimeType);
+    if (!factoryToCheck.isReady) {
+      factoryToCheck.objectsWaiting.add(callee.runtimeType);
+    }
     if (factoryToCheck.isAsync &&
         factoryToCheck.factoryType == _ServiceFactoryType.lazy &&
         factoryToCheck.instance == null) {
