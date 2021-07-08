@@ -91,6 +91,22 @@ void main() {
     expect(instance2.param1, '123');
   });
 
+  test('register factory with one nullable Param', () {
+    final getIt = GetIt.instance;
+
+    constructorCounter = 0;
+    getIt.registerFactoryParam<TestClassParam, String?, void>(
+        (s, _) => TestClassParam(param1: s));
+
+    final instance1 = getIt<TestClassParam>(param1: 'abc');
+    final instance2 = getIt<TestClassParam>(param1: null);
+
+    expect(instance1 is TestClassParam, true);
+    expect(instance1.param1, 'abc');
+    expect(instance2 is TestClassParam, true);
+    expect(instance2.param1, null);
+  });
+
   test('register factory with two Params', () {
     final getIt = GetIt.instance;
 
@@ -111,6 +127,24 @@ void main() {
     expect(instance2.param2, 5);
   });
 
+  test('register factory with two nullable Params', () {
+    final getIt = GetIt.instance;
+
+    constructorCounter = 0;
+    getIt.registerFactoryParam<TestClassParam, String?, int?>(
+        (s, i) => TestClassParam(param1: s, param2: i));
+
+    final instance1 = getIt<TestClassParam>(param1: 'abc', param2: 3);
+    final instance2 = getIt<TestClassParam>();
+
+    expect(instance1 is TestClassParam, true);
+    expect(instance1.param1, 'abc');
+    expect(instance1.param2, 3);
+    expect(instance2 is TestClassParam, true);
+    expect(instance2.param1, null);
+    expect(instance2.param2, null);
+  });
+
   test('register factory with Params with wrong type', () {
     final getIt = GetIt.instance;
 
@@ -119,6 +153,18 @@ void main() {
         (s, i) => TestClassParam(param1: s, param2: i));
 
     expect(() => getIt.get<TestClassParam>(param1: 'abc', param2: '3'),
+        throwsA(const TypeMatcher<TypeError>()));
+  });
+
+  test('register factory with Params with non-nullable type but not pass it',
+      () {
+    final getIt = GetIt.instance;
+
+    constructorCounter = 0;
+    getIt.registerFactoryParam<TestClassParam, String, int>(
+        (s, i) => TestClassParam(param1: s, param2: i));
+
+    expect(() => getIt.get<TestClassParam>(param2: '3'),
         throwsA(const TypeMatcher<TypeError>()));
   });
 

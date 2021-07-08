@@ -575,6 +575,25 @@ void main() {
     expect(instance2.param1, '123');
   });
 
+  test('register factory with one nullable Param', () async {
+    final getIt = GetIt.instance;
+
+    constructorCounter = 0;
+    getIt
+        .registerFactoryParamAsync<TestClassParam, String?, void>((s, _) async {
+      await Future.delayed(const Duration(milliseconds: 1));
+      return TestClassParam(param1: s);
+    });
+
+    final instance1 = await getIt.getAsync<TestClassParam>(param1: 'abc');
+    final instance2 = await getIt.getAsync<TestClassParam>();
+
+    expect(instance1 is TestClassParam, true);
+    expect(instance1.param1, 'abc');
+    expect(instance2 is TestClassParam, true);
+    expect(instance2.param1, null);
+  });
+
   test('register factory with two Params', () async {
     final getIt = GetIt.instance;
 
@@ -599,20 +618,52 @@ void main() {
     expect(instance2.param2, 5);
   });
 
-// this isn't currently possible to ensure because a limitation of Dart
-  // test('register factory with Params with wrong type', () {
-  //   final getIt = GetIt.instance;
-  //   getIt.reset();
+  test('register factory with two nullable Params', () async {
+    final getIt = GetIt.instance;
 
-  //   constructorCounter = 0;
-  //   getIt.registerFactoryParamAsync<TestClassParam, String, int>(
-  //       (s, i) async => TestClassParam(param1: s, param2: i));
+    constructorCounter = 0;
+    getIt
+        .registerFactoryParamAsync<TestClassParam, String?, int?>((s, i) async {
+      await Future.delayed(const Duration(milliseconds: 1));
+      return TestClassParam(param1: s, param2: i);
+    });
 
-  //   //final instance1 = getIt.get<TestBaseClass>();
+    final instance1 =
+        await getIt.getAsync<TestClassParam>(param1: 'abc', param2: 3);
+    final instance2 = await getIt.getAsync<TestClassParam>();
 
-  //   expect(() => getIt.getAsync<TestClassParam>(param1: 'abc', param2: '3'),
-  //       throwsA(const TypeMatcher<AssertionError>()));
-  // });
+    expect(instance1 is TestClassParam, true);
+    expect(instance1.param1, 'abc');
+    expect(instance1.param2, 3);
+    expect(instance2 is TestClassParam, true);
+    expect(instance2.param1, null);
+    expect(instance2.param2, null);
+  });
+
+  test('register factory with Params with wrong type', () {
+    final getIt = GetIt.instance;
+    getIt.reset();
+
+    constructorCounter = 0;
+    getIt.registerFactoryParamAsync<TestClassParam, String, int>(
+        (s, i) async => TestClassParam(param1: s, param2: i));
+
+    expect(() => getIt.getAsync<TestClassParam>(param1: 'abc', param2: '3'),
+        throwsA(const TypeMatcher<TypeError>()));
+  });
+
+  test('register factory with Params with non-nullable type but not pass it',
+      () {
+    final getIt = GetIt.instance;
+    getIt.reset();
+
+    constructorCounter = 0;
+    getIt.registerFactoryParamAsync<TestClassParam, String, void>(
+        (s, i) async => TestClassParam(param1: s));
+
+    expect(() => getIt.getAsync<TestClassParam>(),
+        throwsA(const TypeMatcher<TypeError>()));
+  });
 
   test('asyncFactory called with get instead of getAsync', () async {
     final getIt = GetIt.instance;

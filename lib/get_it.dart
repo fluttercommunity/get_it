@@ -209,7 +209,7 @@ abstract class GetIt {
   ///    getIt.registerFactoryParam<TestClassParam,String,void>((s,_)
   ///        => TestClassParam(param1:s);
   void registerFactoryParam<T extends Object, P1, P2>(
-    FactoryFuncParam<T, P1?, P2?> factoryFunc, {
+    FactoryFuncParam<T, P1, P2> factoryFunc, {
     String? instanceName,
   });
 
