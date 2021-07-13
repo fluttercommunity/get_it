@@ -158,6 +158,7 @@ class _ServiceFactory<T extends Object, P1, P2> {
         case _ServiceFactoryType.lazy:
           if (instance == null) {
             instance = creationFunction!();
+            objectsWaiting.clear();
             _readyCompleter.complete(instance as T);
 
             /// check if we are shadowing an existing Object
@@ -244,6 +245,7 @@ class _ServiceFactory<T extends Object, P1, P2> {
                 /// only complete automatically if the registration wasn't marked with
                 /// [signalsReady==true]
                 _readyCompleter.complete(newInstance);
+                objectsWaiting.clear();
               }
               instance = newInstance;
 
@@ -729,7 +731,8 @@ class _GetItImplementation implements GetIt {
     assert(scopeName != _baseScopeName,
         'This name is reserved for the real base scope.');
     assert(
-      _scopes.firstWhereOrNull((x) => x.name == scopeName) == null,
+      scopeName == null ||
+          _scopes.firstWhereOrNull((x) => x.name == scopeName) == null,
       'You already have used the scope name $scopeName',
     );
     _scopes.add(_Scope(name: scopeName, disposeFunc: dispose));
@@ -950,6 +953,7 @@ class _GetItImplementation implements GetIt {
 
             if (!serviceFactory.shouldSignalReady && !serviceFactory.isReady) {
               serviceFactory._readyCompleter.complete(instance);
+              serviceFactory.objectsWaiting.clear();
             }
 
             return instance;
@@ -1288,7 +1292,9 @@ class _GetItImplementation implements GetIt {
           'You only can use this function on Singletons that are async, that are marked as '
           'dependent or that are marked with "signalsReady==true"'),
     );
-    factoryToCheck.objectsWaiting.add(callee.runtimeType);
+    if (!factoryToCheck.isReady) {
+      factoryToCheck.objectsWaiting.add(callee.runtimeType);
+    }
     if (factoryToCheck.isAsync &&
         factoryToCheck.factoryType == _ServiceFactoryType.lazy &&
         factoryToCheck.instance == null) {
