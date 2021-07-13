@@ -5,6 +5,17 @@ int constructorCounter = 0;
 int disposeCounter = 0;
 int errorCounter = 0;
 
+class TestBaseClassGeneric<T> {
+  late Type t;
+  TestBaseClassGeneric() {
+    t = T;
+  }
+}
+
+class TestClassGeneric<T> implements TestBaseClassGeneric<T> {
+  late Type t;
+}
+
 abstract class TestBaseClass {}
 
 class TestClass extends TestBaseClass {
@@ -784,6 +795,23 @@ void main() {
 
     expect(instance1 is TestClass, true);
   });
+  test('GenericType test', () {
+    GetIt.I.registerSingleton<TestBaseClassGeneric<TestBaseClass>>(
+        TestBaseClassGeneric<TestBaseClass>());
+
+    final instance1 = GetIt.I.get<TestClassGeneric<TestBaseClass>>();
+    expect(instance1 is TestClassGeneric<TestBaseClass>, true);
+  });
+  test('GenericType test2', () {
+    var x = TestBaseClassGeneric<TestBaseClassGeneric<TestBaseClass>>();
+    var y = TestBaseClassGeneric<TestBaseClassGeneric<TestBaseClass>>();
+
+    Map<Type, String> testMap = {TestBaseClassGeneric: 'TestEntry'};
+
+    final instance1 = GetIt.I.get<TestClassGeneric<TestBaseClass>>();
+    expect(instance1 is TestClassGeneric<TestBaseClass>, true);
+  });
+
   test('register LazySingleton with lambda and factory function', () {
     GetIt.I.registerLazySingleton(() => SingletonInjector.configuration());
 
