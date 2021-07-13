@@ -1,8 +1,9 @@
-## [7.1.5] 
+## [7.2.0] 
 
 * fix for https://github.com/fluttercommunity/get_it/issues/210
 * Parameters of factories are no longer needed to be casted because they are nullable
 * downgraded the dependency on `async` to 2.6 again
+* you couldn't push two Scopes without a name
 
 ## [7.1.4]
 
