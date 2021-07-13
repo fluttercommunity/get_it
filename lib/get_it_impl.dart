@@ -42,8 +42,8 @@ class _ServiceFactory<T extends Object, P1, P2> {
   /// only one of them is always set.
   final FactoryFunc<T>? creationFunction;
   final FactoryFuncAsync<T>? asyncCreationFunction;
-  final FactoryFuncParam<T, P1?, P2?>? creationFunctionParam;
-  final FactoryFuncParamAsync<T, P1?, P2?>? asyncCreationFunctionParam;
+  final FactoryFuncParam<T, P1, P2>? creationFunctionParam;
+  final FactoryFuncParamAsync<T, P1, P2>? asyncCreationFunctionParam;
 
   ///  Dispose function that is used when a scope is popped
   final DisposingFunc<T>? disposeFunction;
@@ -149,7 +149,7 @@ class _ServiceFactory<T extends Object, P1, P2> {
             //     param2 == null || param2.runtimeType == param2Type,
             //     'Incompatible Type passed as param2\n'
             //     'expected: $param2Type actual: ${param2.runtimeType}');
-            return creationFunctionParam!(param1 as P1?, param2 as P2?);
+            return creationFunctionParam!(param1 as P1, param2 as P2);
           } else {
             return creationFunction!();
           }
@@ -213,7 +213,7 @@ class _ServiceFactory<T extends Object, P1, P2> {
             //     param2 == null || param2.runtimeType == param2Type,
             //     'Incompatible Type passed a param2\n'
             //     'expected: $param2Type actual: ${param2.runtimeType}');
-            return asyncCreationFunctionParam!(param1 as P1?, param2 as P2?)
+            return asyncCreationFunctionParam!(param1 as P1, param2 as P2)
                 as Future<R>;
           } else {
             return asyncCreationFunction!() as Future<R>;
@@ -483,7 +483,7 @@ class _GetItImplementation implements GetIt {
   ///        => TestClassParam(param1:s);
   @override
   void registerFactoryParam<T extends Object, P1, P2>(
-    FactoryFuncParam<T, P1?, P2?> factoryFunc, {
+    FactoryFuncParam<T, P1, P2> factoryFunc, {
     String? instanceName,
   }) {
     _register<T, P1, P2>(
@@ -780,9 +780,9 @@ class _GetItImplementation implements GetIt {
   void _register<T extends Object, P1, P2>({
     required _ServiceFactoryType type,
     FactoryFunc<T>? factoryFunc,
-    FactoryFuncParam<T, P1?, P2?>? factoryFuncParam,
+    FactoryFuncParam<T, P1, P2>? factoryFuncParam,
     FactoryFuncAsync<T>? factoryFuncAsync,
-    FactoryFuncParamAsync<T, P1?, P2?>? factoryFuncParamAsync,
+    FactoryFuncParamAsync<T, P1, P2>? factoryFuncParamAsync,
     T? instance,
     required String? instanceName,
     required bool isAsync,
