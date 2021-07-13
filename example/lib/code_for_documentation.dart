@@ -1,61 +1,55 @@
-// import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 
-// /// This file only contains code snippets for the readme file.
-// /// just ignore it
+class AppModel {}
 
-// import 'package:get_it/get_it.dart';
-// import 'package:get_it_example/app_model.dart';
+class AppModelImplmentation extends AppModel {
+  AppModelImplmentation();
+}
 
-// class AppModel {}
+// class AppModelMock extends AppModel {}
 
-// class AppModelImplmentation extends AppModel {
-//   AppModelImplmentation();
+// GetIt getIt = GetIt.instance;
+
+// class UserManager {
+//   AppModel appModel;
+//   DbService dbService;
+
+//   UserManager({AppModel appModel, DbService dbService}) {
+//     this.appModel = appModel ?? getIt.get<AppModel>();
+//     this.dbService = dbService ?? getIt.get<DbService>();
+//   }
 // }
 
-// // class AppModelMock extends AppModel {}
-
-// // GetIt getIt = GetIt.instance;
-
-// // class UserManager {
-// //   AppModel appModel;
-// //   DbService dbService;
-
-// //   UserManager({AppModel appModel, DbService dbService}) {
-// //     this.appModel = appModel ?? getIt.get<AppModel>();
-// //     this.dbService = dbService ?? getIt.get<DbService>();
-// //   }
-// // }
-
-// // Future restCall() async {}
+// Future restCall() async {}
 
 // Widget init() {
 //   bool testing;
-//   // ambient variable to access the service locator
+  // ambient variable to access the service locator
 
-//     GetIt getIt = GetIt.instance;
+  // GetIt getIt = GetIt.instance;
 
-//     getIt.registerFactory<AppModel>(() => AppModelImplmentation());
+  // getIt.registerFactory<AppModel>(() => AppModelImplmentation());
 
-//     GetIt.instance.registerSingleton<AppModel>(AppModelImplmentation());
+  // GetIt.instance.registerSingleton<AppModel>(AppModelImplmentation());
 
-//     GetIt.I.registerLazySingleton<AppModel>(() => AppModelImplmentation());
+  // GetIt.I.registerLazySingleton<AppModel>(() => AppModelImplmentation());
 
-//   //   if (testing) {
-//   //     sl.registerSingleton<AppModel>(AppModelMock());
-//   //   } else {
-//   //     sl.registerSingleton<AppModel>(AppModelImplmentation());
-//   //   }
-//   // }
+  //   if (testing) {
+  //     sl.registerSingleton<AppModel>(AppModelMock());
+  //   } else {
+  //     sl.registerSingleton<AppModel>(AppModelImplmentation());
+  //   }
+  // }
 
-//   // void setup() {
-//   //   // sl.registerFactoryAsync<AppModel>(
-//   //   //     () async => AppModelImplmentation(await restCall()));
+  // void setup() {
+  //   // sl.registerFactoryAsync<AppModel>(
+  //   //     () async => AppModelImplmentation(await restCall()));
 
-//   //   // sl.registerSingletonAsync<AppModel>(
-//   //   //     () async => AppModelImplmentation(await restCall()));
+  //   // sl.registerSingletonAsync<AppModel>(
+  //   //     () async => AppModelImplmentation(await restCall()));
 
-//   //   // sl.registerFactoryAsync<AppModel>(
-//   //   //     () async => AppModelImplmentation(await restCall()));
+  //   // sl.registerFactoryAsync<AppModel>(
+  //   //     () async => AppModelImplmentation(await restCall()));
 //   final getIt = GetIt.instance;
 
 //   getIt.registerSingletonAsync<ConfigService>(() async {
@@ -117,23 +111,23 @@
 //   return DbService();
 // }
 
-// // /// instead of
-// // MaterialButton(
-// //   child: Text("Update"),
-// //   onPressed: TheViewModel.of(context).update
-// //   ),
+// /// instead of
+// MaterialButton(
+//   child: Text("Update"),
+//   onPressed: TheViewModel.of(context).update
+//   ),
 
-// // /// do
-// // MaterialButton(
-// //   child: Text("Update"),
-// //   onPressed: sl.get<AppModel>().update
-// //   ),
+// /// do
+// MaterialButton(
+//   child: Text("Update"),
+//   onPressed: sl.get<AppModel>().update
+//   ),
 
-// // /// or even shorter
-// // MaterialButton(
-// //   child:  Text("Update"),
-// //   onPressed: sl.<AppModel>().update
-// //   ),
+// /// or even shorter
+// MaterialButton(
+//   child:  Text("Update"),
+//   onPressed: sl.<AppModel>().update
+//   ),
 
 // class StartupPage extends StatefulWidget {
 //   @override

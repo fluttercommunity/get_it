@@ -1,23 +1,107 @@
-## [5.0.6] - 22.01.2021
+## [7.2.0] 
 
-* fix for bug getAsync with factory
+* fix for https://github.com/fluttercommunity/get_it/issues/210
+* Parameters of factories are no longer needed to be casted because they are nullable
+* downgraded the dependency on `async` to 2.6 again
+* you couldn't push two Scopes without a name
 
-## [5.0.5] - 22.01.2021
+## [7.1.4]
 
-* fix for bug in dependend types
+* fixed bug with manual synchronization of SingletonsWithDependencies 
+https://github.com/fluttercommunity/get_it/issues/196
+## [7.1.3] - 07.05.2021
 
-## [5.0.4] - 10.01.2021
+* Fix for https://github.com/fluttercommunity/get_it/issues/186
+## [7.1.2] - 06.05.2021
 
-* fix for possible null reference exception in ´isRegistered´
+* Thanks to the clever PR https://github.com/fluttercommunity/get_it/pull/185 by @kmartins `unregister` and `resetLazySingleton` now only have to be awaited if you use an async disposal function.
+## [7.1.1] - 05.05.2021
 
-## [5.0.3] - 09.12.2020
+* `pushNewScope()` now got an optional `init` parameter where you can pass a function that registers new objects inside the newly pushed Scope. Doing the registration in this function ensures that the `onScopeChanged` call-back is called after the objects are registered.
+
+## [7.1.0] - 05.05.2021
+
+* The new `Disposable` interface had a typo that now got corrected. You could call this a breaking change but as the last version change is just three days old I guess not many people will be affected by this correction.
+
+#### Getting notified when a scope change happens
+
+When using scopes with objects that shadow other objects its important to give the UI a chance to rebuild and acquire references to the now active objects. For this you can register an call-back function in GetIt
+The getit_mixin has a matching `rebuiltOnScopeChange` method.
+
+```Dart
+  /// Optional call-back that will get call whenever a change in the current scope happens
+  /// This can be very helpful to update the UI in such a case to make sure it uses
+  /// the correct Objects after a scope change
+  void Function(bool pushed)? onScopeChanged;
+```
+## [7.0.0] - 02.05.2021
+
+This is a breaking change because there were some inconsistencies in the handling of the disposal functions that you can pass when registering an Object, pop a Scope or use `unregister()`  `resetLazySingleton()`´.  Some of accepted a `FutureOr` method type, others just a `void` which meant you couldn't use async functions consistently. With this release you can use async functions in all disposal functions which unfortunately also required to change the signatures of the following functions:
+
+```dart
+  Future<void> reset({bool dispose = true});
+
+  Future<void> resetScope({bool dispose = true});
+
+  Future<void> popScope();
+
+  Future<bool> popScopesTill(String name);
+
+  FutureOr resetLazySingleton<T extends Object>({
+    Object? instance,
+    String? instanceName,
+    FutureOr Function(T)? disposingFunction,
+  });
+
+  FutureOr unregister<T extends Object>({
+    Object? instance,
+    String? instanceName,
+    FutureOr Function(T)? disposingFunction,
+  });
+```
+
+Basically all functions that can possibly call a disposal functions should be awaited. 
+#### Implementing the `Disposable` interface
+
+Instead of passing a disposing function on registration or when pushing a Scope from V7.0 on your objects `onDispose()` method will be called
+if the object that you register implements the `Disposable`´interface:
+
+```Dart
+abstract class Disposable {
+  FutureOr onDispose();
+}
+```
+#### Getting notified about the shadowing state of an object
+In some cases it might be helpful to know if an Object gets shadowed by another one e.g. if it has some Stream subscriptions that it want to cancel before the shadowing object creates a new subscription. Also the other way round so that a shadowed Object gets notified when it's "active" again meaning when a shadowing object is removed.
+
+For this a class had to implement the `ShadowChangeHandlers` interface:
+
+```Dart
+abstract class ShadowChangeHandlers {
+  void onGetShadowed(Object shadowing);
+  void onLeaveShadow(Object shadowing);
+}
+```
+When the Object is shadowed its `onGetShadowed()` method is called with the object that is shadowing it. When this object is removed from GetIt `onLeaveShadow()` will be called. 
+
+
+ * Thanks to this PR https://github.com/fluttercommunity/get_it/pull/181 by @n3wtron you can now also make objects depend on other objects not only by type but also by type and name if you used a named registration
+## [6.1.1] - 13.04.2021
+
+* small fix in getAsync with parameters
+## [6.1.0] - 12.04.2021
+
+* Exceptions that occur during an async initialisation are now forwarded to the future that `allReady()` returns instead to get swallowed https://github.com/fluttercommunity/get_it/issues/148
+* Added a property `currentScopeName` to query the name of the currently active scope https://github.com/fluttercommunity/get_it/issues/153
+* `popScope` will know throw an Exception instead just an assert if you are already on the `baseScope` and you try to pop it. 
+
+## [6.0.0] - 15.02.2021
+
+* Official null safety release
+## [5.0.2] - 08.12.2020
 
 * fixed https://github.com/fluttercommunity/get_it/issues/138 when calling `unRegister` the dispose function
 that can be passed when registering wasn't called. 
-
-## [5.0.2] - 08.12.2020
-
-* did not fix #138 as expected 
 
 ## [5.0.1] - 23.09.2020
 

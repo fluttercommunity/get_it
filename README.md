@@ -9,10 +9,7 @@ Typical usage:
 * Accessing service objects like REST API clients or databases so that they easily can be mocked.
 * Accessing View/AppModels/Managers/BLoCs from Flutter Views
 
->**V5.0 has some breaking changes** Check please check the release notes to see what's new.
-
->**Breaking Change with V4.0.0** The principle on how to synchronize your registered instances creation has been rethought and improved :smiley:.
-Please see [Synchronizing asynchronous initializations of Singletons](#synchronizing-asynchronous-initializations-of-singletons).
+>**V7.0 has some breaking changes** Check please check the release notes to see what's new.
 
 ## Why GetIt
 
@@ -20,7 +17,7 @@ As your App grows, at some point you will need to put your app's logic in classe
 But now you need a way to access these objects from your UI code. When I came to Flutter from the .Net world, the only way to do this was the use of InheritedWidgets. I found the way to use them by wrapping them in a StatefulWidget; quite cumbersome and has problems working consistently. Also:
 
 * I missed the ability to easily switch the implementation for a mocked version without changing the UI.
-* The fact that you need a `BuildContext` to access your objects made it inaccessible from the Business layer. 
+* The fact that you need a `BuildContext` to access your objects made it inaccessible from the Business layer.
 
 
 Accessing an object from anywhere in an App can be done by other ways, but:
@@ -38,7 +35,9 @@ GetIt is:
 * Easy to learn/use
 * Doesn't clutter your UI tree with special Widgets to access your data like provider or Redux does.
 
-**GetIt isn't a state management solution!** It's a locator for your objects so you need some other way to notify your UI about changes like `Streams` or `ValueNotifiers`.
+### The get_it_mixin
+
+GetIt isn't a state management solution! It's a locator for your objects so you need some other way to notify your UI about changes like `Streams` or `ValueNotifiers`. But together with the [get_it_mixin](https://pub.dev/packages/get_it_mixin) it gets a full featured easy state management solution that integrates with the Objects registered in get_it
 
 ## Getting Started
 
@@ -89,7 +88,7 @@ GetIt getIt = GetIt.instance;
 ```
 
 
-> You can use any name you want which makes Brian :smiley: happy like (`sl, backend, services...`) ;-) 
+> You can use any name you want which makes Brian :smiley: happy like (`sl, backend, services...`) ;-)
 
 
 Before you can access your objects you have to register them within `GetIt` typically direct in your start-up code.
@@ -152,11 +151,10 @@ void registerLazySingleton<T>(FactoryFunc<T> func)
 
 You have to pass a factory function `func` that returns an instance of an implementation of `T`. Only the first time you call `get<T>()` this factory function will be called to create a new instance. After that you will always get the same instance returned.
 
-
 ### Overwriting registrations
 
 If you try to register a type more than once you will fail with an assertion in debug mode because normally this is not needed and probably a bug.
-If you really have to overwrite a registration, then you can by setting the property `allowReassignment==true`. 
+If you really have to overwrite a registration, then you can by setting the property `allowReassignment==true`.
 
 ### Testing if a Singleton is already registered
 You can check if a certain Type or instance is already registered in GetIt with:
@@ -209,29 +207,12 @@ Future<void> reset({bool dispose = true});
 ```
 ## Scopes
 With V5.0 of GetIt it now supports hierarchical scoping of registration. What does this mean?
-You can push a new registration scope like you push a new page on the Navigator. Any registration after that will be registered in this new scope. When accessing an object with `get` GetIt first checks the topmost scope for an registration and then the ones below. This means you can register the same type that was already registered in a lower scope again in a scope above and you will always get the latest registered object. 
+You can push a new registration scope like you push a new page on the Navigator. Any registration after that will be registered in this new scope. When accessing an object with `get` GetIt first checks the topmost scope for an registration and then the ones below. This means you can register the same type that was already registered in a lower scope again in a scope above and you will always get the latest registered object.
 
 Imagine an app that can be used with or without a login. On App start-up a `DefaultUser` object is registered with the abstract type `User` as singleton. As soon as the user logs in, a new scope is pushed and a new `LoggedInUser` object again with the `User` type is registered that allows more functions. For the rest of the App nothing has changed as it still accesses `User` objects through GetIt.
 As soon as the user Logs off all you have to do is pop the Scope and automatically the `DefaultUser` is used again.
 
 Another example could be a shopping basket where you want to ensure that not a cart from a previous session is used again. So at the beginning of a new session you push a new scope and register a new cart object. At the end of the session you pop this scope again.
-
-### Disposing Singletons and Scopes
-From V5.0 on you can pass a `dispose` function when registering any Singletons. For this the registration functions have a optional parameter:
-
-```Dart
-DisposingFunc<T> dispose
-``` 
-where `DisposingFunc` is defined as 
-
-```Dart
-typedef DisposingFunc<T> = FutureOr Function(T param);
-```
-
-So you can pass simple and async functions as this parameter. This function is called when you pop or reset the scope or when you reset GetIt completely.
-
-When you push a new scope you can also pass a `dispose` function that is called when a scope is popped or reset but before the dispose functions of the registered objects is called which mean it can still access the objects that were registered in that scope. 
-
 
 ### Scope functions
 
@@ -243,7 +224,9 @@ When you push a new scope you can also pass a `dispose` function that is called 
   /// by using the name.
   /// [dispose] function that will be called when you pop this scope. The scope
   /// is still valied while it is executed
-  void pushNewScope({String scopeName, ScopeDisposeFunc dispose});
+  /// [init] optional function to register Objects immediately after the new scope is
+  /// pushed. This ensures that [onScopeChanged] will be called after their registration
+  void pushNewScope({void Function(GetIt getIt)? init,String scopeName, ScopeDisposeFunc dispose});
 
   /// Disposes all factories/Singletons that have ben registered in this scope
   /// and pops (destroys) the scope so that the previous scope gets active again.
@@ -267,6 +250,58 @@ When you push a new scope you can also pass a `dispose` function that is called 
   /// As dispose funcions can be async, you should await this function.
   Future<void> resetScope({bool dispose = true});
   ```
+
+#### Getting notified about the shadowing state of an object
+In some cases it might be helpful to know if an Object gets shadowed by another one e.g. if it has some Stream subscriptions that it want to cancel before the shadowing object creates a new subscription. Also the other way round so that a shadowed Object gets notified when it's "active" again meaning when a shadowing object is removed.
+
+For this a class had to implement the `ShadowChangeHandlers` interface:
+
+```Dart
+abstract class ShadowChangeHandlers {
+  void onGetShadowed(Object shadowing);
+  void onLeaveShadow(Object shadowing);
+}
+```
+When the Object is shadowed its `onGetShadowed()` method is called with the object that is shadowing it. When this object is removed from GetIt `onLeaveShadow()` will be called. 
+
+#### Getting notified when a scope change happens
+
+When using scopes with objects that shadow other objects its important to give the UI a chance to rebuild and acquire references to the now active objects. For this you can register an call-back function in GetIt
+The getit_mixin has a matching `rebuiltOnScopeChange` method.
+
+```Dart
+  /// Optional call-back that will get call whenever a change in the current scope happens
+  /// This can be very helpful to update the UI in such a case to make sure it uses
+  /// the correct Objects after a scope change
+  void Function(bool pushed)? onScopeChanged;
+```
+
+### Disposing Singletons and Scopes
+From V5.0 on you can pass a `dispose` function when registering any Singletons. For this the registration functions have a optional parameter:
+
+```Dart
+DisposingFunc<T> dispose
+```
+where `DisposingFunc` is defined as
+
+```Dart
+typedef DisposingFunc<T> = FutureOr Function(T param);
+```
+
+So you can pass simple or async functions as this parameter. This function is called when you pop or reset the scope or when you reset GetIt completely.
+
+When you push a new scope you can also pass a `dispose` function that is called when a scope is popped or reset but before the dispose functions of the registered objects is called which mean it can still access the objects that were registered in that scope.
+
+#### Implementing the `Disposable` interface
+
+Instead of passing a disposing function on registration or when pushing a Scope from V7.0 on your objects `onDispose()` method will be called
+if the object that you register implements the `Disposable`´interface:
+
+```Dart
+abstract class Disposable {
+  FutureOr ondDispose();
+}
+```
 
 
 ## Asynchronous Factories
@@ -391,6 +426,15 @@ In case that this services have to be initialized in a certain order because the
 
 When using `dependsOn` you ensure that the registration waits with creating its singleton on the completion of the type defined in `dependsOn`.
 
+The `dependsOn` field also accepts `InitDependency` classes that allow specifying the dependency by type and `instanceName`.
+
+```Dart
+  getIt.registerSingletonAsync<RestService>(() async => RestService().init(), instanceName:"rest1");
+
+  getIt.registerSingletonWithDependencies<AppModel>(
+      () => AppModelImplmentation(),
+      dependsOn: [InitDependency(RestService, instanceName:"rest1")]);
+```
 
 ### Manually signalling the ready state of a Singleton
 Sometimes the mechanism of `dependsOn` might not give you enough control. For this case you can use `isReady` to wait for a certain singleton:
@@ -433,8 +477,8 @@ class ConfigService {
   }
 }
 ```
-### Using `allReady` repeatedly 
-Even if you already have awaited `allReady`, the moment you register new async singletons or singletons with dependencies you can use `allReady` again. This makes especially sense if you uses scopes where every scope needs to get initialized. 
+### Using `allReady` repeatedly
+Even if you already have awaited `allReady`, the moment you register new async singletons or singletons with dependencies you can use `allReady` again. This makes especially sense if you uses scopes where every scope needs to get initialized.
 
 ### Manual triggering **allReady** (almost deprecated)
 
@@ -531,7 +575,35 @@ If you have a mocked version of a Service, you can easily switch between that an
 Ok you have been warned! All registration functions have an optional named parameter `instanceName`. Providing a name with factory/singleton here registers that instance with that name and a type. Consequently `get()` has also an optional parameter `instanceName` to access
 factories/singletons that were registered by name.
 
-**IMPORTANT:** Each name must be unique per type.  
+**IMPORTANT:** Each name must be unique per type.
+
+
+```Dart
+  abstract class RestService {}
+  class RestService1 implements RestService{
+    Future<RestService1> init() async {
+      Future.delayed(Duration(seconds: 1));
+      return this;
+    }
+  }
+  class RestService2 implements RestService{
+    Future<RestService2> init() async {
+      Future.delayed(Duration(seconds: 1));
+      return this;
+    }
+  }
+
+  getIt.registerSingletonAsync<RestService>(() async => RestService1().init(), instanceName : "restService1");
+  getIt.registerSingletonAsync<RestService>(() async => RestService2().init(), instanceName : "restService2");
+
+  getIt.registerSingletonWithDependencies<AppModel>(
+      () {
+          RestService restService1 = GetIt.I.get<RestService>(instanceName: "restService1");
+          return AppModelImplmentation(restService1);
+      },
+      dependsOn: [InitDependency(RestService, instanceName:"restService1")],
+  );
+```
 
 ### More than one instance of GetIt
 While not recommended, you can create your own independent instance of `GetIt`if you don't want to share your locator with some

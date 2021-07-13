@@ -8,7 +8,7 @@ int errorCounter = 0;
 abstract class TestBaseClass {}
 
 class TestClass extends TestBaseClass {
-  final String id;
+  final String? id;
   TestClass([this.id]) {
     constructorCounter++;
   }
@@ -17,8 +17,31 @@ class TestClass extends TestBaseClass {
   }
 }
 
+class TestClassShadowChangHandler extends TestBaseClass
+    with ShadowChangeHandlers {
+  final String? id;
+  final void Function(bool isShadowed, Object shadowIngObject) onShadowChange;
+
+  TestClassShadowChangHandler(this.onShadowChange, [this.id]) {
+    constructorCounter++;
+  }
+  void dispose() {
+    disposeCounter++;
+  }
+
+  @override
+  void onGetShadowed(Object shadowing) {
+    onShadowChange(true, shadowing);
+  }
+
+  @override
+  void onLeaveShadow(Object shadowing) {
+    onShadowChange(false, shadowing);
+  }
+}
+
 class TestClass2 {
-  final String id;
+  final String? id;
   TestClass2([this.id]);
   void dispose() {
     disposeCounter++;
@@ -30,8 +53,8 @@ class TestClass3 {}
 class TestClass4 {}
 
 class TestClassParam {
-  final String param1;
-  final int param2;
+  final String? param1;
+  final int? param2;
 
   TestClassParam({this.param1, this.param2});
 }
@@ -66,6 +89,211 @@ void main() {
     expect(instance2.id, 'Basescope');
   });
 
+  test('register constant in two scopes with ShadowChangeHandlers', () async {
+    final getIt = GetIt.instance;
+
+    bool isShadowed = false;
+    Object? shadowingObject;
+
+    getIt.registerSingleton<TestClassShadowChangHandler>(
+      TestClassShadowChangHandler((shadowState, shadow) {
+        isShadowed = shadowState;
+        shadowingObject = shadow;
+      }, 'Basescope'),
+    );
+
+    getIt.pushNewScope();
+
+    final testClassShadowChangHandlerInstance =
+        TestClassShadowChangHandler((shadowState, shadow) {}, 'Scope 2');
+    getIt.registerSingleton<TestClassShadowChangHandler>(
+      testClassShadowChangHandlerInstance,
+    );
+
+    expect(isShadowed, true);
+    expect(shadowingObject, testClassShadowChangHandlerInstance);
+    shadowingObject = null;
+
+    await getIt.popScope();
+
+    expect(isShadowed, false);
+    expect(shadowingObject, testClassShadowChangHandlerInstance);
+  });
+
+  test('register constant in two scopes with ShadowChangeHandlers', () async {
+    final getIt = GetIt.instance;
+
+    bool isShadowed = false;
+    Object? shadowingObject;
+
+    getIt.registerSingleton<TestClassShadowChangHandler>(
+      TestClassShadowChangHandler((shadowState, shadow) {
+        isShadowed = shadowState;
+        shadowingObject = shadow;
+      }, 'Basescope'),
+    );
+
+    getIt.pushNewScope();
+
+    final testClassShadowChangHandlerInstance =
+        TestClassShadowChangHandler((shadowState, shadow) {}, 'Scope 2');
+    getIt.registerSingleton<TestClassShadowChangHandler>(
+      testClassShadowChangHandlerInstance,
+    );
+
+    expect(isShadowed, true);
+    expect(shadowingObject, testClassShadowChangHandlerInstance);
+    shadowingObject = null;
+
+    await getIt.popScope();
+
+    expect(isShadowed, false);
+    expect(shadowingObject, testClassShadowChangHandlerInstance);
+  });
+  test(
+      'register lazySingleton in two scopes with ShadowChangeHandlers and scopeChangedHandler',
+      () async {
+    final getIt = GetIt.instance;
+
+    int scopeChanged = 0;
+    bool isShadowed = false;
+    Object? shadowingObject;
+
+    getIt.onScopeChanged = (pushed) => scopeChanged++;
+
+    getIt.registerLazySingleton<TestBaseClass>(
+      () => TestClassShadowChangHandler((shadowState, shadow) {
+        isShadowed = shadowState;
+        shadowingObject = shadow;
+      }, 'Basescope'),
+    );
+
+    getIt.pushNewScope();
+
+    var testClassShadowChangHandlerInstance =
+        TestClassShadowChangHandler((shadowState, shadow) {}, 'Scope 2');
+    getIt.registerSingleton<TestBaseClass>(
+      testClassShadowChangHandlerInstance,
+    );
+
+    /// As we haven't used the singleton in the lower scope
+    /// it never created an instance that could be shadowed
+    expect(isShadowed, false);
+    expect(shadowingObject, null);
+    await getIt.popScope();
+
+    final lazyInstance = getIt<TestBaseClass>();
+
+    getIt.pushNewScope();
+    testClassShadowChangHandlerInstance =
+        TestClassShadowChangHandler((shadowState, shadow) {}, 'Scope 2');
+
+    getIt.registerSingleton<TestBaseClass>(
+      testClassShadowChangHandlerInstance,
+    );
+
+    expect(isShadowed, true);
+    expect(shadowingObject, testClassShadowChangHandlerInstance);
+    shadowingObject = null;
+
+    await getIt.popScope();
+
+    expect(isShadowed, false);
+    expect(shadowingObject, testClassShadowChangHandlerInstance);
+    expect(scopeChanged, 4);
+  });
+
+  test('register AsyncSingleton in two scopes with ShadowChangeHandlers',
+      () async {
+    final getIt = GetIt.instance;
+
+    bool isShadowed = false;
+    Object? shadowingObject;
+
+    getIt.registerSingleton<TestBaseClass>(
+      TestClassShadowChangHandler((shadowState, shadow) {
+        isShadowed = shadowState;
+        shadowingObject = shadow;
+      }, 'Basescope'),
+    );
+
+    getIt.pushNewScope();
+
+    TestBaseClass? shadowingInstance;
+    getIt.registerSingletonAsync<TestBaseClass>(
+      () async {
+        await Future.delayed(const Duration(milliseconds: 100));
+        final newInstance =
+            TestClassShadowChangHandler((shadowState, shadow) {}, '2, Scope');
+        shadowingInstance = newInstance;
+        return newInstance;
+      },
+    );
+
+    /// The instance is not created yet because the async init function hasn't completed
+    expect(isShadowed, false);
+    expect(shadowingObject, null);
+
+    /// wait for the singelton so be created
+
+    final asyncInstance = await getIt.getAsync<TestBaseClass>();
+
+    expect(isShadowed, true);
+    expect(shadowingObject, shadowingInstance);
+    shadowingObject = null;
+
+    await getIt.popScope();
+
+    expect(isShadowed, false);
+    expect(shadowingObject, shadowingInstance);
+  });
+
+  test(
+      'register SingletonWidthDependies in two scopes with ShadowChangeHandlers',
+      () async {
+    final getIt = GetIt.instance;
+
+    bool isShadowed = false;
+    Object? shadowingObject;
+
+    getIt.registerSingletonAsync<TestClass>(
+      () async {
+        await Future.delayed(const Duration(milliseconds: 100));
+        final newInstance = TestClass('Basescope');
+        return newInstance;
+      },
+    );
+    getIt.registerSingleton<TestBaseClass>(
+        TestClassShadowChangHandler((shadowState, shadow) {
+      isShadowed = shadowState;
+      shadowingObject = shadow;
+    }, '2, Scope'));
+
+    getIt.pushNewScope();
+
+    Object? shadowingInstance;
+    getIt.registerSingletonWithDependencies<TestBaseClass>(() {
+      final newInstance =
+          TestClassShadowChangHandler((shadowState, shadow) {}, '2, Scope');
+      shadowingInstance = newInstance;
+      return newInstance;
+    }, dependsOn: [TestClass]);
+
+    /// The instance is not created yet because the async init function hasn't completed
+    expect(isShadowed, false);
+    expect(shadowingObject, null);
+
+    await getIt.allReady();
+
+    expect(isShadowed, true);
+    expect(shadowingObject, shadowingInstance);
+    shadowingObject = null;
+
+    await getIt.popScope();
+
+    expect(isShadowed, false);
+    expect(shadowingObject, shadowingInstance);
+  });
   test('popscope', () async {
     final getIt = GetIt.instance;
     constructorCounter = 0;
@@ -115,43 +343,30 @@ void main() {
 
     expect(disposeCounter, 3);
   });
-
-  test('popscope until', () async {
+  test('popscope with destructors', () async {
     final getIt = GetIt.instance;
-    constructorCounter = 0;
 
-    getIt.registerSingleton<TestClass>(TestClass(),
-        instanceName: 'scope0', dispose: (x) => x.dispose());
+    getIt.registerSingleton<TestClass>(TestClass('Basescope'),
+        dispose: (x) => x.dispose());
 
-    getIt.pushNewScope(scopeName: 'scope1', dispose: () => disposeCounter++);
-    getIt.registerSingleton<TestClass>(TestClass(),
-        instanceName: 'scope1', dispose: (x) => x.dispose());
+    getIt.pushNewScope(dispose: () {
+      return disposeCounter++;
+    });
 
-    getIt.pushNewScope(scopeName: 'scope2', dispose: () => disposeCounter++);
-    getIt.registerSingleton<TestClass>(TestClass(),
-        instanceName: 'scope2', dispose: (x) => x.dispose());
+    getIt.registerSingleton<TestClass>(TestClass('2. scope'),
+        dispose: (x) => x.dispose());
+    getIt.registerSingleton<TestClass2>(TestClass2('2. scope'),
+        dispose: (x) => x.dispose());
 
-    getIt.pushNewScope(scopeName: 'scope3', dispose: () => disposeCounter++);
-    getIt.registerSingleton<TestClass>(TestClass(),
-        instanceName: 'scope3', dispose: (x) => x.dispose());
+    await getIt.popScope();
 
-    expect(getIt<TestClass>(instanceName: 'scope0'), isNotNull);
-    expect(getIt<TestClass>(instanceName: 'scope1'), isNotNull);
-    expect(getIt<TestClass>(instanceName: 'scope2'), isNotNull);
-    expect(getIt<TestClass>(instanceName: 'scope3'), isNotNull);
-    expect(() => getIt.get<TestClass>(),
-        throwsA(const TypeMatcher<AssertionError>()));
+    expect(disposeCounter, 3);
+  });
 
-    await getIt.popScopesTill('scope2');
+  test('popscope throws if already on the base scope', () async {
+    final getIt = GetIt.instance;
 
-    expect(getIt<TestClass>(instanceName: 'scope0'), isNotNull);
-    expect(getIt<TestClass>(instanceName: 'scope1'), isNotNull);
-    expect(() => getIt.get<TestClass>(instanceName: 'scope2'),
-        throwsA(const TypeMatcher<AssertionError>()));
-    expect(() => getIt.get<TestClass>(instanceName: 'scope3'),
-        throwsA(const TypeMatcher<AssertionError>()));
-
-    expect(disposeCounter, 4);
+    expect(() => getIt.popScope(), throwsA(const TypeMatcher<StateError>()));
   });
 
   test('resetScope', () async {
