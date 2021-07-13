@@ -1,3 +1,9 @@
+## [7.1.5] 
+
+* fix for https://github.com/fluttercommunity/get_it/issues/210
+* Parameters of factories are no longer needed to be casted because they are nullable
+* downgraded the dependency on `async` to 2.6 again
+
 ## [7.1.4]
 
 * fixed bug with manual synchronization of SingletonsWithDependencies 
