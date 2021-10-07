@@ -929,6 +929,7 @@ class _GetItImplementation implements GetIt {
             isReadyFuture = Future<T>.value(serviceFactory.instance as T);
             serviceFactory._readyCompleter
                 .complete(serviceFactory.instance as T);
+            serviceFactory.objectsWaiting.clear();
           } else {
             isReadyFuture = serviceFactory._readyCompleter.future;
           }
