@@ -578,7 +578,7 @@ class _GetItImplementation implements GetIt {
   /// registered with that name instead of a type. This should only be necessary if you need
   /// to register more than one instance of one type. It's highly not recommended
   @override
-  void registerSingleton<T extends Object>(
+  T registerSingleton<T extends Object>(
     T instance, {
     String? instanceName,
     bool? signalsReady,
@@ -592,6 +592,7 @@ class _GetItImplementation implements GetIt {
       shouldSignalReady: signalsReady ?? <T>[] is List<WillSignalReady>,
       disposeFunc: dispose,
     );
+    return instance;
   }
 
   /// registers a type as Singleton by passing an factory function of that type
