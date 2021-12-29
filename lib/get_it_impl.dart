@@ -1033,7 +1033,7 @@ class _GetItImplementation implements GetIt {
   /// provide a [disposingFunction]
   @override
   FutureOr resetLazySingleton<T extends Object>({
-    Object? instance,
+    T? instance,
     String? instanceName,
     FutureOr Function(T)? disposingFunction,
   }) async {

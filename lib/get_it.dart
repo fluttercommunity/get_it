@@ -408,7 +408,7 @@ abstract class GetIt {
   /// provide a [disposingFunction]. This function overrides the disposing
   /// you might have provided when registering.
   FutureOr resetLazySingleton<T extends Object>({
-    Object? instance,
+    T? instance,
     String? instanceName,
     FutureOr Function(T)? disposingFunction,
   });
