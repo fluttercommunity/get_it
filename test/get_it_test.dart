@@ -531,6 +531,24 @@ void main() {
     GetIt.I.reset();
   });
 
+  test('reset LazySingleton by instance only', () {
+    // Arrange
+    final getIt = GetIt.instance;
+    constructorCounter = 0;
+    getIt.registerLazySingleton<TestClass>(() => TestClass());
+    final instance1 = getIt.get<TestClass>();
+
+    // Act
+    GetIt.I.resetLazySingleton(instance: instance1);
+
+    // Assert
+    final instance2 = getIt.get<TestClass>();
+    expect(instance1, isNot(instance2));
+    expect(constructorCounter, 2);
+
+    GetIt.I.reset();
+  });
+
   test('unregister by instance when the dispose of the register is a future',
       () async {
     final getIt = GetIt.instance;
