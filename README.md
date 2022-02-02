@@ -25,19 +25,19 @@ Accessing an object from anywhere in an App can be done in other ways, but:
 * If you use a Singleton you can't easily switch the implementation out for a mock version in tests
 * IoC containers for Dependency Injections offer similar functionality, but with the cost of slow start-up time and less readability because you don't know where the magically injected object comes from. Most IoC libs rely on reflection they cannot be ported to Flutter.
 
-As I was used to use the Service Locator _Splat_ from .Net, I decided to port it to Dart. Since then, more features have been added.
+As I was used to using the Service Locator _Splat_ from .Net, I decided to port it to Dart. Since then, more features have been added.
 
 >If you are not familiar with the concept of Service Locators, it's a way to decouple the interface (abstract base class) from a concrete implementation, and at the same time allows to access the concrete implementation from everywhere in your App over the interface.
-> I can only highly recommend to read this classic article by from Martin Fowler [Inversion of Control Containers and the Dependency Injection  pattern](https://martinfowler.com/articles/injection.html).
+> I can only highly recommend reading this classic article by Martin Fowler [Inversion of Control Containers and the Dependency Injection pattern](https://martinfowler.com/articles/injection.html).
 
 GetIt is:
 * Extremely fast (O(1))
 * Easy to learn/use
-* Don't clutter your UI tree with special Widgets to access your data as provider or Redux does.
+* Doesn't clutter your UI tree with special Widgets to access your data like, provider or Redux does.
 
 ### The get_it_mixin
 
-GetIt isn't a state management solution! It's a locator for your objects so you need some other way to notify your UI about changes like `Streams` or `ValueNotifiers`. But together with the [get_it_mixin](https://pub.dev/packages/get_it_mixin) it gets a full featured easy state management solution that integrates with the Objects registered in get_it
+GetIt isn't a state management solution! It's a locator for your objects so you need some other way to notify your UI about changes like `Streams` or `ValueNotifiers`. But together with the [get_it_mixin](https://pub.dev/packages/get_it_mixin), it gets a full-featured easy state management solution that integrates with the Objects registered in get_it
 
 ## Getting Started
 
@@ -80,7 +80,7 @@ GetIt getIt = GetIt.instance;
 GetIt getIt = GetIt.I;
 ```
 
-Through this any call to `instance` in any package of a project will get the same instance of `GetIt`. I still recommend just to assign the instance to a global variable in your project as it is more convenient and doesn't harm (Also it allows you to give your service locator your own name).
+Through this, any call to `instance` in any package of a project will get the same instance of `GetIt`. I still recommend just assigning the instance to a global variable in your project as it is more convenient and doesn't harm (Also it allows you to give your service locator your own name).
 
 
 ```Dart
@@ -135,7 +135,7 @@ void registerFactory<T>(FactoryFunc<T> func)
 You have to pass a factory function `func` that returns a NEW instance of an implementation of `T`. Each time you call `get<T>()` you will get a new instance returned. How to pass parameters to a factory you can find [here](#passing-parameters-to-factories)
 
 #### Singleton & LazySingleton
->Although I always would recommend using an abstract base class as registration type so that you can vary the implementations you don't have to do this. You can also register concrete types.
+>Although I always would recommend using an abstract base class as a registration type so that you can vary the implementations you don't have to do this. You can also register concrete types.
 
 ```Dart
 void registerSingleton<T>(T instance)
@@ -143,13 +143,13 @@ void registerSingleton<T>(T instance)
 
 You have to pass an instance of `T` or a derived class of `T` that you will always get returned on a call to `get<T>()`.
 
-As creating this instance can be time consuming at app start-up you can shift the creation to the time the object is the first time requested with:
+As creating this instance can be time-consuming at app start-up you can shift the creation to the time the object is the first time requested with:
 
 ```Dart
 void registerLazySingleton<T>(FactoryFunc<T> func)
 ```
 
-You have to pass a factory function `func` that returns an instance of an implementation of `T`. Only the first time you call `get<T>()` this factory function will be called to create a new instance. After that you will always get the same instance returned.
+You have to pass a factory function `func` that returns an instance of an implementation of `T`. Only the first time you call `get<T>()` this factory function will be called to create a new instance. After that, you will always get the same instance returned.
 
 ### Overwriting registrations
 
@@ -166,7 +166,7 @@ You can check if a certain Type or instance is already registered in GetIt with:
 ```
 
 ### Unregistering Singletons or Factories
-If you need to you can also unregister your registered singletons and factories and pass a optional `disposingFunction` for clean-up.
+If you need to you can also unregister your registered singletons and factories and pass an optional `disposingFunction` for clean-up.
 
 ```Dart
 /// Unregister an [instance] of an object or a factory/singleton by Type [T] or by name [instanceName]
@@ -178,7 +178,7 @@ void unregister<T>({Object instance,String instanceName, void Function(T) dispos
 
 ### Resetting LazySingletons
 
-In some cases you might not want to unregister a LazySingleton but instead to reset its instance so that it gets newly created on the next access to it.
+In some cases, you might not want to unregister a LazySingleton but instead, reset its instance so that it gets newly created on the next access to it.
 
 ```Dart
   /// Clears the instance of a lazy singleton,
@@ -206,13 +206,13 @@ void resetLazySingleton<T>({Object instance,
 Future<void> reset({bool dispose = true});
 ```
 ## Scopes
-With V5.0 of GetIt it now supports hierarchical scoping of registration. What does this mean?
-You can push a new registration scope like you push a new page on the Navigator. Any registration after that will be registered in this new scope. When accessing an object with `get` GetIt first checks the topmost scope for an registration and then the ones below. This means you can register the same type that was already registered in a lower scope again in a scope above and you will always get the latest registered object.
+With V5.0 of GetIt, it now supports hierarchical scoping of registration. What does this mean?
+You can push a new registration scope like you push a new page on the Navigator. Any registration after that will be registered in this new scope. When accessing an object with `get` GetIt first checks the topmost scope for registration and then the ones below. This means you can register the same type that was already registered in a lower scope again in the scope above and you will always get the latest registered object.
 
-Imagine an app that can be used with or without a login. On App start-up a `DefaultUser` object is registered with the abstract type `User` as singleton. As soon as the user logs in, a new scope is pushed and a new `LoggedInUser` object again with the `User` type is registered that allows more functions. For the rest of the App nothing has changed as it still accesses `User` objects through GetIt.
+Imagine an app that can be used with or without a login. On App start-up, a `DefaultUser` object is registered with the abstract type `User` as a singleton. As soon as the user logs in, a new scope is pushed and a new `LoggedInUser` object again with the `User` type is registered that allows more functions. For the rest of the App, nothing has changed as it still accesses `User` objects through GetIt.
 As soon as the user Logs off all you have to do is pop the Scope and automatically the `DefaultUser` is used again.
 
-Another example could be a shopping basket where you want to ensure that not a cart from a previous session is used again. So at the beginning of a new session you push a new scope and register a new cart object. At the end of the session you pop this scope again.
+Another example could be a shopping basket where you want to ensure that not a cart from a previous session is used again. So at the beginning of a new session, you push a new scope and register a new cart object. At the end of the session, you pop this scope again.
 
 ### Scope functions
 
@@ -228,12 +228,12 @@ Another example could be a shopping basket where you want to ensure that not a c
   /// pushed. This ensures that [onScopeChanged] will be called after their registration
   void pushNewScope({void Function(GetIt getIt)? init,String scopeName, ScopeDisposeFunc dispose});
 
-  /// Disposes all factories/Singletons that have ben registered in this scope
+  /// Disposes all factories/Singletons that have been registered in this scope
   /// and pops (destroys) the scope so that the previous scope gets active again.
-  /// if you provided  dispose functions on registration, they will be called.
+  /// if you provided dispose functions on registration, they will be called.
   /// if you passed a dispose function when you pushed this scope it will be
-  /// calles before the scope is popped.
-  /// As dispose funcions can be async, you should await this function.
+  /// called before the scope is popped.
+  /// As dispose functions can be async, you should await this function.
   Future<void> popScope();
 
   /// if you have a lot of scopes with names you can pop (see [popScope]) all
@@ -252,7 +252,7 @@ Another example could be a shopping basket where you want to ensure that not a c
   ```
 
 #### Getting notified about the shadowing state of an object
-In some cases it might be helpful to know if an Object gets shadowed by another one e.g. if it has some Stream subscriptions that it want to cancel before the shadowing object creates a new subscription. Also the other way round so that a shadowed Object gets notified when it's "active" again meaning when a shadowing object is removed.
+In some cases, it might be helpful to know if an Object gets shadowed by another one e.g. if it has some Stream subscriptions that it wants to cancel before the shadowing object creates a new subscription. Also, the other way round so that a shadowed Object gets notified when it's "active" again meaning when a shadowing object is removed.
 
 For this a class had to implement the `ShadowChangeHandlers` interface:
 
@@ -266,18 +266,18 @@ When the Object is shadowed its `onGetShadowed()` method is called with the obje
 
 #### Getting notified when a scope change happens
 
-When using scopes with objects that shadow other objects it's important to give the UI a chance to rebuild and acquire references to the now active objects. For this you can register a call-back function in GetIt
+When using scopes with objects that shadow other objects it's important to give the UI a chance to rebuild and acquire references to the now active objects. For this, you can register a call-back function in GetIt
 The getit_mixin has a matching `rebuiltOnScopeChange` method.
 
 ```Dart
-  /// Optional call-back that will get call whenever a change in the current scope happens
+  /// Optional call-back that will get called whenever a change in the current scope happens
   /// This can be very helpful to update the UI in such a case to make sure it uses
   /// the correct Objects after a scope change
   void Function(bool pushed)? onScopeChanged;
 ```
 
 ### Disposing Singletons and Scopes
-From V5.0 on you can pass a `dispose` function when registering any Singletons. For this the registration functions have a optional parameter:
+From V5.0 on you can pass a `dispose` function when registering any Singletons. For this the registration functions have an optional parameter:
 
 ```Dart
 DisposingFunc<T> dispose
@@ -320,7 +320,7 @@ To access instances created by such a factory you can't use `get()` but you have
 you can await the creation of the requested new instance.
 
 ```Dart
-/// Returns an Future of an instance that is created by an async factory or a Singleton that is
+/// Returns a Future of an instance that is created by an async factory or a Singleton that is
 /// not ready with its initialization.
 Future<T> getAsync<T>([String instanceName]);
 ```
@@ -328,7 +328,7 @@ Future<T> getAsync<T>([String instanceName]);
 
 ## Asynchronous Singletons
 
-Additionally you can register asynchronous Singletons which means Singletons that have an initialization that requires async function calls. To be able to control such asynchronous start-up behaviour GetIt supports mechanisms to ensure the correct initialization sequence.
+Additionally, you can register asynchronous Singletons which means Singletons that have an initialization that requires async function calls. To be able to control such asynchronous start-up behaviour GetIt supports mechanisms to ensure the correct initialization sequence.
 
 
 You create a Singleton with an asynchronous creation function
@@ -340,7 +340,7 @@ You create a Singleton with an asynchronous creation function
       bool signalsReady = false});
 ```
 
-The difference to a normal Singleton is that you don't pass an existing instance but provide an factory function
+The difference to a normal Singleton is that you don't pass an existing instance but provide a factory function
 that returns a `Future` that completes at the end of `factoryFunc` and signals that the Singleton is ready to use unless `true` is passed for `signalsReady`. (see next chapter)
 To synchronize with other "async Singletons" you can pass a list of `Type`s in `dependsOn` that have to be ready before the passed factory is executed.
 
@@ -355,7 +355,7 @@ Often your registered services need to do asynchronous initialization work befor
 ```Dart
   Future<void> allReady({Duration timeout, bool ignorePendingAsyncCreation = false});
 ```
-There are different approaches how the returned Future can be completed:
+There are different approaches to how the returned Future can be completed:
 
 ### Using async Singletons
 
@@ -404,7 +404,7 @@ The above example shows you different ways to register async Singletons. The sta
 ### Solving dependencies
 
 ### Automatic using `dependsOn`
-In case that these services have to be initialized in a certain order because they depend on that other services are already ready to be used you can use the `dependsOn` parameter of `registerFactoryAsync`. If you have a non async Singleton that depends on other Singletons, there is `registerSingletonWithDependencies`. In the following example, `DbService` depends on `ConfigService`, and `AppModel` depends on `ConfigService` and `RestService`
+In a case, these services have to be initialized in a certain order because they depend on that other services are already ready to be used you can use the `dependsOn` parameter of `registerFactoryAsync`. If you have a non-async Singleton that depends on other Singletons, there is `registerSingletonWithDependencies`. In the following example, `DbService` depends on `ConfigService`, and `AppModel` depends on `ConfigService` and `RestService`
 
 
 ```Dart
@@ -436,12 +436,12 @@ The `dependsOn` field also accepts `InitDependency` classes that allow specifyin
       dependsOn: [InitDependency(RestService, instanceName:"rest1")]);
 ```
 
-### Manually signalling the ready state of a Singleton
+### Manually signaling the ready state of a Singleton
 Sometimes the mechanism of `dependsOn` might not give you enough control. For this case you can use `isReady` to wait for a certain singleton:
 
 ```Dart
-  /// Returns a Future that completes if the instance of an Singleton, defined by Type [T] or
-  /// by name [instanceName] or by passing the an existing [instance], is ready
+  /// Returns a Future that completes if the instance of a Singleton, defined by Type [T] or
+  /// by name [instanceName] or passing the an existing [instance], is ready
   /// If you pass a [timeout], an [WaitingTimeOutException] will be thrown if the instance
   /// is not ready in the given time. The Exception contains details on which Singletons are
   /// not ready at that time.
@@ -462,7 +462,7 @@ To signal that a singleton is ready it can use `signalReady`, provided you have 
 void signalReady(Object instance);
 ```
 
-You can use this to initialize your Singletons without async registration by using a fire and forget async function from your constructors like so:
+You can use this to initialize your Singletons without async registration by using fire and forget async function from your constructors like so:
 
 ```Dart
 class ConfigService {
@@ -478,7 +478,7 @@ class ConfigService {
 }
 ```
 ### Using `allReady` repeatedly
-Even if you already have awaited `allReady`, the moment you register new async singletons or singletons with dependencies you can use `allReady` again. This makes especially sense if you uses scopes where every scope needs to get initialized.
+Even if you already have awaited `allReady`, the moment you register new async singletons or singletons with dependencies you can use `allReady` again. This makes especially sense if you use scopes where every scope needs to get initialized.
 
 ### Manual triggering **allReady** (almost deprecated)
 
@@ -491,7 +491,7 @@ You can find here a [detailed blog post on async factories and startup synchroni
 
 ## Passing Parameters to factories
 
-In some cases it's handy if you could pass changing values to factories when calling `get()`. For that there are two variants for registering factories:
+In some cases, it's handy if you could pass changing values to factories when calling `get()`. For that there are two variants for registering factories:
 
 ```dart
 /// registers a type so that a new instance will be created on each call of [get] on that type based on
@@ -523,7 +523,7 @@ and
   void registerFactoryParamAsync<T,P1,P2>(FactoryFuncParamAsync<T,P1,P2> factoryfunc, {String instanceName});
 ```
 
-The reason why I settled to use two parameters is that I can imagine some scenarios where you might want to register a builder function for Flutter Widgets that need to get passed a `BuildContext` and some data object.
+The reason why I settled to use two parameters is that I can imagine some scenarios where you might want to register a builder function for Flutter Widgets that need to get a `BuildContext` and some data object.
 
 When accessing these factories you pass the parameters a optional arguments to `get()`:
 
@@ -531,7 +531,7 @@ When accessing these factories you pass the parameters a optional arguments to `
   var instance = getIt<TestClassParam>(param1: 'abc',param2:3);
 ```
 
-These parameters are passed as `dynamics` (otherwise I would have had add more generic parameters to `get`()), but they are checked at runtime to be the correct types.
+These parameters are passed as `dynamics` (otherwise I would have had to add more generic parameters to `get`()), but they are checked at runtime to be the correct types.
 
 ## Testing with GetIt
 
@@ -572,7 +572,7 @@ If you have a mocked version of a Service, you can easily switch between that an
 
 ### Named registration
 
-Ok you have been warned! All registration functions have an optional named parameter `instanceName`. Providing a name with factory/singleton here registers that instance with that name and a type. Consequently `get()` has also an optional parameter `instanceName` to access
+Ok, you have been warned! All registration functions have an optional named parameter `instanceName`. Providing a name with factory/singleton here registers that instance with that name and a type. Consequently `get()` has also an optional parameter `instanceName` to access
 factories/singletons that were registered by name.
 
 **IMPORTANT:** Each name must be unique per type.
