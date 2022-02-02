@@ -392,7 +392,7 @@ abstract class GetIt {
   /// scopes above the scope with [name] including that scope
   /// Scopes are popped in order from the top
   /// As dispose functions can be async, you should await this function.
-  /// it no scope with [name] exists, nothing is popped and `false` is returned
+  /// if no scope with [name] exists, nothing is popped and `false` is returned
   Future<bool> popScopesTill(String name);
 
   /// Returns the name of the current scope if it has one otherwise null
