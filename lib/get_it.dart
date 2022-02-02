@@ -389,11 +389,11 @@ abstract class GetIt {
   Future<void> popScope();
 
   /// if you have a lot of scopes with names you can pop (see [popScope]) all
-  /// scopes above the scope with [name] including that scope
+  /// scopes above the scope with [name] including that scope unless [inclusive]= false
   /// Scopes are popped in order from the top
   /// As dispose functions can be async, you should await this function.
   /// it no scope with [name] exists, nothing is popped and `false` is returned
-  Future<bool> popScopesTill(String name);
+  Future<bool> popScopesTill(String name, {bool inclusive = true});
 
   /// Returns the name of the current scope if it has one otherwise null
   /// if you are already on the baseScope it returns 'baseScope'

@@ -237,11 +237,11 @@ Another example could be a shopping basket where you want to ensure that not a c
   Future<void> popScope();
 
   /// if you have a lot of scopes with names you can pop (see [popScope]) all
-  /// scopes above the scope with [name] including that scope
-  /// Scopes are poped in order from the top
-  /// As dispose funcions can be async, you should await this function.
+  /// scopes above the scope with [name] including that scope unless [inclusive]= false
+  /// Scopes are popped in order from the top
+  /// As dispose functions can be async, you should await this function.
   /// it no scope with [name] exists, nothing is popped and `false` is returned
-  Future<bool> popScopesTill(String name);
+  Future<bool> popScopesTill(String name, {bool inclusive = true});
 
   /// Clears all registered types for the current scope
   /// If you provided dispose function when registering they will be called

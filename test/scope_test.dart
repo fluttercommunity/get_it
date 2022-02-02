@@ -68,6 +68,25 @@ void main() {
     errorCounter = 0;
   });
 
+  test('unregister constant that was registered in a lower scope', () {
+    final getIt = GetIt.instance;
+
+    getIt.registerSingleton<TestClass>(TestClass('Basescope'));
+    getIt.registerSingleton<TestClass2>(TestClass2('Basescope'));
+
+    getIt.pushNewScope();
+
+    getIt.registerSingleton<TestClass>(TestClass('2. scope'));
+
+    final instance2 = getIt.get<TestClass2>();
+
+    expect(instance2.id, 'Basescope');
+
+    getIt.unregister<TestClass2>();
+
+    expect(() => getIt.get<TestClass2>(), throwsA(isA<AssertionError>()));
+  });
+
   test('register constant in two scopes', () {
     final getIt = GetIt.instance;
     constructorCounter = 0;
@@ -320,6 +339,59 @@ void main() {
     final instanceTestClassScope1 = getIt.get<TestClass>();
 
     expect(instanceTestClassScope1.id, 'Basescope');
+    expect(() => getIt.get<TestClass2>(),
+        throwsA(const TypeMatcher<AssertionError>()));
+  });
+
+  test('popscopeuntil inclusive=true', () async {
+    final getIt = GetIt.instance;
+    constructorCounter = 0;
+
+    getIt.registerSingleton<TestClass>(TestClass('Basescope'));
+
+    getIt.pushNewScope(scopeName: 'Level1');
+
+    getIt.registerSingleton<TestClass>(TestClass('2. scope'));
+
+    getIt.pushNewScope(scopeName: 'Level2');
+
+    getIt.registerSingleton<TestClass>(TestClass('3. scope'));
+
+    final instanceTestClassScope3 = getIt.get<TestClass>();
+
+    expect(instanceTestClassScope3.id, '3. scope');
+
+    await getIt.popScopesTill('Level1');
+
+    final instanceTestClassScope1 = getIt.get<TestClass>();
+
+    expect(instanceTestClassScope1.id, 'Basescope');
+    expect(() => getIt.get<TestClass2>(),
+        throwsA(const TypeMatcher<AssertionError>()));
+  });
+  test('popscopeuntil inclusive=false', () async {
+    final getIt = GetIt.instance;
+    constructorCounter = 0;
+
+    getIt.registerSingleton<TestClass>(TestClass('Basescope'));
+
+    getIt.pushNewScope(scopeName: 'Level1');
+
+    getIt.registerSingleton<TestClass>(TestClass('2. scope'));
+
+    getIt.pushNewScope(scopeName: 'Level2');
+
+    getIt.registerSingleton<TestClass>(TestClass('3. scope'));
+
+    final instanceTestClassScope3 = getIt.get<TestClass>();
+
+    expect(instanceTestClassScope3.id, '3. scope');
+
+    await getIt.popScopesTill('Level1', inclusive: false);
+
+    final instanceTestClassScope1 = getIt.get<TestClass>();
+
+    expect(instanceTestClassScope1.id, '2. scope');
     expect(() => getIt.get<TestClass2>(),
         throwsA(const TypeMatcher<AssertionError>()));
   });
