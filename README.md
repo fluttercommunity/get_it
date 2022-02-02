@@ -548,7 +548,7 @@ class UserManager {
   AppModel appModel;
   DbService dbService;
 
-  UserManager({AppModel appModel, DbService dbService}) {
+  UserManager({AppModel? appModel, DbService? dbService}) {
     this.appModel = appModel ?? getIt.get<AppModel>();
     this.dbService = dbService ?? getIt.get<DbService>();
   }
