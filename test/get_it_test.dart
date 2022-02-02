@@ -362,28 +362,6 @@ void main() {
     GetIt.I.reset();
   });
 
-  test('reset lazy Singleton by instance', () async {
-    final getIt = GetIt.instance;
-    disposeCounter = 0;
-    constructorCounter = 0;
-    getIt.registerLazySingleton<TestBaseClass>(() => TestClass());
-
-    expect(constructorCounter, 0);
-
-    final instance1 = getIt.get<TestBaseClass>();
-
-    expect(instance1 is TestClass, true);
-    expect(constructorCounter, 1);
-
-    final instance2 = getIt.get<TestBaseClass>();
-
-    expect(instance1, instance2);
-
-    expect(constructorCounter, 1);
-
-    await GetIt.I.resetLazySingleton(instance: instance1);
-  });
-
   test('reset lazy Singleton when the disposing function is a future',
       () async {
     final getIt = GetIt.instance;
