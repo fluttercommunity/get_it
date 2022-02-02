@@ -299,7 +299,7 @@ if the object that you register implements the `Disposable`´interface:
 
 ```Dart
 abstract class Disposable {
-  FutureOr ondDispose();
+  FutureOr onDispose();
 }
 ```
 
