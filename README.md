@@ -111,7 +111,7 @@ To access the registered objects call `get<Type>()` on your `GetIt` instance
 var myAppModel = getIt.get<AppModel>();
 ```
 
-Alternatively as `GetIt` is a [callable class](https://www.w3adda.com/dart-tutorial/dart-callable-classes) depending on the name you choose for your `GetIt` instance you can use the shorter version:
+Alternatively, as `GetIt` is a [callable class](https://www.w3adda.com/dart-tutorial/dart-callable-classes) depending on the name you choose for your `GetIt` instance you can use the shorter version:
 
 ```Dart
 var myAppModel = getIt<AppModel>();
@@ -124,7 +124,7 @@ var myAppModel = GetIt.I<AppModel>();
 
 ## Different ways of registration
 
-`GetIt` offers different ways how objects have registered that affect the lifetime of these objects.
+`GetIt` offers different ways how objects are registered that affect the lifetime of these objects.
 
 #### Factory
 

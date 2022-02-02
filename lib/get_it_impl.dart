@@ -371,7 +371,7 @@ class _GetItImplementation implements GetIt {
     assert(
       instanceFactory != null,
       // ignore: missing_whitespace_between_adjacent_strings
-      'Object/factory with ${instanceName != null ? 'with name $instanceName and ' : ' '}'
+      'Object/factory with ${instanceName != null ? 'with name $instanceName and ' : ''}'
       'type ${T.toString()} is not registered inside GetIt. '
       '\n(Did you accidentally do GetIt sl=GetIt.instance(); instead of GetIt sl=GetIt.instance;'
       '\nDid you forget to register it?)',
@@ -806,7 +806,7 @@ class _GetItImplementation implements GetIt {
           !allowReassignment,
       ArgumentError(
         // ignore: missing_whitespace_between_adjacent_strings
-        'Object/factory with ${instanceName != null ? 'with name $instanceName and ' : ' '}'
+        'Object/factory with ${instanceName != null ? 'with name $instanceName and ' : ''}'
         'type ${T.toString()} is already registered inside GetIt. ',
       ),
     );
@@ -929,6 +929,7 @@ class _GetItImplementation implements GetIt {
             isReadyFuture = Future<T>.value(serviceFactory.instance as T);
             serviceFactory._readyCompleter
                 .complete(serviceFactory.instance as T);
+            serviceFactory.objectsWaiting.clear();
           } else {
             isReadyFuture = serviceFactory._readyCompleter.future;
           }
@@ -1033,7 +1034,7 @@ class _GetItImplementation implements GetIt {
   /// provide a [disposingFunction]
   @override
   FutureOr resetLazySingleton<T extends Object>({
-    Object? instance,
+    T? instance,
     String? instanceName,
     FutureOr Function(T)? disposingFunction,
   }) async {
