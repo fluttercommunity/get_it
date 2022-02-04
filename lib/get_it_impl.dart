@@ -1191,6 +1191,10 @@ class _GetItImplementation implements GetIt {
         .forEach((f) {
       if (f.pendingResult != null) {
         futures.add(f.pendingResult!);
+        if (f.shouldSignalReady) {
+          futures.add(f._readyCompleter
+              .future); // asyncSingleton with signalReady = true
+        }
       } else {
         futures.add(f._readyCompleter
             .future); // non async singletons that have signalReady == true and not dependencies
