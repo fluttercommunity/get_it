@@ -34,6 +34,7 @@ class _ServiceFactory<T extends Object, P1, P2> {
   final _ServiceFactoryType factoryType;
 
   final _GetItImplementation _getItInstance;
+  final _Scope registrationScope;
 
   late final Type param1Type;
   late final Type param2Type;
@@ -93,6 +94,7 @@ class _ServiceFactory<T extends Object, P1, P2> {
     this.isAsync = false,
     this.instanceName,
     required this.shouldSignalReady,
+    required this.registrationScope,
     this.disposeFunction,
   }) : assert(
             !(disposeFunction != null &&
@@ -763,16 +765,18 @@ class _GetItImplementation implements GetIt {
   /// Scopes are popped in order from the top
   /// As dispose functions can be async, you should await this function.
   @override
-  Future<bool> popScopesTill(String scopeName) async {
+  Future<bool> popScopesTill(String scopeName, {bool inclusive = true}) async {
     assert(scopeName != _baseScopeName, "You can't pop the base scope");
     if (_scopes.firstWhereOrNull((x) => x.name == scopeName) == null) {
       return false;
     }
-    String? _scopeName;
+    String? _poppedScopeName;
     do {
-      _scopeName = _currentScope.name;
+      _poppedScopeName = _currentScope.name;
       await popScope();
-    } while (_scopeName != scopeName);
+    } while (inclusive
+        ? (_poppedScopeName != scopeName)
+        : (_currentScope.name != scopeName));
     onScopeChanged?.call(false);
     return true;
   }
@@ -826,6 +830,7 @@ class _GetItImplementation implements GetIt {
     final serviceFactory = _ServiceFactory<T, P1, P2>(
       this,
       type,
+      registrationScope: _currentScope,
       creationFunction: factoryFunc,
       creationFunctionParam: factoryFuncParam,
       asyncCreationFunctionParam: factoryFuncParamAsync,
@@ -1007,7 +1012,8 @@ class _GetItImplementation implements GetIt {
           'There are still other objects waiting for this instance so signal ready'),
     );
 
-    _currentScope.factoriesByName[factoryToRemove.instanceName]!
+    factoryToRemove
+        .registrationScope.factoriesByName[factoryToRemove.instanceName]!
         .remove(factoryToRemove.registrationType);
 
     if (factoryToRemove.instance != null) {
@@ -1185,6 +1191,10 @@ class _GetItImplementation implements GetIt {
         .forEach((f) {
       if (f.pendingResult != null) {
         futures.add(f.pendingResult!);
+        if (f.shouldSignalReady) {
+          futures.add(f._readyCompleter
+              .future); // asyncSingleton with signalReady = true
+        }
       } else {
         futures.add(f._readyCompleter
             .future); // non async singletons that have signalReady == true and not dependencies

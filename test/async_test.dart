@@ -226,8 +226,8 @@ void main() {
         getIt.isReadySync<TestClass2>(instanceName: 'Second Instance'), false);
 
     final timer = Stopwatch()..start();
-    final t = getIt<TestClass>();
     await getIt.allReady(timeout: const Duration(milliseconds: 20));
+    final t = getIt<TestClass>();
     expect(timer.elapsedMilliseconds, greaterThan(5));
   });
 
@@ -776,6 +776,38 @@ void main() {
       final instance = Service1Implementation();
       await instance.init();
       return instance;
+    });
+  });
+
+  group("registerSingletonAsync, calling signalReady", () {
+    test('attempt to get instance with getIt.get', () async {
+      final getIt = GetIt.instance;
+      getIt.registerSingletonAsync<TestClass>(
+        () => Future.delayed(const Duration(milliseconds: 1))
+            .then((_) => TestClass(internalCompletion: true, getIt: getIt)),
+        signalsReady: true,
+      );
+
+      await getIt.allReady();
+      await Future.delayed(const Duration(seconds: 1));
+
+      final instance = getIt<TestClass>();
+
+      expect(instance.initCompleted, isTrue);
+    });
+
+    test('attempt to get instance with getAsync', () async {
+      final getIt = GetIt.instance;
+      getIt.registerSingletonAsync<TestClass>(
+          () => Future.delayed(const Duration(milliseconds: 1))
+              .then((_) => TestClass(internalCompletion: true, getIt: getIt)),
+          signalsReady: true);
+
+      await getIt.allReady();
+
+      final instance = await getIt.getAsync<TestClass>();
+
+      expect(instance.initCompleted, isTrue);
     });
   });
 }
