@@ -384,7 +384,7 @@ abstract class GetIt {
   /// and pops (destroys) the scope so that the previous scope gets active again.
   /// if you provided  dispose functions on registration, they will be called.
   /// if you passed a dispose function when you pushed this scope it will be
-  /// calles before the scope is popped.
+  /// called before the scope is popped.
   /// As dispose functions can be async, you should await this function.
   Future<void> popScope();
 
