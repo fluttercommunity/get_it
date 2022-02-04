@@ -9,7 +9,7 @@ Typical usage:
 * Accessing service objects like REST API clients or databases so that they easily can be mocked.
 * Accessing View/AppModels/Managers/BLoCs from Flutter Views
 
->**V7.0 has some breaking changes** Check please check the release notes to see what's new.
+>**V7.0 has some breaking changes** Please check the release notes to see what's new.
 
 ## Why GetIt
 
@@ -240,7 +240,7 @@ Another example could be a shopping basket where you want to ensure that not a c
   /// scopes above the scope with [name] including that scope unless [inclusive]= false
   /// Scopes are popped in order from the top
   /// As dispose functions can be async, you should await this function.
-  /// it no scope with [name] exists, nothing is popped and `false` is returned
+  /// If no scope with [name] exists, nothing is popped and `false` is returned
   Future<bool> popScopesTill(String name, {bool inclusive = true});
 
   /// Clears all registered types for the current scope
