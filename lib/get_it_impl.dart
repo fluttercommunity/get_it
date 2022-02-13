@@ -1,6 +1,6 @@
 part of 'get_it.dart';
 
-/// Two handy function that helps me to express my intention clearer and shorter to check for runtime
+/// Two handy functions that help me to express my intention clearer and shorter to check for runtime
 /// errors
 // ignore: avoid_positional_boolean_parameters
 void throwIf(bool condition, Object error) {
@@ -55,11 +55,11 @@ class _ServiceFactory<T extends Object, P1, P2> {
   /// true if one of the async registration functions have been used
   final bool isAsync;
 
-  /// If a an existing Object gets registered or an async/lazy Singleton has finished
-  /// its creation it is stored here
+  /// If an existing Object gets registered or an async/lazy Singleton has finished
+  /// its creation, it is stored here
   Object? instance;
 
-  /// the type that was used when registering. used for runtime checks
+  /// the type that was used when registering, used for runtime checks
   late final Type registrationType;
 
   /// to enable Singletons to signal that they are ready (their initialization is finished)
@@ -432,7 +432,7 @@ class _GetItImplementation implements GetIt {
     return get<T>(instanceName: instanceName, param1: param1, param2: param2);
   }
 
-  /// Returns an Future of an instance that is created by an async factory or a Singleton that is
+  /// Returns a Future of an instance that is created by an async factory or a Singleton that is
   /// not ready with its initialization.
   /// for async factories you can pass up to 2 parameters [param1,param2] they have to match
   /// the types given at registration with [registerFactoryParamAsync()]
@@ -451,7 +451,7 @@ class _GetItImplementation implements GetIt {
   /// [factoryFunc] factory function for this type
   /// [instanceName] if you provide a value here your factory gets registered with that
   /// name instead of a type. This should only be necessary if you need to register more
-  /// than one instance of one type. It's highly not recommended
+  /// than one instance of one type. It's highly not recommended.
   @override
   void registerFactory<T extends Object>(
     FactoryFunc<T> factoryFunc, {
@@ -469,13 +469,13 @@ class _GetItImplementation implements GetIt {
   /// registers a type so that a new instance will be created on each call of [get] on that
   /// type based on up to two parameters provided to [get()]
   /// [T] type to register
-  /// [P1] type of  param1
-  /// [P2] type of  param2
+  /// [P1] type of param1
+  /// [P2] type of param2
   /// if you use only one parameter pass void here
   /// [factoryFunc] factory function for this type that accepts two parameters
   /// [instanceName] if you provide a value here your factory gets registered with that
   /// name instead of a type. This should only be necessary if you need to register more
-  /// than one instance of one type. It's highly not recommended
+  /// than one instance of one type. It's highly not recommended.
   ///
   /// example:
   ///    getIt.registerFactoryParam<TestClassParam,String,int>((s,i)
@@ -498,7 +498,7 @@ class _GetItImplementation implements GetIt {
         shouldSignalReady: false);
   }
 
-  /// We use a separate function for the async registration instead just a new parameter
+  /// We use a separate function for the async registration instead of just a new parameter
   /// so make the intention explicit
   @override
   void registerFactoryAsync<T extends Object>(
@@ -515,15 +515,15 @@ class _GetItImplementation implements GetIt {
 
   /// registers a type so that a new instance will be created on each call of [getAsync]
   /// on that type based on up to two parameters provided to [getAsync()]
-  /// the creation function is executed asynchronously and has to be accessed  with [getAsync]
+  /// the creation function is executed asynchronously and has to be accessed with [getAsync]
   /// [T] type to register
-  /// [P1] type of  param1
-  /// [P2] type of  param2
+  /// [P1] type of param1
+  /// [P2] type of param2
   /// if you use only one parameter pass void here
   /// [factoryFunc] factory function for this type that accepts two parameters
   /// [instanceName] if you provide a value here your factory gets registered with that
   /// name instead of a type. This should only be necessary if you need to register more
-  /// than one instance of one type. It's highly not recommended
+  /// than one instance of one type. It's highly not recommended.
   ///
   /// example:
   ///    getIt.registerFactoryParam<TestClassParam,String,int>((s,i) async
@@ -552,7 +552,7 @@ class _GetItImplementation implements GetIt {
   /// [factoryFunc] factory function for this type
   /// [instanceName] if you provide a value here your factory gets registered with that
   /// name instead of a type. This should only be necessary if you need to register more
-  /// than one instance of one type. It's highly not recommended
+  /// than one instance of one type. It's highly not recommended.
   /// [registerLazySingleton] does not influence [allReady] however you can wait
   /// for and be dependent on a LazySingleton.
   @override
@@ -578,7 +578,7 @@ class _GetItImplementation implements GetIt {
   /// cannot complete until this registration was signalled ready by calling
   /// [signalsReady(instance)] [instanceName] if you provide a value here your instance gets
   /// registered with that name instead of a type. This should only be necessary if you need
-  /// to register more than one instance of one type. It's highly not recommended
+  /// to register more than one instance of one type. It's highly not recommended.
   @override
   void registerSingleton<T extends Object>(
     T instance, {
@@ -601,13 +601,13 @@ class _GetItImplementation implements GetIt {
   /// [T] type to register
   /// [instanceName] if you provide a value here your instance gets registered with that
   /// name instead of a type. This should only be necessary if you need to register more
-  /// than one instance of one type. It's highly not recommended
-  /// [dependsOn] if this instance depends on other registered  Singletons before it can be initialized
+  /// than one instance of one type. It's highly not recommended.
+  /// [dependsOn] if this instance depends on other registered Singletons before it can be initialized
   /// you can either orchestrate this manually using [isReady()] or pass a list of the types that the
-  /// instance depends on here. [factoryFunc] won't get executed till this types are ready.
+  /// instance depends on here. [factoryFunc] won't get executed till these types are ready.
   /// [func] is called
   /// If [signalsReady] is set to `true` it means that the future you can get from `allReady()`
-  /// cannot complete until this this instance was signalled ready by calling [signalsReady(instance)].
+  /// cannot complete until this instance was signalled ready by calling [signalsReady(instance)].
   @override
   void registerSingletonWithDependencies<T extends Object>(
     FactoryFunc<T> factoryFunc, {
@@ -636,12 +636,12 @@ class _GetItImplementation implements GetIt {
   /// (see below). As soon as it returns, this instance is marked as ready unless you don't set
   /// [signalsReady==true] [instanceName] if you provide a value here your instance gets
   /// registered with that name instead of a type. This should only be necessary if you need
-  /// to register more than one instance of one type. It's highly not recommended
-  /// [dependsOn] if this instance depends on other registered  Singletons before it can be
+  /// to register more than one instance of one type. It's highly not recommended.
+  /// [dependsOn] if this instance depends on other registered Singletons before it can be
   /// initialized you can either orchestrate this manually using [isReady()] or pass a list of
-  /// the types that the instance depends on here. [factoryFunc] won't get  executed till this
+  /// the types that the instance depends on here. [factoryFunc] won't get executed till this
   /// types are ready. If [signalsReady] is set to `true` it means that the future you can get
-  /// from `allReady()` cannot complete until this this instance was signalled ready by calling
+  /// from `allReady()` cannot complete until this instance was signalled ready by calling
   /// [signalsReady(instance)]. In that case no automatic ready signal is made after
   /// completion of [factoryFunc]
   @override
@@ -663,7 +663,7 @@ class _GetItImplementation implements GetIt {
     );
   }
 
-  /// registers a type as Singleton by passing a async factory function that will be called
+  /// registers a type as Singleton by passing an async factory function that will be called
   /// on the first call of [getAsync] on that type
   /// This is a rather esoteric requirement so you should seldom have the need to use it.
   /// This factory function [providerFunc] isn't called immediately but wait till the first call by
@@ -742,11 +742,11 @@ class _GetItImplementation implements GetIt {
     onScopeChanged?.call(true);
   }
 
-  /// Disposes all factories/Singletons that have ben registered in this scope
+  /// Disposes all factories/Singletons that have been registered in this scope
   /// and pops (destroys) the scope so that the previous scope gets active again.
-  /// if you provided  dispose functions on registration, they will be called.
+  /// if you provided dispose functions on registration, they will be called.
   /// if you passed a dispose function when you pushed this scope it will be
-  /// calles before the scope is popped.
+  /// called before the scope is popped.
   /// As dispose functions can be async, you should await this function.
   @override
   Future<void> popScope() async {
@@ -856,7 +856,7 @@ class _GetItImplementation implements GetIt {
       return;
     }
 
-    // if its an async or an dependent Singleton we start its creation function here after we check if
+    // if it's an async or a dependent Singleton we start its creation function here after we check if
     // it is dependent on other registered Singletons.
     if ((isAsync || (dependsOn?.isNotEmpty ?? false)) &&
         type == _ServiceFactoryType.constant) {
@@ -929,8 +929,8 @@ class _GetItImplementation implements GetIt {
           }
 
           if (!serviceFactory.shouldSignalReady) {
-            /// As this isn't an asnc function we declare it as ready here
-            /// if is wasn't marked that it will signalReady
+            /// As this isn't an async function we declare it as ready here
+            /// if wasn't marked that it will signalReady
             isReadyFuture = Future<T>.value(serviceFactory.instance as T);
             serviceFactory._readyCompleter
                 .complete(serviceFactory.instance as T);
@@ -995,7 +995,7 @@ class _GetItImplementation implements GetIt {
 
   /// Unregister an instance of an object or a factory/singleton by Type [T] or by name [instanceName]
   /// if you need to dispose any resources you can do it using [disposingFunction] function
-  /// that provides a instance of your class to be disposed
+  /// that provides an instance of your class to be disposed
   @override
   FutureOr unregister<T extends Object>({
     Object? instance,
@@ -1117,7 +1117,7 @@ class _GetItImplementation implements GetIt {
   /// will complete the future you got from [allReady], so it can be used to globally
   /// giving a ready Signal
   ///
-  /// Both ways are mutual exclusive, meaning either only use the global `signalReady()` and
+  /// Both ways are mutually exclusive, meaning either only use the global `signalReady()` and
   /// don't register a singleton to signal ready or use any async registrations
   ///
   /// Or use async registrations methods or let individual instances signal their ready
@@ -1173,7 +1173,7 @@ class _GetItImplementation implements GetIt {
   /// returns a Future that completes if all asynchronously created Singletons and any
   /// Singleton that had [signalsReady==true] are ready.
   /// This can be used inside a FutureBuilder to change the UI as soon as all initialization
-  /// is done. If you pass a [timeout], an [WaitingTimeOutException] will be thrown if not all
+  /// is done. If you pass a [timeout], a [WaitingTimeOutException] will be thrown if not all
   /// Singletons were ready in the given time. The Exception contains details on which
   /// Singletons are not ready yet.
   @override
@@ -1232,9 +1232,9 @@ class _GetItImplementation implements GetIt {
       }
     }).toList();
 
-    /// IN debug mode we print the List of not ready types/named instances
+    /// In debug mode we print the List of not ready types/named instances
     if (notReadyTypes.isNotEmpty) {
-      // Hack to only output this in debug mode;
+      // Hack to only output this in debug mode
       assert(() {
         // ignore: avoid_print
         print('Not yet ready objects:');
@@ -1277,9 +1277,9 @@ class _GetItImplementation implements GetIt {
     return WaitingTimeOutException(waitedBy, notReady, areReady);
   }
 
-  /// Returns a Future that completes if the instance of an Singleton, defined by Type [T] or
-  /// by name [instanceName] or by passing the an existing [instance],  is ready
-  /// If you pass a [timeout], an [WaitingTimeOutException] will be thrown if the instance
+  /// Returns a Future that completes if the instance of a Singleton, defined by Type [T] or
+  /// by name [instanceName] or by passing an existing [instance], is ready
+  /// If you pass a [timeout], a [WaitingTimeOutException] will be thrown if the instance
   /// is not ready in the given time. The Exception contains details on which Singletons are
   /// not ready at that time.
   /// [callee] optional parameter which makes debugging easier. Pass `this` in here.

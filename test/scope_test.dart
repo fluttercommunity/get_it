@@ -61,7 +61,7 @@ class TestClassParam {
 
 void main() {
   setUp(() async {
-    //make sure the instance is cleared before each test
+    // make sure the instance is cleared before each test
     await GetIt.I.reset();
     constructorCounter = 0;
     disposeCounter = 0;
@@ -253,7 +253,7 @@ void main() {
     expect(isShadowed, false);
     expect(shadowingObject, null);
 
-    /// wait for the singelton so be created
+    /// wait for the singleton so be created
 
     final asyncInstance = await getIt.getAsync<TestBaseClass>();
 
