@@ -86,7 +86,7 @@ class TestClass4 extends TestClass {
 
 void main() {
   setUp(() async {
-    //make sure the instance is cleared before each test
+    // make sure the instance is cleared before each test
     await GetIt.I.reset();
   });
 
@@ -269,7 +269,7 @@ void main() {
         instanceName: 'Second Instance', signalsReady: true);
 
     expect(getIt.allReadySync(), false);
-    // this are async calls fire and forget
+    // these are async calls fire and forget
     getIt<TestClass>().initWithSignal();
     getIt<TestClass2>().initWithSignal();
     final TestClass2 instance =
