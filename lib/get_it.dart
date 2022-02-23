@@ -267,7 +267,7 @@ abstract class GetIt {
   });
 
   /// registers a type as Singleton by passing a factory function of that type
-  /// that will be called on each call of [get] on that type
+  /// that will be called when all dependent Singletons are ready
   /// [T] type to register
   /// [instanceName] if you provide a value here your instance gets registered with that
   /// name instead of a type. This should only be necessary if you need to register more
@@ -376,6 +376,21 @@ abstract class GetIt {
   /// pushed. This ensures that [onScopeChanged] will be called after their registration
   void pushNewScope({
     void Function(GetIt getIt)? init,
+    String? scopeName,
+    ScopeDisposeFunc? dispose,
+  });
+
+  /// Creates a new registration scope. If you register types after creating
+  /// a new scope they will hide any previous registration of the same type.
+  /// Scopes allow you to manage different live times of your Objects.
+  /// [scopeName] if you name a scope you can pop all scopes above the named one
+  /// by using the name.
+  /// [dispose] function that will be called when you pop this scope. The scope
+  /// is still valid while it is executed
+  /// [init] optional asynchronous  function to register Objects immediately after the new scope is
+  /// pushed. This ensures that [onScopeChanged] will be called after their registration
+  Future<void> pushNewScopeAsync({
+    Future<void> Function(GetIt getIt)? init,
     String? scopeName,
     ScopeDisposeFunc? dispose,
   });

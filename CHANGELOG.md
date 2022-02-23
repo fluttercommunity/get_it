@@ -1,3 +1,15 @@
+## [7.3.0]
+
+New features:
+* `popScopeTil` got a new optional `inclusive` parameter so you can now decide if scope with the passed name should be popped too or only the ones above
+* PR by @jtdLab that adds to reset a LazySingleton by providing an existing instance
+
+* Fix for an internal state error by @ioantsaf 
+* Fix for a rare edge case if you manually `signalReady`
+* Many PRs with improvements to spelling and grammar of readme, source documentation and even one assert message by @selcukguvel @isinghmitesh @UsamaKarim @nilsreichardt and  Os-Prog
+@Ae-Mc 
+
+
 ## [7.2.0] 
 
 * fix for https://github.com/fluttercommunity/get_it/issues/210

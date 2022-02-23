@@ -742,6 +742,32 @@ class _GetItImplementation implements GetIt {
     onScopeChanged?.call(true);
   }
 
+  /// Creates a new registration scope. If you register types after creating
+  /// a new scope they will hide any previous registration of the same type.
+  /// Scopes allow you to manage different live times of your Objects.
+  /// [scopeName] if you name a scope you can pop all scopes above the named one
+  /// by using the name.
+  /// [dispose] function that will be called when you pop this scope. The scope
+  /// is still valid while it is executed
+  /// [init] optional asynchronous function to register Objects immediately after the new scope is
+  /// pushed. This ensures that [onScopeChanged] will be called after their registration
+  @override
+  Future<void> pushNewScopeAsync(
+      {Future<void> Function(GetIt getIt)? init,
+      String? scopeName,
+      ScopeDisposeFunc? dispose}) async {
+    assert(scopeName != _baseScopeName,
+        'This name is reserved for the real base scope.');
+    assert(
+      scopeName == null ||
+          _scopes.firstWhereOrNull((x) => x.name == scopeName) == null,
+      'You already have used the scope name $scopeName',
+    );
+    _scopes.add(_Scope(name: scopeName, disposeFunc: dispose));
+    await init?.call(this);
+    onScopeChanged?.call(true);
+  }
+
   /// Disposes all factories/Singletons that have been registered in this scope
   /// and pops (destroys) the scope so that the previous scope gets active again.
   /// if you provided dispose functions on registration, they will be called.
