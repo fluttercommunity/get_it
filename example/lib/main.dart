@@ -44,7 +44,7 @@ class _MyHomePageState extends State<MyHomePage> {
         .isReady<AppModel>()
         .then((_) => getIt<AppModel>().addListener(update));
     // Alternative
-    // getIt.getAsync<AppModel>().addListener(update);
+    // getIt<AppModel>().addListener(update);
 
     super.initState();
   }
