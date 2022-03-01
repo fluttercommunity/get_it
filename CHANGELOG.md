@@ -48,7 +48,7 @@ The getit_mixin has a matching `rebuiltOnScopeChange` method.
 ```
 ## [7.0.0] - 02.05.2021
 
-This is a breaking change because there were some inconsistencies in the handling of the disposal functions that you can pass when registering an Object, pop a Scope or use `unregister()`  `resetLazySingleton()`´.  Some of accepted a `FutureOr` method type, others just a `void` which meant you couldn't use async functions consistently. With this release you can use async functions in all disposal functions which unfortunately also required to change the signatures of the following functions:
+This is a breaking change because there were some inconsistencies in the handling of the disposal functions that you can pass when registering an Object, pop a Scope or use `unregister()`  `resetLazySingleton()`.  Some of accepted a `FutureOr` method type, others just a `void` which meant you couldn't use async functions consistently. With this release you can use async functions in all disposal functions which unfortunately also required to change the signatures of the following functions:
 
 ```dart
   Future<void> reset({bool dispose = true});
