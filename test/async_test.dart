@@ -178,6 +178,7 @@ void main() {
     expect(() => getIt.signalReady(null),
         throwsA(const TypeMatcher<StateError>()));
   });
+
   test('all ready ignoring pending async Singletons', () async {
     final getIt = GetIt.instance;
 
@@ -320,6 +321,7 @@ void main() {
 
     expect(getIt.allReady(), throwsA(isA<StateError>()));
   });
+
   test('ready manual synchronisation of sequence', () async {
     final getIt = GetIt.instance;
     getIt.reset();
@@ -423,6 +425,7 @@ void main() {
         completes);
     expect(getIt.allReady(timeout: const Duration(seconds: 20)), completes);
   });
+
   test('ready automatic synchronisation of sequence', () async {
     final getIt = GetIt.instance;
     errorCounter = 0;
@@ -564,8 +567,6 @@ void main() {
       return TestClassParam(param1: s);
     });
 
-    //final instance1 = getIt.get<TestBaseClass>();
-
     final instance1 = await getIt.getAsync<TestClassParam>(param1: 'abc');
     final instance2 = await getIt.getAsync<TestClassParam>(param1: '123');
 
@@ -602,8 +603,6 @@ void main() {
       await Future.delayed(const Duration(milliseconds: 1));
       return TestClassParam(param1: s, param2: i);
     });
-
-    //final instance1 = getIt.get<TestBaseClass>();
 
     final instance1 =
         await getIt.getAsync<TestClassParam>(param1: 'abc', param2: 3);

@@ -63,6 +63,7 @@ void main() {
   setUp(() async {
     // make sure the instance is cleared before each test
     await GetIt.I.reset();
+
     constructorCounter = 0;
     disposeCounter = 0;
     errorCounter = 0;
@@ -89,7 +90,6 @@ void main() {
 
   test('register constant in two scopes', () {
     final getIt = GetIt.instance;
-    constructorCounter = 0;
 
     getIt.registerSingleton<TestClass>(TestClass('Basescope'));
     getIt.registerSingleton<TestClass2>(TestClass2('Basescope'));
@@ -169,6 +169,7 @@ void main() {
     expect(isShadowed, false);
     expect(shadowingObject, testClassShadowChangHandlerInstance);
   });
+
   test(
       'register lazySingleton in two scopes with ShadowChangeHandlers and scopeChangedHandler',
       () async {
@@ -313,9 +314,9 @@ void main() {
     expect(isShadowed, false);
     expect(shadowingObject, shadowingInstance);
   });
+
   test('popscope', () async {
     final getIt = GetIt.instance;
-    constructorCounter = 0;
 
     getIt.registerSingleton<TestClass>(TestClass('Basescope'));
 
@@ -345,7 +346,6 @@ void main() {
 
   test('popscopeuntil inclusive=true', () async {
     final getIt = GetIt.instance;
-    constructorCounter = 0;
 
     getIt.registerSingleton<TestClass>(TestClass('Basescope'));
 
@@ -369,9 +369,9 @@ void main() {
     expect(() => getIt.get<TestClass2>(),
         throwsA(const TypeMatcher<AssertionError>()));
   });
+
   test('popscopeuntil inclusive=false', () async {
     final getIt = GetIt.instance;
-    constructorCounter = 0;
 
     getIt.registerSingleton<TestClass>(TestClass('Basescope'));
 
@@ -415,6 +415,7 @@ void main() {
 
     expect(disposeCounter, 3);
   });
+
   test('popscope with destructors', () async {
     final getIt = GetIt.instance;
 
@@ -443,7 +444,6 @@ void main() {
 
   test('resetScope', () async {
     final getIt = GetIt.instance;
-    constructorCounter = 0;
 
     getIt.registerSingleton<TestClass>(TestClass(),
         instanceName: 'scope0', dispose: (x) => x.dispose());
@@ -477,7 +477,6 @@ void main() {
 
   test('resetScope no dispose', () async {
     final getIt = GetIt.instance;
-    constructorCounter = 0;
 
     getIt.registerSingleton<TestClass>(TestClass(),
         instanceName: 'scope0', dispose: (x) => x.dispose());
@@ -508,9 +507,9 @@ void main() {
         instanceName: 'scope3', dispose: (x) => x.dispose());
     expect(getIt<TestClass>(instanceName: 'scope3'), isNotNull);
   });
+
   test('full reset', () async {
     final getIt = GetIt.instance;
-    constructorCounter = 0;
 
     getIt.registerSingleton<TestClass>(TestClass(),
         instanceName: 'scope0', dispose: (x) => x.dispose());
@@ -547,7 +546,6 @@ void main() {
 
   test('full reset no dispose', () async {
     final getIt = GetIt.instance;
-    constructorCounter = 0;
 
     getIt.registerSingleton<TestClass>(TestClass(),
         instanceName: 'scope0', dispose: (x) => x.dispose());
