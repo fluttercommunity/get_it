@@ -1,4 +1,5 @@
 // ignore_for_file: unnecessary_type_check, avoid_redundant_argument_values, avoid_classes_with_only_static_members
+import 'dart:async';
 
 import 'package:get_it/get_it.dart';
 import 'package:test/test.dart';
@@ -527,6 +528,27 @@ void main() {
     expect(constructorCounter, 2);
 
     GetIt.I.reset();
+  });
+
+  test(
+      'create a new instance even if dispose is not completed after resetLazySingleton',
+      () {
+    // Arrange
+    final completer = Completer();
+    GetIt.I.registerLazySingleton<TestClass>(
+      () => TestClass(),
+      dispose: (_) => completer.future,
+    );
+    final instance1 = GetIt.I.get<TestClass>();
+
+    // Act
+    GetIt.I.resetLazySingleton(instance: instance1);
+
+    // Assert
+    final instance2 = GetIt.I.get<TestClass>();
+    expect(instance1, isNot(instance2));
+
+    completer.complete();
   });
 
   test('unregister by instance when the dispose of the register is a future',
