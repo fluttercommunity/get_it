@@ -401,6 +401,7 @@ abstract class GetIt {
   /// if you passed a dispose function when you pushed this scope it will be
   /// called before the scope is popped.
   /// As dispose functions can be async, you should await this function.
+  /// If [scopeName] is provided, only the scope with that name will be popped.
   Future<void> popScope({String? scopeName});
 
   /// if you have a lot of scopes with names you can pop (see [popScope]) all
