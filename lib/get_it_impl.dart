@@ -775,14 +775,20 @@ class _GetItImplementation implements GetIt {
   /// called before the scope is popped.
   /// As dispose functions can be async, you should await this function.
   @override
-  Future<void> popScope() async {
+  Future<void> popScope({String? scopeName}) async {
     throwIfNot(
         _scopes.length > 1,
         StateError(
             "GetIt: You are already on the base scope. you can't pop this one"));
-    await _currentScope.dispose();
-    await _currentScope.reset(dispose: true);
-    _scopes.removeLast();
+    final scope = scopeName != null
+        ? _scopes.firstWhere(
+            (s) => s.name == scopeName,
+            orElse: () => throw ArgumentError("Scope $scopeName not found"),
+          )
+        : _currentScope;
+    await scope.dispose();
+    await scope.reset(dispose: true);
+    _scopes.remove(scope);
     onScopeChanged?.call(false);
   }
 
