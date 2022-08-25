@@ -782,7 +782,7 @@ class _GetItImplementation implements GetIt {
         StateError(
             "GetIt: You are already on the base scope. you can't pop this one"));
     final scope = scopeName != null
-        ? _scopes.firstWhere(
+        ? _scopes.lastWhere(
             (s) => s.name == scopeName,
             orElse: () => throw ArgumentError("Scope $scopeName not found"),
           )
