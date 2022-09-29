@@ -623,6 +623,9 @@ GetIt myOwnInstance = GetIt.asNewInstance();
 
 This new instance does not share any registrations with the singleton instance.
 
+### Visualization your dependencies
+You can use [this CLI tool](https://pub.dev/packages/di_visualizer) to get UML diagram of your dependencies
+
 ## Acknowledgements
 
 Many thanks to the insightful discussions on the API with [Brian Egan](https://github.com/brianegan) and [Simon Lightfoot](https://github.com/slightfoot)
