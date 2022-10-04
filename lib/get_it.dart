@@ -179,8 +179,8 @@ abstract class GetIt {
   });
 
   /// registers a type so that a new instance will be created on each call of [get] on that type
-  /// [T] type to register
-  /// [factoryFunc] factory function for this type
+  /// [T] type to register,
+  /// [factoryFunc] factory function for this type,
   /// [instanceName] if you provide a value here your factory gets registered with that
   /// name instead of a type. This should only be necessary if you need to register more
   /// than one instance of one type. Its highly not recommended.
