@@ -150,7 +150,7 @@ abstract class GetIt {
   /// If you really need to you can disable the asserts by setting[allowReassignment]= true
   bool allowReassignment = false;
 
-  /// retrieves or creates an instance of a registered type [T] depending on the registration
+  /// retrieves or creates an instance of a registered type [T] or [type] depending on the registration
   /// function used for this type or based on a name.
   /// for factories you can pass up to 2 parameters [param1,param2] they have to match the types
   /// given at registration with [registerFactoryParam()]
@@ -158,6 +158,7 @@ abstract class GetIt {
     String? instanceName,
     dynamic param1,
     dynamic param2,
+    Type? type,
   });
 
   /// Returns a Future of an instance that is created by an async factory or a Singleton that is
@@ -168,6 +169,7 @@ abstract class GetIt {
     String? instanceName,
     dynamic param1,
     dynamic param2,
+    Type? type,
   });
 
   /// Callable class so that you can write `GetIt.instance<MyType>` instead of
@@ -176,6 +178,7 @@ abstract class GetIt {
     String? instanceName,
     dynamic param1,
     dynamic param2,
+    Type? type,
   });
 
   /// registers a type so that a new instance will be created on each call of [get] on that type
