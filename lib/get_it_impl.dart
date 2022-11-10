@@ -1015,7 +1015,7 @@ class _GetItImplementation implements GetIt {
     if (instance != null) {
       return _findFirstFactoryByInstanceOrNull(instance) != null;
     } else {
-      return _findFirstFactoryByNameAndTypeOrNull<T>(instanceName) != null;
+      return _findFirstFactoryByNameAndTypeOrNull<T>(instanceName, type: T) != null;
     }
   }
 
