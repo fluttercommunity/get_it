@@ -1,5 +1,3 @@
-// ignore_for_file: unnecessary_type_check
-
 import 'package:get_it/get_it.dart';
 import 'package:test/test.dart';
 
@@ -203,6 +201,8 @@ void main() {
     expect(shadowingObject, null);
     await getIt.popScope();
 
+    final lazyInstance = getIt<TestBaseClass>();
+
     getIt.pushNewScope();
     testClassShadowChangHandlerInstance =
         TestClassShadowChangHandler((shadowState, shadow) {}, 'Scope 2');
@@ -253,7 +253,10 @@ void main() {
     expect(isShadowed, false);
     expect(shadowingObject, null);
 
-    /// wait for the singleton to be created
+    /// wait for the singleton so be created
+
+    final asyncInstance = await getIt.getAsync<TestBaseClass>();
+
     expect(isShadowed, true);
     expect(shadowingObject, shadowingInstance);
     shadowingObject = null;

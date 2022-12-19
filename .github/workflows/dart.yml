@@ -15,7 +15,7 @@ jobs:
       - name: Install dependencies
         run: dart pub get
       - name: Run linter
-        run: dart analyze lib test
+        run: dart analyze lib
       - name: Run tests
         run: dart test
 

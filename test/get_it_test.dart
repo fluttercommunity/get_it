@@ -1,5 +1,3 @@
-// ignore_for_file: avoid_redundant_argument_values, unnecessary_type_check, avoid_classes_with_only_static_members
-
 import 'package:get_it/get_it.dart';
 import 'package:test/test.dart';
 
