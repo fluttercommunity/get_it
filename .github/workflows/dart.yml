@@ -18,17 +18,6 @@ jobs:
       - name: Run tests
         run: flutter test
 
-  coverage:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: subosito/flutter-action@v2
-      - name: Get coverage
-        run: flutter test --coverage
-      - uses: romeovs/lcov-reporter-action@v0.2.16
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
   format:
     runs-on: ubuntu-latest
     steps:
