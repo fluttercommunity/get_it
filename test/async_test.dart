@@ -1,3 +1,5 @@
+// ignore_for_file: unnecessary_type_check
+
 import 'package:get_it/get_it.dart';
 import 'package:test/test.dart';
 
@@ -227,7 +229,6 @@ void main() {
 
     final timer = Stopwatch()..start();
     await getIt.allReady(timeout: const Duration(milliseconds: 20));
-    final t = getIt<TestClass>();
     expect(timer.elapsedMilliseconds, greaterThan(5));
   });
 
@@ -309,7 +310,6 @@ void main() {
     );
     getIt.registerSingletonAsync<TestClass2>(
       () async {
-        final instance = TestClass2(internalCompletion: false);
         await Future.delayed(const Duration(milliseconds: 500));
         throw StateError('Intentional');
       },
@@ -491,8 +491,6 @@ void main() {
 
     await getIt<TestClass>().initWithSignal();
     await getIt.allReady();
-
-    final o = getIt<TestClass3>();
 
     expect(getIt.isReady<TestClass>(), completes);
     expect(getIt.isReadySync<TestClass3>(), true);
