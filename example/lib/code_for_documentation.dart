@@ -24,32 +24,32 @@ class AppModelImplmentation extends AppModel {
 
 // Widget init() {
 //   bool testing;
-  // ambient variable to access the service locator
+// ambient variable to access the service locator
 
-  // GetIt getIt = GetIt.instance;
+// GetIt getIt = GetIt.instance;
 
-  // getIt.registerFactory<AppModel>(() => AppModelImplmentation());
+// getIt.registerFactory<AppModel>(() => AppModelImplmentation());
 
-  // GetIt.instance.registerSingleton<AppModel>(AppModelImplmentation());
+// GetIt.instance.registerSingleton<AppModel>(AppModelImplmentation());
 
-  // GetIt.I.registerLazySingleton<AppModel>(() => AppModelImplmentation());
+// GetIt.I.registerLazySingleton<AppModel>(() => AppModelImplmentation());
 
-  //   if (testing) {
-  //     sl.registerSingleton<AppModel>(AppModelMock());
-  //   } else {
-  //     sl.registerSingleton<AppModel>(AppModelImplmentation());
-  //   }
-  // }
+//   if (testing) {
+//     sl.registerSingleton<AppModel>(AppModelMock());
+//   } else {
+//     sl.registerSingleton<AppModel>(AppModelImplmentation());
+//   }
+// }
 
-  // void setup() {
-  //   // sl.registerFactoryAsync<AppModel>(
-  //   //     () async => AppModelImplmentation(await restCall()));
+// void setup() {
+//   // sl.registerFactoryAsync<AppModel>(
+//   //     () async => AppModelImplmentation(await restCall()));
 
-  //   // sl.registerSingletonAsync<AppModel>(
-  //   //     () async => AppModelImplmentation(await restCall()));
+//   // sl.registerSingletonAsync<AppModel>(
+//   //     () async => AppModelImplmentation(await restCall()));
 
-  //   // sl.registerFactoryAsync<AppModel>(
-  //   //     () async => AppModelImplmentation(await restCall()));
+//   // sl.registerFactoryAsync<AppModel>(
+//   //     () async => AppModelImplmentation(await restCall()));
 //   final getIt = GetIt.instance;
 
 //   getIt.registerSingletonAsync<ConfigService>(() async {
