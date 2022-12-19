@@ -7,7 +7,7 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
+  checks:
     runs-on: ubuntu-latest
 
     container:
@@ -22,6 +22,15 @@ jobs:
     - name: Run tests
       run: dart test
 
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: subosito/flutter-action@v2
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Get coverage
+        run: flutter test --coverage
     # # Code coverage can be acitivated once its ready.
     # - name: Upload coverage to codecov
     #   uses: codecov/codecov-action@v1
