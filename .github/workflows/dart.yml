@@ -31,3 +31,15 @@ jobs:
       - uses: romeovs/lcov-reporter-action@v0.2.16
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  format:
+    runs-on: ubuntu-latest
+    container:
+      image: google/dart:latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: dart format .
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Update formatted files
+          file_pattern: "*.dart"
