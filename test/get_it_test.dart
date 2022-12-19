@@ -1,3 +1,5 @@
+// ignore_for_file: unnecessary_type_check, avoid_redundant_argument_values, avoid_classes_with_only_static_members
+
 import 'package:get_it/get_it.dart';
 import 'package:test/test.dart';
 
