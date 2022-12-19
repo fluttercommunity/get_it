@@ -8,26 +8,25 @@ on:
 jobs:
   checks:
     runs-on: ubuntu-latest
-    container:
-      image: google/dart:latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Install dependencies
-        run: dart pub get
-      - name: Install dependencies for example
-        run: dart pub get -C example
-      - name: Run linter
-        run: dart analyze
-      - name: Run tests
-        run: dart test
-
-  coverage:
-    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: subosito/flutter-action@v2
       - name: Install dependencies
         run: flutter pub get
+      - name: Run linter
+        run: dart analyze
+
+  test:
+    needs: checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get coverage
+        run: flutter test
+
+  coverage:
+    needs: checks
+    runs-on: ubuntu-latest
+    steps:
       - name: Get coverage
         run: flutter test --coverage
       - uses: romeovs/lcov-reporter-action@v0.2.16
@@ -35,12 +34,10 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
   format:
+    needs: checks
     runs-on: ubuntu-latest
-    container:
-      image: google/dart:latest
     steps:
-      - uses: actions/checkout@v3
-      - run: dart format .
+      - run: flutter format .
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: Update formatted files
