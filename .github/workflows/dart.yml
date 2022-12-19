@@ -20,10 +20,10 @@ jobs:
     - name: Run linter
       run: dart analyze lib
     - name: Run tests
-      run: dart test --coverage
-      
-    # Code coverage can be acitivated once its ready.
-    - name: Upload coverage to codecov
-      uses: codecov/codecov-action@v1
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
+      run: dart test
+
+    # # Code coverage can be acitivated once its ready.
+    # - name: Upload coverage to codecov
+    #   uses: codecov/codecov-action@v1
+    #   with:
+    #     token: ${{ secrets.CODECOV_TOKEN }}
