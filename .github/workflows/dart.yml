@@ -31,8 +31,4 @@ jobs:
         run: flutter pub get
       - name: Get coverage
         run: flutter test --coverage
-    # # Code coverage can be acitivated once its ready.
-    # - name: Upload coverage to codecov
-    #   uses: codecov/codecov-action@v1
-    #   with:
-    #     token: ${{ secrets.CODECOV_TOKEN }}
+      - uses: romeovs/lcov-reporter-action@v0.2.16
