@@ -3,7 +3,6 @@
 New features:
 * `popScopeTil` got a new optional `inclusive` parameter so you can now decide if scope with the passed name should be popped too or only the ones above
 * PR by @jtdLab that adds to reset a LazySingleton by providing an existing instance
-
 * Fix for an internal state error by @ioantsaf 
 * Fix for a rare edge case if you manually `signalReady`
 * Many PRs with improvements to spelling and grammar of readme, source documentation and even one assert message by @selcukguvel @isinghmitesh @UsamaKarim @nilsreichardt and  Os-Prog
@@ -21,12 +20,15 @@ New features:
 
 * fixed bug with manual synchronization of SingletonsWithDependencies 
 https://github.com/fluttercommunity/get_it/issues/196
+
 ## [7.1.3] - 07.05.2021
 
 * Fix for https://github.com/fluttercommunity/get_it/issues/186
+
 ## [7.1.2] - 06.05.2021
 
 * Thanks to the clever PR https://github.com/fluttercommunity/get_it/pull/185 by @kmartins `unregister` and `resetLazySingleton` now only have to be awaited if you use an async disposal function.
+
 ## [7.1.1] - 05.05.2021
 
 * `pushNewScope()` now got an optional `init` parameter where you can pass a function that registers new objects inside the newly pushed Scope. Doing the registration in this function ensures that the `onScopeChanged` call-back is called after the objects are registered.
@@ -98,9 +100,11 @@ When the Object is shadowed its `onGetShadowed()` method is called with the obje
 
 
  * Thanks to this PR https://github.com/fluttercommunity/get_it/pull/181 by @n3wtron you can now also make objects depend on other objects not only by type but also by type and name if you used a named registration
+
 ## [6.1.1] - 13.04.2021
 
 * small fix in getAsync with parameters
+
 ## [6.1.0] - 12.04.2021
 
 * Exceptions that occur during an async initialisation are now forwarded to the future that `allReady()` returns instead to get swallowed https://github.com/fluttercommunity/get_it/issues/148
@@ -110,6 +114,7 @@ When the Object is shadowed its `onGetShadowed()` method is called with the obje
 ## [6.0.0] - 15.02.2021
 
 * Official null safety release
+
 ## [5.0.2] - 08.12.2020
 
 * fixed https://github.com/fluttercommunity/get_it/issues/138 when calling `unRegister` the dispose function
