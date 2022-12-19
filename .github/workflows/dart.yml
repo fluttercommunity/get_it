@@ -6,24 +6,16 @@ on:
     branches: [master]
 
 jobs:
-  test:
+  checks:
     runs-on: ubuntu-latest
+    container:
+      image:  google/dart:latest
     steps:
       - uses: actions/checkout@v3
-      - uses: subosito/flutter-action@v2
-      - name: Install dependencies
-        run: flutter pub get
-      - name: Run linter
-        run: flutter analyze
-      - name: Run tests
-        run: flutter test
-
-  format:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: subosito/flutter-action@v2
-      - run: flutter format .
+      - run: dart pub get
+      - run: dart analyze lib test
+      - run: dart test
+      - run: dart format .
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: Update formatted files
