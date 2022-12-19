@@ -8,7 +8,6 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     container:
@@ -17,9 +16,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Install dependencies
-      run: pub get
+      run: dart pub get
+    - name: Run linter
+      run: dart analyze
     - name: Run tests
-      run: pub run test --coverage
+      run: dart test --coverage
       
     # Code coverage can be acitivated once its ready.
     - name: Upload coverage to codecov
