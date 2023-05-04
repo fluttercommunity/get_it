@@ -117,10 +117,13 @@ void main() {
     Object? shadowingObject;
 
     getIt.registerSingleton<TestClassShadowChangHandler>(
-      TestClassShadowChangHandler((shadowState, shadow) {
-        isShadowed = shadowState;
-        shadowingObject = shadow;
-      }, 'Basescope'),
+      TestClassShadowChangHandler(
+        (shadowState, shadow) {
+          isShadowed = shadowState;
+          shadowingObject = shadow;
+        },
+        'Basescope',
+      ),
     );
 
     getIt.pushNewScope();
@@ -148,10 +151,13 @@ void main() {
     Object? shadowingObject;
 
     getIt.registerSingleton<TestClassShadowChangHandler>(
-      TestClassShadowChangHandler((shadowState, shadow) {
-        isShadowed = shadowState;
-        shadowingObject = shadow;
-      }, 'Basescope'),
+      TestClassShadowChangHandler(
+        (shadowState, shadow) {
+          isShadowed = shadowState;
+          shadowingObject = shadow;
+        },
+        'Basescope',
+      ),
     );
 
     getIt.pushNewScope();
@@ -183,10 +189,13 @@ void main() {
     getIt.onScopeChanged = (pushed) => scopeChanged++;
 
     getIt.registerLazySingleton<TestBaseClass>(
-      () => TestClassShadowChangHandler((shadowState, shadow) {
-        isShadowed = shadowState;
-        shadowingObject = shadow;
-      }, 'Basescope'),
+      () => TestClassShadowChangHandler(
+        (shadowState, shadow) {
+          isShadowed = shadowState;
+          shadowingObject = shadow;
+        },
+        'Basescope',
+      ),
     );
 
     getIt.pushNewScope();
@@ -232,10 +241,13 @@ void main() {
     Object? shadowingObject;
 
     getIt.registerSingleton<TestBaseClass>(
-      TestClassShadowChangHandler((shadowState, shadow) {
-        isShadowed = shadowState;
-        shadowingObject = shadow;
-      }, 'Basescope'),
+      TestClassShadowChangHandler(
+        (shadowState, shadow) {
+          isShadowed = shadowState;
+          shadowingObject = shadow;
+        },
+        'Basescope',
+      ),
     );
 
     getIt.pushNewScope();
@@ -285,20 +297,27 @@ void main() {
       },
     );
     getIt.registerSingleton<TestBaseClass>(
-        TestClassShadowChangHandler((shadowState, shadow) {
-      isShadowed = shadowState;
-      shadowingObject = shadow;
-    }, '2, Scope'));
+      TestClassShadowChangHandler(
+        (shadowState, shadow) {
+          isShadowed = shadowState;
+          shadowingObject = shadow;
+        },
+        '2, Scope',
+      ),
+    );
 
     getIt.pushNewScope();
 
     Object? shadowingInstance;
-    getIt.registerSingletonWithDependencies<TestBaseClass>(() {
-      final newInstance =
-          TestClassShadowChangHandler((shadowState, shadow) {}, '2, Scope');
-      shadowingInstance = newInstance;
-      return newInstance;
-    }, dependsOn: [TestClass]);
+    getIt.registerSingletonWithDependencies<TestBaseClass>(
+      () {
+        final newInstance =
+            TestClassShadowChangHandler((shadowState, shadow) {}, '2, Scope');
+        shadowingInstance = newInstance;
+        return newInstance;
+      },
+      dependsOn: [TestClass],
+    );
 
     /// The instance is not created yet because the async init function hasn't completed
     expect(isShadowed, false);
@@ -341,8 +360,10 @@ void main() {
     final instanceTestClassScope1 = getIt.get<TestClass>();
 
     expect(instanceTestClassScope1.id, 'Basescope');
-    expect(() => getIt.get<TestClass2>(),
-        throwsA(const TypeMatcher<AssertionError>()));
+    expect(
+      () => getIt.get<TestClass2>(),
+      throwsA(const TypeMatcher<AssertionError>()),
+    );
   });
 
   test('popscopeuntil inclusive=true', () async {
@@ -368,8 +389,10 @@ void main() {
     final instanceTestClassScope1 = getIt.get<TestClass>();
 
     expect(instanceTestClassScope1.id, 'Basescope');
-    expect(() => getIt.get<TestClass2>(),
-        throwsA(const TypeMatcher<AssertionError>()));
+    expect(
+      () => getIt.get<TestClass2>(),
+      throwsA(const TypeMatcher<AssertionError>()),
+    );
   });
   test('popscopeuntil inclusive=false', () async {
     final getIt = GetIt.instance;
@@ -394,24 +417,34 @@ void main() {
     final instanceTestClassScope1 = getIt.get<TestClass>();
 
     expect(instanceTestClassScope1.id, '2. scope');
-    expect(() => getIt.get<TestClass2>(),
-        throwsA(const TypeMatcher<AssertionError>()));
+    expect(
+      () => getIt.get<TestClass2>(),
+      throwsA(const TypeMatcher<AssertionError>()),
+    );
   });
 
   test('popscope with destructors', () async {
     final getIt = GetIt.instance;
 
-    getIt.registerSingleton<TestClass>(TestClass('Basescope'),
-        dispose: (x) => x.dispose());
+    getIt.registerSingleton<TestClass>(
+      TestClass('Basescope'),
+      dispose: (x) => x.dispose(),
+    );
 
-    getIt.pushNewScope(dispose: () {
-      return disposeCounter++;
-    });
+    getIt.pushNewScope(
+      dispose: () {
+        return disposeCounter++;
+      },
+    );
 
-    getIt.registerSingleton<TestClass>(TestClass('2. scope'),
-        dispose: (x) => x.dispose());
-    getIt.registerSingleton<TestClass2>(TestClass2('2. scope'),
-        dispose: (x) => x.dispose());
+    getIt.registerSingleton<TestClass>(
+      TestClass('2. scope'),
+      dispose: (x) => x.dispose(),
+    );
+    getIt.registerSingleton<TestClass2>(
+      TestClass2('2. scope'),
+      dispose: (x) => x.dispose(),
+    );
 
     await getIt.popScope();
 
@@ -420,17 +453,25 @@ void main() {
   test('popscope with destructors', () async {
     final getIt = GetIt.instance;
 
-    getIt.registerSingleton<TestClass>(TestClass('Basescope'),
-        dispose: (x) => x.dispose());
+    getIt.registerSingleton<TestClass>(
+      TestClass('Basescope'),
+      dispose: (x) => x.dispose(),
+    );
 
-    getIt.pushNewScope(dispose: () {
-      return disposeCounter++;
-    });
+    getIt.pushNewScope(
+      dispose: () {
+        return disposeCounter++;
+      },
+    );
 
-    getIt.registerSingleton<TestClass>(TestClass('2. scope'),
-        dispose: (x) => x.dispose());
-    getIt.registerSingleton<TestClass2>(TestClass2('2. scope'),
-        dispose: (x) => x.dispose());
+    getIt.registerSingleton<TestClass>(
+      TestClass('2. scope'),
+      dispose: (x) => x.dispose(),
+    );
+    getIt.registerSingleton<TestClass2>(
+      TestClass2('2. scope'),
+      dispose: (x) => x.dispose(),
+    );
 
     await getIt.popScope();
 
@@ -447,33 +488,50 @@ void main() {
     final getIt = GetIt.instance;
     constructorCounter = 0;
 
-    getIt.registerSingleton<TestClass>(TestClass(),
-        instanceName: 'scope0', dispose: (x) => x.dispose());
+    getIt.registerSingleton<TestClass>(
+      TestClass(),
+      instanceName: 'scope0',
+      dispose: (x) => x.dispose(),
+    );
 
     getIt.pushNewScope(scopeName: 'scope1', dispose: () => disposeCounter++);
-    getIt.registerSingleton<TestClass>(TestClass(),
-        instanceName: 'scope1', dispose: (x) => x.dispose());
+    getIt.registerSingleton<TestClass>(
+      TestClass(),
+      instanceName: 'scope1',
+      dispose: (x) => x.dispose(),
+    );
 
     getIt.pushNewScope(scopeName: 'scope2', dispose: () => disposeCounter++);
-    getIt.registerSingleton<TestClass>(TestClass(),
-        instanceName: 'scope2', dispose: (x) => x.dispose());
+    getIt.registerSingleton<TestClass>(
+      TestClass(),
+      instanceName: 'scope2',
+      dispose: (x) => x.dispose(),
+    );
 
     getIt.pushNewScope(scopeName: 'scope3', dispose: () => disposeCounter++);
-    getIt.registerSingleton<TestClass>(TestClass(),
-        instanceName: 'scope3', dispose: (x) => x.dispose());
+    getIt.registerSingleton<TestClass>(
+      TestClass(),
+      instanceName: 'scope3',
+      dispose: (x) => x.dispose(),
+    );
 
     await getIt.resetScope();
 
     expect(getIt<TestClass>(instanceName: 'scope0'), isNotNull);
     expect(getIt<TestClass>(instanceName: 'scope1'), isNotNull);
     expect(getIt<TestClass>(instanceName: 'scope2'), isNotNull);
-    expect(() => getIt.get<TestClass>(instanceName: 'scope3'),
-        throwsA(const TypeMatcher<AssertionError>()));
+    expect(
+      () => getIt.get<TestClass>(instanceName: 'scope3'),
+      throwsA(const TypeMatcher<AssertionError>()),
+    );
 
     expect(disposeCounter, 2);
 
-    getIt.registerSingleton<TestClass>(TestClass(),
-        instanceName: 'scope3', dispose: (x) => x.dispose());
+    getIt.registerSingleton<TestClass>(
+      TestClass(),
+      instanceName: 'scope3',
+      dispose: (x) => x.dispose(),
+    );
     expect(getIt<TestClass>(instanceName: 'scope3'), isNotNull);
   });
 
@@ -481,69 +539,109 @@ void main() {
     final getIt = GetIt.instance;
     constructorCounter = 0;
 
-    getIt.registerSingleton<TestClass>(TestClass(),
-        instanceName: 'scope0', dispose: (x) => x.dispose());
+    getIt.registerSingleton<TestClass>(
+      TestClass(),
+      instanceName: 'scope0',
+      dispose: (x) => x.dispose(),
+    );
 
     getIt.pushNewScope(scopeName: 'scope1', dispose: () => disposeCounter++);
-    getIt.registerSingleton<TestClass>(TestClass(),
-        instanceName: 'scope1', dispose: (x) => x.dispose());
+    getIt.registerSingleton<TestClass>(
+      TestClass(),
+      instanceName: 'scope1',
+      dispose: (x) => x.dispose(),
+    );
 
     getIt.pushNewScope(scopeName: 'scope2', dispose: () => disposeCounter++);
-    getIt.registerSingleton<TestClass>(TestClass(),
-        instanceName: 'scope2', dispose: (x) => x.dispose());
+    getIt.registerSingleton<TestClass>(
+      TestClass(),
+      instanceName: 'scope2',
+      dispose: (x) => x.dispose(),
+    );
 
     getIt.pushNewScope(scopeName: 'scope3', dispose: () => disposeCounter++);
-    getIt.registerSingleton<TestClass>(TestClass(),
-        instanceName: 'scope3', dispose: (x) => x.dispose());
+    getIt.registerSingleton<TestClass>(
+      TestClass(),
+      instanceName: 'scope3',
+      dispose: (x) => x.dispose(),
+    );
 
     await getIt.resetScope(dispose: false);
 
     expect(getIt<TestClass>(instanceName: 'scope0'), isNotNull);
     expect(getIt<TestClass>(instanceName: 'scope1'), isNotNull);
     expect(getIt<TestClass>(instanceName: 'scope2'), isNotNull);
-    expect(() => getIt.get<TestClass>(instanceName: 'scope3'),
-        throwsA(const TypeMatcher<AssertionError>()));
+    expect(
+      () => getIt.get<TestClass>(instanceName: 'scope3'),
+      throwsA(const TypeMatcher<AssertionError>()),
+    );
 
     expect(disposeCounter, 0);
 
-    getIt.registerSingleton<TestClass>(TestClass(),
-        instanceName: 'scope3', dispose: (x) => x.dispose());
+    getIt.registerSingleton<TestClass>(
+      TestClass(),
+      instanceName: 'scope3',
+      dispose: (x) => x.dispose(),
+    );
     expect(getIt<TestClass>(instanceName: 'scope3'), isNotNull);
   });
   test('full reset', () async {
     final getIt = GetIt.instance;
     constructorCounter = 0;
 
-    getIt.registerSingleton<TestClass>(TestClass(),
-        instanceName: 'scope0', dispose: (x) => x.dispose());
+    getIt.registerSingleton<TestClass>(
+      TestClass(),
+      instanceName: 'scope0',
+      dispose: (x) => x.dispose(),
+    );
 
     getIt.pushNewScope(scopeName: 'scope1', dispose: () => disposeCounter++);
-    getIt.registerSingleton<TestClass>(TestClass(),
-        instanceName: 'scope1', dispose: (x) => x.dispose());
+    getIt.registerSingleton<TestClass>(
+      TestClass(),
+      instanceName: 'scope1',
+      dispose: (x) => x.dispose(),
+    );
 
     getIt.pushNewScope(scopeName: 'scope2', dispose: () => disposeCounter++);
-    getIt.registerSingleton<TestClass>(TestClass(),
-        instanceName: 'scope2', dispose: (x) => x.dispose());
+    getIt.registerSingleton<TestClass>(
+      TestClass(),
+      instanceName: 'scope2',
+      dispose: (x) => x.dispose(),
+    );
 
     getIt.pushNewScope(scopeName: 'scope3', dispose: () => disposeCounter++);
-    getIt.registerSingleton<TestClass>(TestClass(),
-        instanceName: 'scope3', dispose: (x) => x.dispose());
+    getIt.registerSingleton<TestClass>(
+      TestClass(),
+      instanceName: 'scope3',
+      dispose: (x) => x.dispose(),
+    );
 
     await getIt.reset();
 
-    expect(() => getIt.get<TestClass>(instanceName: 'scope0'),
-        throwsA(const TypeMatcher<AssertionError>()));
-    expect(() => getIt.get<TestClass>(instanceName: 'scope1'),
-        throwsA(const TypeMatcher<AssertionError>()));
-    expect(() => getIt.get<TestClass>(instanceName: 'scope2'),
-        throwsA(const TypeMatcher<AssertionError>()));
-    expect(() => getIt.get<TestClass>(instanceName: 'scope3'),
-        throwsA(const TypeMatcher<AssertionError>()));
+    expect(
+      () => getIt.get<TestClass>(instanceName: 'scope0'),
+      throwsA(const TypeMatcher<AssertionError>()),
+    );
+    expect(
+      () => getIt.get<TestClass>(instanceName: 'scope1'),
+      throwsA(const TypeMatcher<AssertionError>()),
+    );
+    expect(
+      () => getIt.get<TestClass>(instanceName: 'scope2'),
+      throwsA(const TypeMatcher<AssertionError>()),
+    );
+    expect(
+      () => getIt.get<TestClass>(instanceName: 'scope3'),
+      throwsA(const TypeMatcher<AssertionError>()),
+    );
 
     expect(disposeCounter, 7);
 
-    getIt.registerSingleton<TestClass>(TestClass(),
-        instanceName: 'scope3', dispose: (x) => x.dispose());
+    getIt.registerSingleton<TestClass>(
+      TestClass(),
+      instanceName: 'scope3',
+      dispose: (x) => x.dispose(),
+    );
     expect(getIt<TestClass>(instanceName: 'scope3'), isNotNull);
   });
 
@@ -551,36 +649,59 @@ void main() {
     final getIt = GetIt.instance;
     constructorCounter = 0;
 
-    getIt.registerSingleton<TestClass>(TestClass(),
-        instanceName: 'scope0', dispose: (x) => x.dispose());
+    getIt.registerSingleton<TestClass>(
+      TestClass(),
+      instanceName: 'scope0',
+      dispose: (x) => x.dispose(),
+    );
 
     getIt.pushNewScope(scopeName: 'scope1', dispose: () => disposeCounter++);
-    getIt.registerSingleton<TestClass>(TestClass(),
-        instanceName: 'scope1', dispose: (x) => x.dispose());
+    getIt.registerSingleton<TestClass>(
+      TestClass(),
+      instanceName: 'scope1',
+      dispose: (x) => x.dispose(),
+    );
 
     getIt.pushNewScope(scopeName: 'scope2', dispose: () => disposeCounter++);
-    getIt.registerSingleton<TestClass>(TestClass(),
-        instanceName: 'scope2', dispose: (x) => x.dispose());
+    getIt.registerSingleton<TestClass>(
+      TestClass(),
+      instanceName: 'scope2',
+      dispose: (x) => x.dispose(),
+    );
 
     getIt.pushNewScope(scopeName: 'scope3', dispose: () => disposeCounter++);
-    getIt.registerSingleton<TestClass>(TestClass(),
-        instanceName: 'scope3', dispose: (x) => x.dispose());
+    getIt.registerSingleton<TestClass>(
+      TestClass(),
+      instanceName: 'scope3',
+      dispose: (x) => x.dispose(),
+    );
 
     await getIt.reset(dispose: false);
 
-    expect(() => getIt.get<TestClass>(instanceName: 'scope0'),
-        throwsA(const TypeMatcher<AssertionError>()));
-    expect(() => getIt.get<TestClass>(instanceName: 'scope1'),
-        throwsA(const TypeMatcher<AssertionError>()));
-    expect(() => getIt.get<TestClass>(instanceName: 'scope2'),
-        throwsA(const TypeMatcher<AssertionError>()));
-    expect(() => getIt.get<TestClass>(instanceName: 'scope3'),
-        throwsA(const TypeMatcher<AssertionError>()));
+    expect(
+      () => getIt.get<TestClass>(instanceName: 'scope0'),
+      throwsA(const TypeMatcher<AssertionError>()),
+    );
+    expect(
+      () => getIt.get<TestClass>(instanceName: 'scope1'),
+      throwsA(const TypeMatcher<AssertionError>()),
+    );
+    expect(
+      () => getIt.get<TestClass>(instanceName: 'scope2'),
+      throwsA(const TypeMatcher<AssertionError>()),
+    );
+    expect(
+      () => getIt.get<TestClass>(instanceName: 'scope3'),
+      throwsA(const TypeMatcher<AssertionError>()),
+    );
 
     expect(disposeCounter, 0);
 
-    getIt.registerSingleton<TestClass>(TestClass(),
-        instanceName: 'scope3', dispose: (x) => x.dispose());
+    getIt.registerSingleton<TestClass>(
+      TestClass(),
+      instanceName: 'scope3',
+      dispose: (x) => x.dispose(),
+    );
     expect(getIt<TestClass>(instanceName: 'scope3'), isNotNull);
   });
 }

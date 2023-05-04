@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 library get_it;
 
 import 'dart:async';
@@ -93,25 +95,19 @@ class WaitingTimeOutException implements Exception {
 
   @override
   String toString() {
-    // ignore: avoid_print
     print(
-        'GetIt: There was a timeout while waiting for an instance to signal ready');
-    // ignore: avoid_print
+      'GetIt: There was a timeout while waiting for an instance to signal ready',
+    );
     print('The following instance types where waiting for completion');
     for (final entry in areWaitedBy.entries) {
-      // ignore: avoid_print
       print('${entry.value} is waiting for ${entry.key}');
     }
-    // ignore: avoid_print
     print('The following instance types have NOT signalled ready yet');
     for (final entry in notReadyYet) {
-      // ignore: avoid_print
       print(entry);
     }
-    // ignore: avoid_print
     print('The following instance types HAVE signalled ready yet');
     for (final entry in areReady) {
-      // ignore: avoid_print
       print(entry);
     }
     return super.toString();
@@ -142,9 +138,13 @@ abstract class GetIt {
 
   /// If you need more than one instance of GetIt you can use [asNewInstance()]
   /// You should prefer to use the `instance()` method to access the global instance of [GetIt].
-  factory GetIt.asNewInstance({bool quietErrors = false}) {
-    return _GetItImplementation(quietErrors: quietErrors);
+  factory GetIt.asNewInstance() {
+    return _GetItImplementation();
   }
+
+  // If this is set to true do not print errors
+  // By default in release mode we don't print errors
+  static bool noDebugOutput = false;
 
   /// By default it's not allowed to register a type a second time.
   /// If you really need to you can disable the asserts by setting[allowReassignment]= true
@@ -253,6 +253,7 @@ abstract class GetIt {
   /// registers a type as Singleton by passing an [instance] of that type
   /// that will be returned on each call of [get] on that type
   /// [T] type to register
+  /// The newly registered instance will also be returned.
   /// [instanceName] if you provide a value here your instance gets registered with that
   /// name instead of a type. This should only be necessary if you need to register more
   /// than one instance of one type. Its highly not recommended.
