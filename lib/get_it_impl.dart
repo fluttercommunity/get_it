@@ -180,10 +180,12 @@ class _ServiceFactory<T extends Object, P1, P2> {
           throw StateError('Impossible factoryType');
       }
     } catch (e, s) {
-      // ignore: avoid_print
-      print('Error while creating ${T.toString()}');
-      // ignore: avoid_print
-      print('Stack trace:\n $s');
+      if(!_getItInstance.quietErrors) {
+        // ignore: avoid_print
+        print('Error while creating ${T.toString()}');
+        // ignore: avoid_print
+        print('Stack trace:\n $s');
+      }
       rethrow;
     }
   }
@@ -270,10 +272,12 @@ class _ServiceFactory<T extends Object, P1, P2> {
           throw StateError('Impossible factoryType');
       }
     } catch (e, s) {
-      // ignore: avoid_print
-      print('Error while creating ${T.toString()}');
-      // ignore: avoid_print
-      print('Stack trace:\n $s');
+      if(!_getItInstance.quietErrors) {
+        // ignore: avoid_print
+        print('Error while creating ${T.toString()}');
+        // ignore: avoid_print
+        print('Stack trace:\n $s');
+      }
       rethrow;
     }
   }
@@ -309,6 +313,11 @@ class _GetItImplementation implements GetIt {
   final _scopes = [_Scope(name: _baseScopeName)];
 
   _Scope get _currentScope => _scopes.last;
+
+  // If this is set do not print errors
+  final bool quietErrors;
+
+  _GetItImplementation({this.quietErrors = false});
 
   @override
   void Function(bool pushed)? onScopeChanged;

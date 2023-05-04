@@ -142,8 +142,8 @@ abstract class GetIt {
 
   /// If you need more than one instance of GetIt you can use [asNewInstance()]
   /// You should prefer to use the `instance()` method to access the global instance of [GetIt].
-  factory GetIt.asNewInstance() {
-    return _GetItImplementation();
+  factory GetIt.asNewInstance({bool quietErrors = false}) {
+    return _GetItImplementation(quietErrors: quietErrors);
   }
 
   /// By default it's not allowed to register a type a second time.
