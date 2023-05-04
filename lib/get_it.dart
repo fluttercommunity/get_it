@@ -259,7 +259,7 @@ abstract class GetIt {
   /// If [signalsReady] is set to `true` it means that the future you can get from `allReady()`
   /// cannot complete until this instance was signalled ready by calling
   /// [signalsReady(instance)].
-  void registerSingleton<T extends Object>(
+  T registerSingleton<T extends Object>(
     T instance, {
     String? instanceName,
     bool? signalsReady,

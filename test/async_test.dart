@@ -1,3 +1,5 @@
+// ignore_for_file: unused_local_variable, unnecessary_type_check
+
 import 'package:get_it/get_it.dart';
 import 'package:test/test.dart';
 
