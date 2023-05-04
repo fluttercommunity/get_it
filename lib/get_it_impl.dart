@@ -180,7 +180,7 @@ class _ServiceFactory<T extends Object, P1, P2> {
           throw StateError('Impossible factoryType');
       }
     } catch (e, s) {
-      if(!_getItInstance.quietErrors) {
+      if (!_getItInstance.quietErrors) {
         // ignore: avoid_print
         print('Error while creating ${T.toString()}');
         // ignore: avoid_print
@@ -272,7 +272,7 @@ class _ServiceFactory<T extends Object, P1, P2> {
           throw StateError('Impossible factoryType');
       }
     } catch (e, s) {
-      if(!_getItInstance.quietErrors) {
+      if (!_getItInstance.quietErrors) {
         // ignore: avoid_print
         print('Error while creating ${T.toString()}');
         // ignore: avoid_print
