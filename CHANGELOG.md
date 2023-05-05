@@ -1,3 +1,7 @@
+## [7.4.1]
+* PR from @dzziwny which fixed an edge case with LazySingletons https://github.com/fluttercommunity/get_it/pull/284
+* Changed an assertion in case that an object is not registered to an Exception that also will throw in real time so that you get meaningful errors based on https://github.com/fluttercommunity/get_it/issues/312
+
 ## [7.4.0]
 * `registerSingleton` now returns the passed instance as a return value thanks to the PR by @Rexios80 https://github.com/fluttercommunity/get_it/pull/242
 * In some cases GetIt will print error messages to the debug output. Now this won't happen anymore in release mode and can be completely disabled by setting `GetIt.noDebugOutput=true` following the PR from @James1345 

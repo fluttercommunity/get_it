@@ -769,7 +769,7 @@ void main() {
     await Future.delayed(const Duration(microseconds: 1));
     expect(
       () => getIt.get<TestClass>(),
-      throwsA(const TypeMatcher<AssertionError>()),
+      throwsA(const TypeMatcher<StateError>()),
     );
   });
 

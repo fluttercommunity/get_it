@@ -13,7 +13,8 @@ class AppModelImplementation extends AppModel {
 
   AppModelImplementation() {
     /// lets pretend we have to do some async initialization
-    Future.delayed(Duration(seconds: 3)).then((_) => getIt.signalReady(this));
+    Future.delayed(const Duration(seconds: 3))
+        .then((_) => getIt.signalReady(this));
   }
 
   @override
