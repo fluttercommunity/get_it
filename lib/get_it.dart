@@ -402,8 +402,7 @@ abstract class GetIt {
   /// if you passed a dispose function when you pushed this scope it will be
   /// called before the scope is popped.
   /// As dispose functions can be async, you should await this function.
-  /// If [scopeName] is provided, only the scope with that name will be popped.
-  Future<void> popScope({String? scopeName});
+  Future<void> popScope();
 
   /// if you have a lot of scopes with names you can pop (see [popScope]) all
   /// scopes above the scope with [name] including that scope unless [inclusive]= false
@@ -411,6 +410,15 @@ abstract class GetIt {
   /// As dispose functions can be async, you should await this function.
   /// If no scope with [name] exists, nothing is popped and `false` is returned
   Future<bool> popScopesTill(String name, {bool inclusive = true});
+
+  /// Disposes all registered factories and singletons in the provided scope,
+  /// then destroys (drops) the scope. If the dropped scope was the last one,
+  /// the previous scope becomes active again.
+  /// if you provided dispose functions on registration, they will be called.
+  /// if you passed a dispose function when you pushed this scope it will be
+  /// called before the scope is dropped.
+  /// As dispose functions can be async, you should await this function.
+  Future<void> dropScope(String scopeName);
 
   /// Returns the name of the current scope if it has one otherwise null
   /// if you are already on the baseScope it returns 'baseScope'

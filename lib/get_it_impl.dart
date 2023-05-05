@@ -842,6 +842,33 @@ class _GetItImplementation implements GetIt {
     return true;
   }
 
+  /// Disposes all registered factories and singletons in the provided scope,
+  /// then drops (destroys) the scope. If the dropped scope was the last one,
+  /// the previous scope becomes active again.
+  /// if you provided dispose functions on registration, they will be called.
+  /// if you passed a dispose function when you pushed this scope it will be
+  /// called before the scope is dropped.
+  /// As dispose functions can be async, you should await this function.
+  @override
+  Future<void> dropScope(String scopeName) async {
+    if (currentScopeName == scopeName) {
+      return popScope();
+    }
+    throwIfNot(
+      _scopes.length > 1,
+      StateError(
+        "GetIt: You are already on the base scope. you can't drop this one",
+      ),
+    );
+    final scope = _scopes.lastWhere(
+      (s) => s.name == scopeName,
+      orElse: () => throw ArgumentError("Scope $scopeName not found"),
+    );
+    await scope.dispose();
+    await scope.reset(dispose: true);
+    _scopes.remove(scope);
+  }
+
   @override
   String? get currentScopeName => _currentScope.name;
 
