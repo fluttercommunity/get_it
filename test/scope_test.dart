@@ -365,6 +365,7 @@ void main() {
       throwsA(const TypeMatcher<AssertionError>()),
     );
   });
+
   test('popscopeuntil inclusive=true', () async {
     final getIt = GetIt.instance;
     constructorCounter = 0;
@@ -482,6 +483,7 @@ void main() {
 
     expect(() => getIt.popScope(), throwsA(const TypeMatcher<StateError>()));
   });
+
   test('dropScope', () async {
     final getIt = GetIt.instance;
 
@@ -512,6 +514,7 @@ void main() {
     final instanceTestClass3Scope3 = getIt.get<TestClass3>();
     expect(instanceTestClass3Scope3 is TestClass3, true);
   });
+
   test('dropScope throws if scope with name not found', () async {
     final getIt = GetIt.instance;
 
