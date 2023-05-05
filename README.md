@@ -1,6 +1,6 @@
 [![Flutter Community: get_it](https://fluttercommunity.dev/_github/header/get_it)](https://github.com/fluttercommunity/community)
 
-[:heart: Sponsor](https://github.com/sponsors/escamoteur) <a href="https://www.buymeacoffee.com/roniemartinez" target="_blank"><img align="right" src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
+[:heart: Sponsor](https://github.com/sponsors/escamoteur) <a href="https://www.buymeacoffee.com/escamoteur" target="_blank"><img align="right" src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
 
 # get_it
 
@@ -134,10 +134,10 @@ You have to pass a factory function `func` that returns a NEW instance of an imp
 > Although I always would recommend using an abstract base class as a registration type so that you can vary the implementations you don't have to do this. You can also register concrete types.
 
 ```Dart
-void registerSingleton<T>(T instance)
+T registerSingleton<T>(T instance)
 ```
 
-You have to pass an instance of `T` or a derived class of `T` that you will always get returned on a call to `get<T>()`.
+You have to pass an instance of `T` or a derived class of `T` that you will always get returned on a call to `get<T>()`. The newly registered instance is also returned which can be sometimes convenient.
 
 As creating this instance can be time-consuming at app start-up you can shift the creation to the time the object is the first time requested with:
 
