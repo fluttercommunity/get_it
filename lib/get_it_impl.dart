@@ -1130,16 +1130,17 @@ class _GetItImplementation implements GetIt {
       ),
     );
 
+    Future<dynamic> _dispose = Future.value();
     if (instanceFactory.instance != null) {
       if (disposingFunction != null) {
         final dispose = disposingFunction.call(instanceFactory.instance! as T);
         if (dispose is Future) {
-          await dispose;
+          _dispose = dispose;
         }
       } else {
         final dispose = instanceFactory.dispose();
         if (dispose is Future) {
-          await dispose;
+          _dispose = dispose;
         }
       }
     }
@@ -1147,6 +1148,7 @@ class _GetItImplementation implements GetIt {
     instanceFactory.instance = null;
     instanceFactory.pendingResult = null;
     instanceFactory._readyCompleter = Completer<T>();
+    await _dispose;
   }
 
   List<_ServiceFactory> get _allFactories =>
