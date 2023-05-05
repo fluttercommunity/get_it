@@ -508,7 +508,7 @@ void main() {
     expect(instanceTestClassScope1.id, 'Basescope');
     expect(
       () => getIt.get<TestClass2>(),
-      throwsA(const TypeMatcher<AssertionError>()),
+      throwsA(const TypeMatcher<StateError>()),
     );
 
     final instanceTestClass3Scope3 = getIt.get<TestClass3>();
