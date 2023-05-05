@@ -237,7 +237,7 @@ void main() {
     await getIt.reset();
     expect(
       () => getIt.get<TestClass>(),
-      throwsA(const TypeMatcher<AssertionError>()),
+      throwsA(const TypeMatcher<StateError>()),
     );
 
     expect(destructorCounter, 1);
@@ -252,7 +252,7 @@ void main() {
     await getIt.reset();
     expect(
       () => getIt.get<TestClass>(),
-      throwsA(const TypeMatcher<AssertionError>()),
+      throwsA(const TypeMatcher<StateError>()),
     );
 
     expect(disposeCounter, 1);
@@ -284,7 +284,7 @@ void main() {
 
     expect(
       () => getIt.get<int>(),
-      throwsA(const TypeMatcher<AssertionError>()),
+      throwsA(const TypeMatcher<StateError>()),
     );
 
     GetIt.I.reset();
@@ -618,7 +618,7 @@ void main() {
 
     expect(
       () => getIt.get<TestClass>(),
-      throwsA(const TypeMatcher<AssertionError>()),
+      throwsA(const TypeMatcher<StateError>()),
     );
   });
 
@@ -654,7 +654,7 @@ void main() {
 
     expect(
       () => getIt.get<TestClass>(),
-      throwsA(const TypeMatcher<AssertionError>()),
+      throwsA(const TypeMatcher<StateError>()),
     );
   });
 
@@ -689,7 +689,7 @@ void main() {
 
     expect(
       () => getIt.get<TestClass>(),
-      throwsA(const TypeMatcher<AssertionError>()),
+      throwsA(const TypeMatcher<StateError>()),
     );
   });
 
@@ -724,7 +724,7 @@ void main() {
 
     expect(
       () => getIt.get<TestClass>(),
-      throwsA(const TypeMatcher<AssertionError>()),
+      throwsA(const TypeMatcher<StateError>()),
     );
   });
 
@@ -755,7 +755,7 @@ void main() {
 
     expect(
       () => getIt.get<TestClass>(),
-      throwsA(const TypeMatcher<AssertionError>()),
+      throwsA(const TypeMatcher<StateError>()),
     );
   });
 
@@ -783,7 +783,7 @@ void main() {
 
     expect(
       () => getIt<TestClass>(instanceName: 'instanceName'),
-      throwsA(const TypeMatcher<AssertionError>()),
+      throwsA(const TypeMatcher<StateError>()),
     );
     expect(
       getIt<TestClass>(instanceName: 'instanceName2'),
@@ -818,7 +818,7 @@ void main() {
 
     expect(
       () => getIt.get<TestClass>(),
-      throwsA(const TypeMatcher<AssertionError>()),
+      throwsA(const TypeMatcher<StateError>()),
     );
   });
 
@@ -845,7 +845,7 @@ void main() {
 
     expect(
       () => getIt.get<TestClass>(),
-      throwsA(const TypeMatcher<AssertionError>()),
+      throwsA(const TypeMatcher<StateError>()),
     );
   });
 
@@ -874,7 +874,7 @@ void main() {
 
     expect(
       () => getIt.get<TestClassDisposable>(),
-      throwsA(const TypeMatcher<AssertionError>()),
+      throwsA(const TypeMatcher<StateError>()),
     );
   });
 
@@ -895,7 +895,7 @@ void main() {
 
     expect(
       () => getIt<TestClass>(instanceName: 'instanceName'),
-      throwsA(const TypeMatcher<AssertionError>()),
+      throwsA(const TypeMatcher<StateError>()),
     );
   });
 
