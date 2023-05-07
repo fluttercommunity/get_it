@@ -1,3 +1,6 @@
+[7.5.0] - 07.05.2023
+
+* new function `dropScope(scopeName)` which allows to remove and dispose any named scope even if it's not the top one. Great PR by @olexale https://github.com/fluttercommunity/get_it/pull/292 which fixes sort of race conditions if you create scopes just for the life time of a widget. 
 ## [7.4.1]
 * PR from @dzziwny which fixed an edge case with LazySingletons https://github.com/fluttercommunity/get_it/pull/284
 * Changed an assertion in case that an object is not registered to an Exception that also will throw in real time so that you get meaningful errors based on https://github.com/fluttercommunity/get_it/issues/312
