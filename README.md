@@ -242,6 +242,15 @@ Another example could be a shopping basket where you want to ensure that not a c
   /// If no scope with [name] exists, nothing is popped and `false` is returned
   Future<bool> popScopesTill(String name, {bool inclusive = true});
 
+  /// Disposes all registered factories and singletons in the provided scope,
+  /// then destroys (drops) the scope. If the dropped scope was the last one,
+  /// the previous scope becomes active again.
+  /// if you provided dispose functions on registration, they will be called.
+  /// if you passed a dispose function when you pushed this scope it will be
+  /// called before the scope is dropped.
+  /// As dispose functions can be async, you should await this function.
+  Future<void> dropScope(String scopeName);
+
   /// Clears all registered types for the current scope
   /// If you provided dispose function when registering they will be called
   /// [dispose] if `false` it only resets without calling any dispose

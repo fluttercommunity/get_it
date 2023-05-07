@@ -484,6 +484,47 @@ void main() {
     expect(() => getIt.popScope(), throwsA(const TypeMatcher<StateError>()));
   });
 
+  test('dropScope', () async {
+    final getIt = GetIt.instance;
+
+    getIt.registerSingleton<TestClass>(TestClass('Basescope'));
+
+    getIt.pushNewScope(scopeName: 'scope2');
+    getIt.registerSingleton<TestClass>(TestClass('2. scope'));
+    getIt.registerSingleton<TestClass2>(TestClass2('2. scope'));
+
+    getIt.pushNewScope();
+    getIt.registerSingleton<TestClass3>(TestClass3());
+
+    final instanceTestClassScope2 = getIt.get<TestClass>();
+
+    expect(instanceTestClassScope2 is TestClass, true);
+    expect(instanceTestClassScope2.id, '2. scope');
+
+    await getIt.dropScope('scope2');
+
+    final instanceTestClassScope1 = getIt.get<TestClass>();
+
+    expect(instanceTestClassScope1.id, 'Basescope');
+    expect(
+      () => getIt.get<TestClass2>(),
+      throwsA(const TypeMatcher<StateError>()),
+    );
+
+    final instanceTestClass3Scope3 = getIt.get<TestClass3>();
+    expect(instanceTestClass3Scope3 is TestClass3, true);
+  });
+
+  test('dropScope throws if scope with name not found', () async {
+    final getIt = GetIt.instance;
+
+    getIt.pushNewScope(scopeName: 'scope2');
+    await expectLater(
+      () => getIt.dropScope('scope'),
+      throwsA(const TypeMatcher<ArgumentError>()),
+    );
+  });
+
   test('resetScope', () async {
     final getIt = GetIt.instance;
     constructorCounter = 0;
