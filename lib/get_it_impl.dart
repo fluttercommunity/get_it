@@ -827,7 +827,8 @@ class _GetItImplementation implements GetIt {
   /// As dispose functions can be async, you should await this function.
   @override
   Future<bool> popScopesTill(String scopeName, {bool inclusive = true}) async {
-    assert(scopeName != _baseScopeName, "You can't pop the base scope");
+    assert(inclusive && scopeName != _baseScopeName,
+        "You can't pop the base scope");
     if (_scopes.firstWhereOrNull((x) => x.name == scopeName) == null) {
       return false;
     }
