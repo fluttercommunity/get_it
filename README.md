@@ -324,7 +324,7 @@ If a factory needs to call an async function you can use `registerFactoryAsync()
 /// [func] factory function for this type
 /// [instanceName] if you provide a value here your factory gets registered with that
 /// name instead of a type. This should only be necessary if you need to register more
-/// than one instance of one type. Its highly not recommended.
+/// than one instance of one type.
 void registerFactoryAsync<T>(FactoryFuncAsync<T> func, {String instanceName});
 ```
 
@@ -516,7 +516,7 @@ In some cases, it's handy if you could pass changing values to factories when ca
 /// [factoryfunc] factory function for this type that accepts two parameters
 /// [instanceName] if you provide a value here your factory gets registered with that
 /// name instead of a type. This should only be necessary if you need to register more
-/// than one instance of one type. Its highly not recommended.
+/// than one instance of one type. 
 ///
 /// example:
 ///    getIt.registerFactoryParam<TestClassParam,String,int>((s,i)

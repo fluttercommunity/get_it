@@ -183,7 +183,7 @@ abstract class GetIt {
   /// [factoryFunc] factory function for this type
   /// [instanceName] if you provide a value here your factory gets registered with that
   /// name instead of a type. This should only be necessary if you need to register more
-  /// than one instance of one type. Its highly not recommended.
+  /// than one instance of one type.
   void registerFactory<T extends Object>(
     FactoryFunc<T> factoryFunc, {
     String? instanceName,
@@ -198,7 +198,7 @@ abstract class GetIt {
   /// [factoryFunc] factory function for this type that accepts two parameters
   /// [instanceName] if you provide a value here your factory gets registered with that
   /// name instead of a type. This should only be necessary if you need to register more
-  /// than one instance of one type. Its highly not recommended.
+  /// than one instance of one type.
   ///
   /// example:
   ///    getIt.registerFactoryParam<TestClassParam,String,int>((s,i)
@@ -219,7 +219,7 @@ abstract class GetIt {
   /// [factoryFunc] async factory function for this type
   /// [instanceName] if you provide a value here your factory gets registered with that
   /// name instead of a type. This should only be necessary if you need to register more
-  /// than one instance of one type. Its highly not recommended.
+  /// than one instance of one type.
   void registerFactoryAsync<T extends Object>(
     FactoryFuncAsync<T> factoryFunc, {
     String? instanceName,
@@ -235,7 +235,7 @@ abstract class GetIt {
   /// [factoryFunc] factory function for this type that accepts two parameters
   /// [instanceName] if you provide a value here your factory gets registered with that
   /// name instead of a type. This should only be necessary if you need to register more
-  /// than one instance of one type. Its highly not recommended.
+  /// than one instance of one type.
   ///
   /// example:
   ///    getIt.registerFactoryParam<TestClassParam,String,int>((s,i) async
@@ -256,7 +256,7 @@ abstract class GetIt {
   /// The newly registered instance will also be returned.
   /// [instanceName] if you provide a value here your instance gets registered with that
   /// name instead of a type. This should only be necessary if you need to register more
-  /// than one instance of one type. Its highly not recommended.
+  /// than one instance of one type.
   /// If [signalsReady] is set to `true` it means that the future you can get from `allReady()`
   /// cannot complete until this instance was signalled ready by calling
   /// [signalsReady(instance)].
@@ -272,7 +272,7 @@ abstract class GetIt {
   /// [T] type to register
   /// [instanceName] if you provide a value here your instance gets registered with that
   /// name instead of a type. This should only be necessary if you need to register more
-  /// than one instance of one type. Its highly not recommended.
+  /// than one instance of one type.
   /// [dependsOn] if this instance depends on other registered Singletons before it can be
   /// initialized you can either orchestrate this manually using [isReady()] or pass a list of
   /// the types that the instance depends on here. [factoryFunc] won't get executed till this
@@ -296,7 +296,7 @@ abstract class GetIt {
   /// (see below). As soon as it returns, this instance is marked as ready unless you don't
   /// set [signalsReady==true] [instanceName] if you provide a value here your instance gets
   /// registered with that name instead of a type. This should only be necessary if you need to
-  /// register more than one instance of one type. Its highly not recommended.
+  /// register more than one instance of one type.
   /// [dependsOn] if this instance depends on other registered Singletons before it can be
   /// initialized you can either orchestrate this manually using [isReady()] or pass a list of
   /// the types that the instance depends on here. [factoryFunc] won't get executed till this
@@ -318,7 +318,7 @@ abstract class GetIt {
   /// [factoryFunc] factory function for this type
   /// [instanceName] if you provide a value here your factory gets registered with that
   /// name instead of a type. This should only be necessary if you need to register more
-  /// than one instance of one type. Its highly not recommended.
+  /// than one instance of one type.
   /// [registerLazySingleton] does not influence [allReady] however you can wait
   /// for and be dependent on a LazySingleton.
   void registerLazySingleton<T extends Object>(
@@ -339,7 +339,7 @@ abstract class GetIt {
   /// You can wait/check if the instance is ready by using [isReady()] and [isReadySync()].
   /// [instanceName] if you provide a value here your instance gets registered with that
   /// name instead of a type. This should only be necessary if you need to register more
-  /// than one instance of one type. Its highly not recommended.
+  /// than one instance of one type.
   /// [registerLazySingletonAsync] does not influence [allReady] however you can wait
   /// for and be dependent on a LazySingleton.
   void registerLazySingletonAsync<T extends Object>(

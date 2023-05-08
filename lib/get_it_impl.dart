@@ -474,7 +474,7 @@ class _GetItImplementation implements GetIt {
   /// [factoryFunc] factory function for this type
   /// [instanceName] if you provide a value here your factory gets registered with that
   /// name instead of a type. This should only be necessary if you need to register more
-  /// than one instance of one type. It's highly not recommended.
+  /// than one instance of one type.
   @override
   void registerFactory<T extends Object>(
     FactoryFunc<T> factoryFunc, {
@@ -498,7 +498,7 @@ class _GetItImplementation implements GetIt {
   /// [factoryFunc] factory function for this type that accepts two parameters
   /// [instanceName] if you provide a value here your factory gets registered with that
   /// name instead of a type. This should only be necessary if you need to register more
-  /// than one instance of one type. It's highly not recommended.
+  /// than one instance of one type.
   ///
   /// example:
   ///    getIt.registerFactoryParam<TestClassParam,String,int>((s,i)
@@ -548,7 +548,7 @@ class _GetItImplementation implements GetIt {
   /// [factoryFunc] factory function for this type that accepts two parameters
   /// [instanceName] if you provide a value here your factory gets registered with that
   /// name instead of a type. This should only be necessary if you need to register more
-  /// than one instance of one type. It's highly not recommended.
+  /// than one instance of one type.
   ///
   /// example:
   ///    getIt.registerFactoryParam<TestClassParam,String,int>((s,i) async
@@ -578,7 +578,7 @@ class _GetItImplementation implements GetIt {
   /// [factoryFunc] factory function for this type
   /// [instanceName] if you provide a value here your factory gets registered with that
   /// name instead of a type. This should only be necessary if you need to register more
-  /// than one instance of one type. It's highly not recommended.
+  /// than one instance of one type.
   /// [registerLazySingleton] does not influence [allReady] however you can wait
   /// for and be dependent on a LazySingleton.
   @override
@@ -604,7 +604,7 @@ class _GetItImplementation implements GetIt {
   /// cannot complete until this registration was signalled ready by calling
   /// [signalsReady(instance)] [instanceName] if you provide a value here your instance gets
   /// registered with that name instead of a type. This should only be necessary if you need
-  /// to register more than one instance of one type. It's highly not recommended.
+  /// to register more than one instance of one type.
   @override
   T registerSingleton<T extends Object>(
     T instance, {
@@ -628,7 +628,7 @@ class _GetItImplementation implements GetIt {
   /// [T] type to register
   /// [instanceName] if you provide a value here your instance gets registered with that
   /// name instead of a type. This should only be necessary if you need to register more
-  /// than one instance of one type. It's highly not recommended.
+  /// than one instance of one type.
   /// [dependsOn] if this instance depends on other registered Singletons before it can be initialized
   /// you can either orchestrate this manually using [isReady()] or pass a list of the types that the
   /// instance depends on here. [factoryFunc] won't get executed till these types are ready.
@@ -663,7 +663,7 @@ class _GetItImplementation implements GetIt {
   /// (see below). As soon as it returns, this instance is marked as ready unless you don't set
   /// [signalsReady==true] [instanceName] if you provide a value here your instance gets
   /// registered with that name instead of a type. This should only be necessary if you need
-  /// to register more than one instance of one type. It's highly not recommended.
+  /// to register more than one instance of one type.
   /// [dependsOn] if this instance depends on other registered Singletons before it can be
   /// initialized you can either orchestrate this manually using [isReady()] or pass a list of
   /// the types that the instance depends on here. [factoryFunc] won't get executed till this
@@ -702,7 +702,7 @@ class _GetItImplementation implements GetIt {
   /// You can wait/check if the instance is ready by using [isReady()] and [isReadySync()].
   /// [instanceName] if you provide a value here your instance gets registered with that
   /// name instead of a type. This should only be necessary if you need to register more
-  /// than one instance of one type. It's highly not recommended.
+  /// than one instance of one type.
   /// [registerLazySingletonAsync] does not influence [allReady] however you can wait
   /// for and be dependent on a LazySingleton.
   @override
