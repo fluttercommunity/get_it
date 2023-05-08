@@ -48,7 +48,7 @@ class TestClass extends TestBaseClass {
 
   Future<TestClass> initWithExeption() async {
     await Future.delayed(const Duration(milliseconds: 10));
-    throw (StateError('Intentional'));
+    throw StateError('Intentional');
   }
 
   void dispose() {
