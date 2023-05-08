@@ -828,7 +828,7 @@ class _GetItImplementation implements GetIt {
   @override
   Future<bool> popScopesTill(String scopeName, {bool inclusive = true}) async {
     assert(
-      inclusive && scopeName != _baseScopeName,
+      scopeName != _baseScopeName || !inclusive,
       "You can't pop the base scope",
     );
     if (_scopes.firstWhereOrNull((x) => x.name == scopeName) == null) {
