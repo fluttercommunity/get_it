@@ -1427,6 +1427,18 @@ class _GetItImplementation implements GetIt {
         return factoryToCheck.getObjectAsync(null, null);
       }
     }
+    if (factoryToCheck.pendingResult != null) {
+      if (timeout != null) {
+        return factoryToCheck.pendingResult!.timeout(
+          timeout,
+          onTimeout: () {
+            throw _createTimeoutError();
+          },
+        );
+      } else {
+        return factoryToCheck.pendingResult!;
+      }
+    }
     if (timeout != null) {
       return factoryToCheck._readyCompleter.future
           .timeout(timeout, onTimeout: () => throw _createTimeoutError());

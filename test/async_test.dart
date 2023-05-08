@@ -46,6 +46,11 @@ class TestClass extends TestBaseClass {
     return this;
   }
 
+  Future<TestClass> initWithExeption() async {
+    await Future.delayed(const Duration(milliseconds: 10));
+    throw (StateError('Intentional'));
+  }
+
   void dispose() {
     disposeCounter++;
   }
@@ -333,6 +338,16 @@ void main() {
       instanceName: 'Second Instance',
     );
     expect(getIt.allReady(), completes);
+  });
+
+  test('isReady propagates Error', () async {
+    final getIt = GetIt.instance;
+    getIt.reset();
+
+    getIt.registerSingletonAsync<TestClass>(
+      () async => TestClass(internalCompletion: false).initWithExeption(),
+    );
+    expect(getIt.isReady<TestClass>(), throwsStateError);
   });
 
   test('allReady propagades Exceptions that occur in the factory functions',
