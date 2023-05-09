@@ -910,6 +910,19 @@ void main() {
 
     expect(instance1 is TestClass, true);
   });
+
+  test(
+      'can register a singleton with instanceName and retrieve it with Type parameter and instanceName',
+      () {
+    final getIt = GetIt.instance;
+
+    getIt.registerSingleton(TestClass(), instanceName: 'instanceName');
+
+    final instance1 = getIt.get(type: TestClass, instanceName: 'instanceName');
+
+    expect(instance1 is TestClass, true);
+  });
+
   test('GenericType test', () {
     GetIt.I.registerSingleton<TestBaseClassGeneric<TestBaseClass>>(
       TestClassGeneric<TestBaseClass>(),

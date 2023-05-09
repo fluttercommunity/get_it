@@ -619,6 +619,20 @@ factories/singletons that were registered by name.
   );
 ```
 
+### Accessing an object inside GetIt by a runtime type
+
+In rare occasions you might be faced with the problem that you don't know the type that you want to retrieve from GetIt at compile time which means you can't pass it as a generic parameter. For this the `get` functions have an optional `type` parameter
+
+```Dart
+    getIt.registerSingleton(TestClass());
+
+    final instance1 = getIt.get(type: TestClass);
+
+    expect(instance1 is TestClass, true);
+```
+
+Be careful that the receiving variable has the correct type and don't pass `type` and a generic parameter.
+
 ### More than one instance of GetIt
 
 While not recommended, you can create your own independent instance of `GetIt` if you don't want to share your locator with some

@@ -1,3 +1,16 @@
+[7.6.0] - 09.05.2023
+* merged PR by lacopiroty https://github.com/fluttercommunity/get_it/pull/297 which now allows to access objects inside GetIt by runtime type too like
+```Dart
+    getIt.registerSingleton(TestClass());
+
+    final instance1 = getIt.get(type: TestClass);
+
+    expect(instance1 is TestClass, true);
+```
+* fix for https://github.com/fluttercommunity/get_it/issues/299 
+* fix for https://github.com/fluttercommunity/get_it/issues/300    
+
+
 [7.5.0] - 07.05.2023
 
 * new function `dropScope(scopeName)` which allows to remove and dispose any named scope even if it's not the top one. Great PR by @olexale https://github.com/fluttercommunity/get_it/pull/292 which fixes sort of race conditions if you create scopes just for the life time of a widget. 

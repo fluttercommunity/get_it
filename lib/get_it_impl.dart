@@ -416,6 +416,10 @@ class _GetItImplementation implements GetIt {
     dynamic param2,
     Type? type,
   }) {
+    assert(
+        type == null || type is T,
+        'The type you passed is not a $T. This can happen'
+        'if the receiving variable is of the wrong type, or you passed a gerenic type and a type parameter');
     final instanceFactory = _findFactoryByNameAndType<T>(instanceName, type);
 
     Object instance = Object; //late
@@ -469,6 +473,10 @@ class _GetItImplementation implements GetIt {
     dynamic param2,
     Type? type,
   }) {
+    assert(
+        type == null || type is T,
+        'The type you passed is not a $T. This can happen'
+        'if the receiving variable is of the wrong type, or you passed a gerenic type and a type parameter');
     final factoryToGet = _findFactoryByNameAndType<T>(instanceName, type);
     return factoryToGet.getObjectAsync<T>(param1, param2);
   }
