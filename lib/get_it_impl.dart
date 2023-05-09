@@ -418,7 +418,7 @@ class _GetItImplementation implements GetIt {
   }) {
     assert(
         type == null || type is T,
-        'The type you passed is not a $T. This can happen'
+        'The type you passed is not a $T. This can happen '
         'if the receiving variable is of the wrong type, or you passed a gerenic type and a type parameter');
     final instanceFactory = _findFactoryByNameAndType<T>(instanceName, type);
 
@@ -459,7 +459,11 @@ class _GetItImplementation implements GetIt {
     Type? type,
   }) {
     return get<T>(
-        instanceName: instanceName, param1: param1, param2: param2, type: type);
+      instanceName: instanceName,
+      param1: param1,
+      param2: param2,
+      type: type,
+    );
   }
 
   /// Returns a Future of an instance that is created by an async factory or a Singleton that is
@@ -475,7 +479,7 @@ class _GetItImplementation implements GetIt {
   }) {
     assert(
         type == null || type is T,
-        'The type you passed is not a $T. This can happen'
+        'The type you passed is not a $T. This can happen '
         'if the receiving variable is of the wrong type, or you passed a gerenic type and a type parameter');
     final factoryToGet = _findFactoryByNameAndType<T>(instanceName, type);
     return factoryToGet.getObjectAsync<T>(param1, param2);
