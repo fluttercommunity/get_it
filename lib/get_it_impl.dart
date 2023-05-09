@@ -454,7 +454,8 @@ class _GetItImplementation implements GetIt {
     dynamic param2,
     Type? type,
   }) {
-    return get<T>(instanceName: instanceName, param1: param1, param2: param2, type: type);
+    return get<T>(
+        instanceName: instanceName, param1: param1, param2: param2, type: type);
   }
 
   /// Returns a Future of an instance that is created by an async factory or a Singleton that is
