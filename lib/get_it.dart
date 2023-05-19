@@ -427,6 +427,9 @@ abstract class GetIt {
   /// As dispose functions can be async, you should await this function.
   Future<void> dropScope(String scopeName);
 
+  /// Tests if the scope by name [scopeName] is registered in GetIt
+  bool hasScope(String scopeName);
+
   /// Returns the name of the current scope if it has one otherwise null
   /// if you are already on the baseScope it returns 'baseScope'
   String? get currentScopeName;

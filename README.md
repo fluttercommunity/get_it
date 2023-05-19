@@ -251,6 +251,9 @@ Another example could be a shopping basket where you want to ensure that not a c
   /// As dispose functions can be async, you should await this function.
   Future<void> dropScope(String scopeName);
 
+  /// Tests if the scope by name [scopeName] is registered in GetIt
+  bool hasScope(String scopeName);
+
   /// Clears all registered types for the current scope
   /// If you provided dispose function when registering they will be called
   /// [dispose] if `false` it only resets without calling any dispose
@@ -516,7 +519,7 @@ In some cases, it's handy if you could pass changing values to factories when ca
 /// [factoryfunc] factory function for this type that accepts two parameters
 /// [instanceName] if you provide a value here your factory gets registered with that
 /// name instead of a type. This should only be necessary if you need to register more
-/// than one instance of one type. 
+/// than one instance of one type.
 ///
 /// example:
 ///    getIt.registerFactoryParam<TestClassParam,String,int>((s,i)
