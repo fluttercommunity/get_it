@@ -897,6 +897,12 @@ class _GetItImplementation implements GetIt {
     _scopes.remove(scope);
   }
 
+  /// Tests if the scope by name [scopeName] is registered in GetIt
+  @override
+  bool hasScope(String scopeName) {
+    return _scopes.any((x) => x.name == scopeName);
+  }
+
   @override
   String? get currentScopeName => _currentScope.name;
 

@@ -11,9 +11,11 @@ abstract class TestBaseClass {}
 
 class TestClass extends TestBaseClass {
   final String? id;
+
   TestClass([this.id]) {
     constructorCounter++;
   }
+
   void dispose() {
     disposeCounter++;
   }
@@ -27,6 +29,7 @@ class TestClassShadowChangHandler extends TestBaseClass
   TestClassShadowChangHandler(this.onShadowChange, [this.id]) {
     constructorCounter++;
   }
+
   void dispose() {
     disposeCounter++;
   }
@@ -44,7 +47,9 @@ class TestClassShadowChangHandler extends TestBaseClass
 
 class TestClass2 {
   final String? id;
+
   TestClass2([this.id]);
+
   void dispose() {
     disposeCounter++;
   }
@@ -676,6 +681,23 @@ void main() {
     );
     expect(getIt<TestClass>(instanceName: 'scope3'), isNotNull);
   });
+
+  test(
+    'has registered scope test',
+    () async {
+      final getIt = GetIt.instance;
+      getIt.pushNewScope(scopeName: 'scope1');
+      getIt.pushNewScope(scopeName: 'scope2');
+      getIt.pushNewScope(scopeName: 'scope3');
+
+      expect(getIt.hasScope('scope2'), isTrue);
+      expect(getIt.hasScope('scope4'), isFalse);
+
+      await getIt.dropScope('scope2');
+
+      expect(getIt.hasScope('scope2'), isFalse);
+    },
+  );
 
   test('full reset no dispose', () async {
     final getIt = GetIt.instance;
