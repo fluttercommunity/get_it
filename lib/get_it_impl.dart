@@ -840,6 +840,9 @@ class _GetItImplementation implements GetIt {
         "GetIt: You are already on the base scope. you can't pop this one",
       ),
     );
+    // make sure that nothing new can be registered in this scope
+    // while the scopes async dispose functions are running
+    _currentScope.isFinal = true;
     await _currentScope.dispose();
     await _currentScope.reset(dispose: true);
     _scopes.removeLast();
@@ -892,6 +895,9 @@ class _GetItImplementation implements GetIt {
       (s) => s.name == scopeName,
       orElse: () => throw ArgumentError("Scope $scopeName not found"),
     );
+    // make sure that nothing new can be registered in this scope
+    // while the scopes async dispose functions are running
+    scope.isFinal = true;
     await scope.dispose();
     await scope.reset(dispose: true);
     _scopes.remove(scope);
