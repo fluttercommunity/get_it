@@ -920,10 +920,10 @@ class _GetItImplementation implements GetIt {
     );
 
     _Scope registrationScope;
-    int i = _scopes.length - 1;
+    int i = _scopes.length;
     do {
-      registrationScope = _scopes[i];
       i--;
+      registrationScope = _scopes[i];
     } while (registrationScope.isFinal && i >= 0);
     assert(
       i >= 0,
