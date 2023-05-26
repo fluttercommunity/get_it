@@ -386,6 +386,7 @@ abstract class GetIt {
     void Function(GetIt getIt)? init,
     String? scopeName,
     ScopeDisposeFunc? dispose,
+    bool isFinal,
   });
 
   /// Creates a new registration scope. If you register types after creating
