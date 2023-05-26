@@ -1,3 +1,6 @@
+[7.6.1] - 28.05.2023
+* added `isFinal` scope parameter which fixes https://github.com/fluttercommunity/get_it/issues/326
+
 [7.6.0] - 09.05.2023
 * merged PR by lacopiroty https://github.com/fluttercommunity/get_it/pull/297 which now allows to access objects inside GetIt by runtime type too like
 ```Dart

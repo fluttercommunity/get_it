@@ -145,7 +145,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "7.6.0"
+    version: "7.6.1"
   glob:
     dependency: transitive
     description:
