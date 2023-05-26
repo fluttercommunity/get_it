@@ -21,7 +21,7 @@ abstract class WillSignalReady {}
 /// It also will get notified if the shadowing object is removed from GetIt
 ///
 /// This can be helpful to unsubscribe / resubscribe from Streams or Listenables
-abstract class ShadowChangeHandlers {
+abstract mixin class ShadowChangeHandlers {
   void onGetShadowed(Object shadowing);
   void onLeaveShadow(Object shadowing);
 }
@@ -29,7 +29,7 @@ abstract class ShadowChangeHandlers {
 /// If objects that are registered inside GetIt implements [Disposable] the
 /// [onDispose] method will be called whenever that Object is unregistered,
 /// resetted or its enclosing Scope is popped
-abstract class Disposable {
+abstract mixin class Disposable {
   FutureOr onDispose();
 }
 

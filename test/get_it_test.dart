@@ -39,10 +39,6 @@ class TestClassDisposable extends TestBaseClass with Disposable {
 
 class TestClass2 {}
 
-class TestClass3 {}
-
-class TestClass4 {}
-
 class TestClassParam {
   final String? param1;
   final int? param2;

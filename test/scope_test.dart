@@ -52,15 +52,6 @@ class TestClass2 {
 
 class TestClass3 {}
 
-class TestClass4 {}
-
-class TestClassParam {
-  final String? param1;
-  final int? param2;
-
-  TestClassParam({this.param1, this.param2});
-}
-
 void main() {
   setUp(() async {
     // make sure the instance is cleared before each test

@@ -34,6 +34,7 @@ class MyHomePage extends StatefulWidget {
   final String title;
 
   @override
+  // ignore: library_private_types_in_public_api
   _MyHomePageState createState() => _MyHomePageState();
 }
 
@@ -91,10 +92,10 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               );
             } else {
-              return Column(
+              return const Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
-                children: const [
+                children: [
                   Text('Waiting for initialisation'),
                   SizedBox(
                     height: 16,

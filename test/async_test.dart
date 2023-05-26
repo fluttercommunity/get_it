@@ -58,37 +58,37 @@ class TestClass extends TestBaseClass {
 
 class TestClassWillSignalReady extends TestClass implements WillSignalReady {
   TestClassWillSignalReady({
-    required bool internalCompletion,
-    GetIt? getIt,
-  }) : super(internalCompletion: internalCompletion, getIt: getIt);
+    required super.internalCompletion,
+    super.getIt,
+  });
 }
 
 class TestClassWillSignalReady2 extends TestClass implements WillSignalReady {
   TestClassWillSignalReady2({
-    required bool internalCompletion,
-    GetIt? getIt,
-  }) : super(internalCompletion: internalCompletion, getIt: getIt);
+    required super.internalCompletion,
+    super.getIt,
+  });
 }
 
 class TestClass2 extends TestClass {
   TestClass2({
-    required bool internalCompletion,
-    GetIt? getIt,
-  }) : super(internalCompletion: internalCompletion, getIt: getIt);
+    required super.internalCompletion,
+    super.getIt,
+  });
 }
 
 class TestClass3 extends TestClass {
   TestClass3({
-    required bool internalCompletion,
-    GetIt? getIt,
-  }) : super(internalCompletion: internalCompletion, getIt: getIt);
+    required super.internalCompletion,
+    super.getIt,
+  });
 }
 
 class TestClass4 extends TestClass {
   TestClass4({
-    required bool internalCompletion,
-    GetIt? getIt,
-  }) : super(internalCompletion: internalCompletion, getIt: getIt);
+    required super.internalCompletion,
+    super.getIt,
+  });
 }
 
 void main() {
@@ -920,7 +920,7 @@ void main() {
 
 abstract class Service1 {}
 
-abstract class Service2 {}
+// abstract class Service2 {}
 
 class Service1Implementation implements Service1 {
   Future init() {
@@ -929,14 +929,14 @@ class Service1Implementation implements Service1 {
   }
 }
 
-class Service2Implementation implements Service2 {
-  Service2Implementation() {
-    _init(); // we call _init here without awaiting it.
-  }
+// class Service2Implementation implements Service2 {
+//   Service2Implementation() {
+//     _init(); // we call _init here without awaiting it.
+//   }
 
-  Future _init() async {
-    // dummy async call
-    await Future.delayed(const Duration(microseconds: 1));
-    // From here on we are ready
-  }
-}
+//   Future _init() async {
+//     // dummy async call
+//     await Future.delayed(const Duration(microseconds: 1));
+//     // From here on we are ready
+//   }
+// }
