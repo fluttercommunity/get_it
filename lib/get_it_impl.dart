@@ -301,6 +301,7 @@ class _ServiceFactory<T extends Object, P1, P2> {
 class _Scope {
   final String? name;
   final ScopeDisposeFunc? disposeFunc;
+  bool isFinal = false;
   final factoriesByName =
       <String?, Map<Type, _ServiceFactory<Object, dynamic, dynamic>>>{};
 
@@ -768,11 +769,16 @@ class _GetItImplementation implements GetIt {
   /// is still valid while it is executed
   /// [init] optional function to register Objects immediately after the new scope is
   /// pushed. This ensures that [onScopeChanged] will be called after their registration
+  /// if [isFinal] is set to true, you can't register any new objects in this scope after
+  /// this call. In Other words you have to register the objects for this scope inside
+  /// [init] if you set [isFinal] to true. This is useful if you want to ensure that
+  /// no new objects are registered in this scope by accident which could lead to race conditions
   @override
   void pushNewScope({
     void Function(GetIt getIt)? init,
     String? scopeName,
     ScopeDisposeFunc? dispose,
+    bool isFinal = false,
   }) {
     assert(
       scopeName != _baseScopeName,
@@ -785,6 +791,9 @@ class _GetItImplementation implements GetIt {
     );
     _scopes.add(_Scope(name: scopeName, disposeFunc: dispose));
     init?.call(this);
+    if (isFinal) {
+      _scopes.last.isFinal = true;
+    }
     onScopeChanged?.call(true);
   }
 
@@ -910,7 +919,18 @@ class _GetItImplementation implements GetIt {
       'instead of var sl=GetIt.instance;',
     );
 
-    final factoriesByName = _currentScope.factoriesByName;
+    _Scope registrationScope;
+    int i = _scopes.length - 1;
+    do {
+      registrationScope = _scopes[i];
+      i--;
+    } while (registrationScope.isFinal && i >= 0);
+    assert(
+      i >= 0,
+      'The baseScope should always be open. If you see this error please file an issue at',
+    );
+
+    final factoriesByName = registrationScope.factoriesByName;
     throwIf(
       factoriesByName.containsKey(instanceName) &&
           factoriesByName[instanceName]!.containsKey(T) &&
@@ -937,7 +957,7 @@ class _GetItImplementation implements GetIt {
     final serviceFactory = _ServiceFactory<T, P1, P2>(
       this,
       type,
-      registrationScope: _currentScope,
+      registrationScope: registrationScope,
       creationFunction: factoryFunc,
       creationFunctionParam: factoryFuncParam,
       asyncCreationFunctionParam: factoryFuncParamAsync,
