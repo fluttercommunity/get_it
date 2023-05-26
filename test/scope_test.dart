@@ -21,8 +21,7 @@ class TestClass extends TestBaseClass {
   }
 }
 
-class TestClassShadowChangHandler extends TestBaseClass
-    with ShadowChangeHandlers {
+class TestClassShadowChangHandler extends TestBaseClass with ShadowChangeHandlers {
   final String? id;
   final void Function(bool isShadowed, Object shadowIngObject) onShadowChange;
 
@@ -124,8 +123,7 @@ void main() {
 
     getIt.pushNewScope();
 
-    final testClassShadowChangHandlerInstance =
-        TestClassShadowChangHandler((shadowState, shadow) {}, 'Scope 2');
+    final testClassShadowChangHandlerInstance = TestClassShadowChangHandler((shadowState, shadow) {}, 'Scope 2');
     getIt.registerSingleton<TestClassShadowChangHandler>(
       testClassShadowChangHandlerInstance,
     );
@@ -158,8 +156,7 @@ void main() {
 
     getIt.pushNewScope();
 
-    final testClassShadowChangHandlerInstance =
-        TestClassShadowChangHandler((shadowState, shadow) {}, 'Scope 2');
+    final testClassShadowChangHandlerInstance = TestClassShadowChangHandler((shadowState, shadow) {}, 'Scope 2');
     getIt.registerSingleton<TestClassShadowChangHandler>(
       testClassShadowChangHandlerInstance,
     );
@@ -173,9 +170,7 @@ void main() {
     expect(isShadowed, false);
     expect(shadowingObject, testClassShadowChangHandlerInstance);
   });
-  test(
-      'register lazySingleton in two scopes with ShadowChangeHandlers and scopeChangedHandler',
-      () async {
+  test('register lazySingleton in two scopes with ShadowChangeHandlers and scopeChangedHandler', () async {
     final getIt = GetIt.instance;
 
     int scopeChanged = 0;
@@ -196,8 +191,7 @@ void main() {
 
     getIt.pushNewScope();
 
-    var testClassShadowChangHandlerInstance =
-        TestClassShadowChangHandler((shadowState, shadow) {}, 'Scope 2');
+    var testClassShadowChangHandlerInstance = TestClassShadowChangHandler((shadowState, shadow) {}, 'Scope 2');
     getIt.registerSingleton<TestBaseClass>(
       testClassShadowChangHandlerInstance,
     );
@@ -211,8 +205,7 @@ void main() {
     final lazyInstance = getIt<TestBaseClass>();
 
     getIt.pushNewScope();
-    testClassShadowChangHandlerInstance =
-        TestClassShadowChangHandler((shadowState, shadow) {}, 'Scope 2');
+    testClassShadowChangHandlerInstance = TestClassShadowChangHandler((shadowState, shadow) {}, 'Scope 2');
 
     getIt.registerSingleton<TestBaseClass>(
       testClassShadowChangHandlerInstance,
@@ -229,8 +222,7 @@ void main() {
     expect(scopeChanged, 4);
   });
 
-  test('register AsyncSingleton in two scopes with ShadowChangeHandlers',
-      () async {
+  test('register AsyncSingleton in two scopes with ShadowChangeHandlers', () async {
     final getIt = GetIt.instance;
 
     bool isShadowed = false;
@@ -252,8 +244,7 @@ void main() {
     getIt.registerSingletonAsync<TestBaseClass>(
       () async {
         await Future.delayed(const Duration(milliseconds: 100));
-        final newInstance =
-            TestClassShadowChangHandler((shadowState, shadow) {}, '2, Scope');
+        final newInstance = TestClassShadowChangHandler((shadowState, shadow) {}, '2, Scope');
         shadowingInstance = newInstance;
         return newInstance;
       },
@@ -277,9 +268,7 @@ void main() {
     expect(shadowingObject, shadowingInstance);
   });
 
-  test(
-      'register SingletonWidthDependies in two scopes with ShadowChangeHandlers',
-      () async {
+  test('register SingletonWidthDependies in two scopes with ShadowChangeHandlers', () async {
     final getIt = GetIt.instance;
 
     bool isShadowed = false;
@@ -307,8 +296,7 @@ void main() {
     Object? shadowingInstance;
     getIt.registerSingletonWithDependencies<TestBaseClass>(
       () {
-        final newInstance =
-            TestClassShadowChangHandler((shadowState, shadow) {}, '2, Scope');
+        final newInstance = TestClassShadowChangHandler((shadowState, shadow) {}, '2, Scope');
         shadowingInstance = newInstance;
         return newInstance;
       },
@@ -519,6 +507,30 @@ void main() {
       () => getIt.dropScope('scope'),
       throwsA(const TypeMatcher<ArgumentError>()),
     );
+  });
+
+  test('isFinal', () async {
+    final getIt = GetIt.instance;
+
+    getIt.pushNewScope(
+      isFinal: true,
+      init: (getIt) {
+        getIt.registerSingleton(
+          TestClass(),
+          dispose: (x) => x.dispose(),
+        );
+      },
+    );
+
+    getIt.registerSingleton(TestClass2()); // gets into baseScope
+
+    getIt.popScope(); // it shouldn't affect the TestClass2
+
+    expect(
+      () => getIt.get<TestClass>(),
+      throwsA(const TypeMatcher<StateError>()),
+    );
+    expect(getIt.get<TestClass2>(), isNotNull);
   });
 
   test('resetScope', () async {
