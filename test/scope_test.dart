@@ -525,6 +525,7 @@ void main() {
     final getIt = GetIt.instance;
 
     getIt.pushNewScope(
+      scopeName: 'sealedScope',
       isFinal: true,
       init: (getIt) {
         getIt.registerSingleton(
@@ -536,7 +537,7 @@ void main() {
 
     getIt.registerSingleton(TestClass2()); // gets into baseScope
 
-    getIt.popScope(); // it shouldn't affect the TestClass2
+    await getIt.popScope(); // it shouldn't affect the TestClass2
 
     expect(
       () => getIt.get<TestClass>(),
