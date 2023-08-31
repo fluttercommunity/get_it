@@ -61,7 +61,7 @@ typedef FactoryFuncParamAsync<T, P1, P2> = Future<T> Function(
 );
 
 /// Data structure used to identify a dependency by type and instanceName
-class InitDependency extends Type {
+class InitDependency implements Type {
   final Type type;
   final String? instanceName;
 
