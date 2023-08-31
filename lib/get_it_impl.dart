@@ -431,7 +431,7 @@ class _GetItImplementation implements GetIt {
             instanceFactory.factoryType == _ServiceFactoryType.lazy,
         "You can't use get with an async Factory of ${instanceName ?? T.toString()}.",
       );
-      assert(
+      throwIfNot(
         instanceFactory.isReady,
         'You tried to access an instance of ${instanceName ?? T.toString()} that is not ready yet',
       );

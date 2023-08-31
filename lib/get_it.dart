@@ -157,9 +157,9 @@ abstract class GetIt {
   /// [type] if you want to get an instance by a Type object instead of a generic parameter.This should
   /// rarely be needed but can be useful if you have a runtime type and want to get an instance
   T get<T extends Object>({
-    String? instanceName,
     dynamic param1,
     dynamic param2,
+    String? instanceName,
     Type? type,
   });
 
