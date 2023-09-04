@@ -1,4 +1,4 @@
-// ignore_for_file: unnecessary_type_check, unused_local_variable
+// ignore_for_file: unnecessary_type_check, unused_local_variable, unreachable_from_main
 
 import 'package:get_it/get_it.dart';
 import 'package:test/test.dart';
