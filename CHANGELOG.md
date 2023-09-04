@@ -1,4 +1,5 @@
-[7.6.2] - 31.08.2023 fix linter error
+[7.6.3] -04.09.2023 push new version because pub didn't list this one
+[7.6.2] -31.08.2023 fix linter error
 [7.6.1] - 31.08.2023 version bump of dependencies and updates readme
 [7.6.0] - 09.05.2023
 * merged PR by lacopiroty https://github.com/fluttercommunity/get_it/pull/297 which now allows to access objects inside GetIt by runtime type too like
