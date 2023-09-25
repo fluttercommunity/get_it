@@ -5,7 +5,7 @@
 # get_it
 
 >Check out my new package [watch_it](https://github.com/escamoteur/watch_it) the state management addon to get_it
->There is now a discord support channel for my packages https://discord.gg/xzBwqF8r
+>There is now a discord support channel for my packages https://discord.gg/ZHYHYCM38h
 
 This is a simple **Service Locator** for Dart and Flutter projects with some additional goodies highly inspired by [Splat](https://github.com/reactiveui/splat). It can be used instead of `InheritedWidget` or `Provider` to access objects e.g. from your UI.
 
