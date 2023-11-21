@@ -309,7 +309,7 @@ class _Scope {
 
   Future<void> reset({required bool dispose}) async {
     if (dispose) {
-      for (final factory in allFactories) {
+      for (final factory in allFactories.reversed) {
         await factory.dispose();
       }
     }
