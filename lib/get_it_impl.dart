@@ -302,14 +302,15 @@ class _Scope {
   final String? name;
   final ScopeDisposeFunc? disposeFunc;
   bool isFinal = false;
-  final factoriesByName =
-      <String?, Map<Type, _ServiceFactory<Object, dynamic, dynamic>>>{};
+  // ignore: prefer_collection_literals
+  final factoriesByName = LinkedHashMap<String?,
+      LinkedHashMap<Type, _ServiceFactory<Object, dynamic, dynamic>>>();
 
   _Scope({this.name, this.disposeFunc});
 
   Future<void> reset({required bool dispose}) async {
     if (dispose) {
-      for (final factory in allFactories) {
+      for (final factory in allFactories.reversed) {
         await factory.dispose();
       }
     }
@@ -753,7 +754,7 @@ class _GetItImplementation implements GetIt {
     await resetScope(dispose: dispose);
   }
 
-  /// Clears all registered types of the current scope.
+  /// Clears all registered types of the current scope in the reverse order in which they were registered.
   @override
   Future<void> resetScope({bool dispose = true}) async {
     if (dispose) {
@@ -829,6 +830,7 @@ class _GetItImplementation implements GetIt {
   }
 
   /// Disposes all factories/Singletons that have been registered in this scope
+  /// (in the reverse order in which they were registered)
   /// and pops (destroys) the scope so that the previous scope gets active again.
   /// if you provided dispose functions on registration, they will be called.
   /// if you passed a dispose function when you pushed this scope it will be
@@ -875,7 +877,8 @@ class _GetItImplementation implements GetIt {
     return true;
   }
 
-  /// Disposes all registered factories and singletons in the provided scope,
+  /// Disposes all registered factories and singletons in the provided scope
+  /// (in the reverse order in which they were registered),
   /// then drops (destroys) the scope. If the dropped scope was the last one,
   /// the previous scope becomes active again.
   /// if you provided dispose functions on registration, they will be called.
@@ -985,7 +988,7 @@ class _GetItImplementation implements GetIt {
 
     factoriesByName.putIfAbsent(
       instanceName,
-      () => <Type, _ServiceFactory<Object, dynamic, dynamic>>{},
+      () => LinkedHashMap<Type, _ServiceFactory<Object, dynamic, dynamic>>(),
     );
     factoriesByName[instanceName]![T] = serviceFactory;
 

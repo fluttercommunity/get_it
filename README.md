@@ -198,7 +198,8 @@ void resetLazySingleton<T>({Object instance,
 ### Resetting GetIt completely
 
 ```Dart
-/// Clears all registered types. Handy when writing unit tests
+/// Disposes all registered types in the reverse order in which they were registered.
+/// Handy when writing unit tests or before quitting your application.
 /// If you provided dispose function when registering they will be called
 /// [dispose] if `false` it only resets without calling any dispose
 /// functions
@@ -245,7 +246,7 @@ Another example could be a shopping basket where you want to ensure that not a c
   /// If no scope with [name] exists, nothing is popped and `false` is returned
   Future<bool> popScopesTill(String name, {bool inclusive = true});
 
-  /// Disposes all registered factories and singletons in the provided scope,
+  /// Clears all registered factories and singletons in the provided scope,
   /// then destroys (drops) the scope. If the dropped scope was the last one,
   /// the previous scope becomes active again.
   /// if you provided dispose functions on registration, they will be called.
@@ -257,7 +258,7 @@ Another example could be a shopping basket where you want to ensure that not a c
   /// Tests if the scope by name [scopeName] is registered in GetIt
   bool hasScope(String scopeName);
 
-  /// Clears all registered types for the current scope
+  /// Clears all registered types for the current scope in the reverse order in which they were registered.
   /// If you provided dispose function when registering they will be called
   /// [dispose] if `false` it only resets without calling any dispose
   /// functions

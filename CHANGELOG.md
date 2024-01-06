@@ -1,9 +1,29 @@
-[7.6.5] - 25.09.2023 updated Discord link
-[7.6.4] -04.09.2023 fixed the throwing of a StateError that was previously thrown as String
-[7.6.3] -04.09.2023 push new version because pub didn't list this one
-[7.6.2] -31.08.2023 fix linter error
-[7.6.1] - 31.08.2023 version bump of dependencies and updates readme
-[7.6.0] - 09.05.2023
+## [7.6.6] - 04.01.2024
+
+* `getIt.reset, getIt.popScope, getIt.dropScope` now dispose services in the reverse order in which they were registered.
+
+## [7.6.5] - 25.09.2023
+
+* updated Discord link
+
+## [7.6.4] - 04.09.2023
+
+* fixed the throwing of a StateError that was previously thrown as String
+
+## [7.6.3] - 04.09.2023
+
+* push new version because pub didn't list this one
+
+## [7.6.2] - 31.08.2023
+
+* fix linter error
+
+## [7.6.1] - 31.08.2023
+
+* version bump of dependencies and updates readme
+
+## [7.6.0] - 09.05.2023
+
 * merged PR by lacopiroty https://github.com/fluttercommunity/get_it/pull/297 which now allows to access objects inside GetIt by runtime type too like
 ```Dart
     getIt.registerSingleton(TestClass());
@@ -16,7 +36,7 @@
 * fix for https://github.com/fluttercommunity/get_it/issues/300    
 
 
-[7.5.0] - 07.05.2023
+## [7.5.0] - 07.05.2023
 
 * new function `dropScope(scopeName)` which allows to remove and dispose any named scope even if it's not the top one. Great PR by @olexale https://github.com/fluttercommunity/get_it/pull/292 which fixes sort of race conditions if you create scopes just for the life time of a widget. 
 ## [7.4.1]
