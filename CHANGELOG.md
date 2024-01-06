@@ -1,6 +1,6 @@
 ## [7.6.6] - 04.01.2024
 
-* `getIt.reset, getIt.popScope, getIt.dropScope` now dispose services in the reverse order in which they were registered.
+* Thanks to PR by @bvoq `getIt.reset, getIt.popScope, getIt.dropScope` now dispose registered objects in the reverse order in which they were registered.
 
 ## [7.6.5] - 25.09.2023
 

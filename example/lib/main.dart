@@ -6,6 +6,8 @@ import 'package:get_it_example/app_model.dart';
 GetIt getIt = GetIt.instance;
 
 void main() {
+  /// I use signalReady here only to show how to use it. In 99% of the cases
+  /// you don't need it. Just use registerSingletonAsync
   getIt.registerSingleton<AppModel>(AppModelImplementation(),
       signalsReady: true);
 
@@ -42,7 +44,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     // Access the instance of the registered AppModel
-    // As we don't know for sure if AppModel is already ready we use getAsync
+    // As we don't know for sure if AppModel is already ready we use isReady
     getIt
         .isReady<AppModel>()
         .then((_) => getIt<AppModel>().addListener(update));
