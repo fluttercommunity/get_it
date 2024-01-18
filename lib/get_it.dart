@@ -384,6 +384,10 @@ abstract class GetIt {
   /// is still valid while it is executed
   /// [init] optional function to register Objects immediately after the new scope is
   /// pushed. This ensures that [onScopeChanged] will be called after their registration
+  /// if [isFinal] is set to true, you can't register any new objects in this scope after
+  /// this call. In Other words you have to register the objects for this scope inside
+  /// [init] if you set [isFinal] to true. This is useful if you want to ensure that
+  /// no new objects are registered in this scope by accident which could lead to race conditions
   void pushNewScope({
     void Function(GetIt getIt)? init,
     String? scopeName,

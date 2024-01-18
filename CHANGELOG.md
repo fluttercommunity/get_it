@@ -20,6 +20,7 @@
 
 ## [7.6.1] - 31.08.2023
 
+* added `isFinal` scope parameter which fixes https://github.com/fluttercommunity/get_it/issues/326
 * version bump of dependencies and updates readme
 
 ## [7.6.0] - 09.05.2023
