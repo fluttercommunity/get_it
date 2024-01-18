@@ -1,3 +1,7 @@
+## [7.6.7] - 18.01.204
+
+* merged PR by @subzero911  https://github.com/fluttercommunity/get_it/pull/330
+
 ## [7.6.6] - 04.01.2024
 
 * Thanks to PR by @bvoq `getIt.reset, getIt.popScope, getIt.dropScope` now dispose registered objects in the reverse order in which they were registered.

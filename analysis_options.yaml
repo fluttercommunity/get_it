@@ -6,8 +6,6 @@ include: package:lint/analysis_options_package.yaml
 linter:
   rules:
     - always_declare_return_types
-    - unawaited_futures
-    - discarded_futures
 
     # ------ Disable individual rules ----- #
     #                 ---                   #
