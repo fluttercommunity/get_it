@@ -46,6 +46,24 @@ class TestClassParam {
   TestClassParam({this.param1, this.param2});
 }
 
+class TestClassDisposableWithDependency with Disposable {
+  final TestClassDisposable testClass;
+  TestClassDisposableWithDependency(this.testClass) {
+    constructorCounter *=
+        3; // with this multiplication we can detect the order of the constructor.
+  }
+
+  void dispose() {
+    disposeCounter *=
+        3; // with this multiplication we can detect the order of disposal.
+  }
+
+  @override
+  void onDispose() {
+    dispose();
+  }
+}
+
 void main() {
   setUp(() async {
     // make sure the instance is cleared before each test
@@ -935,6 +953,100 @@ void main() {
     final Injector instance = GetIt.I<Injector>();
 
     expect(instance, const TypeMatcher<Injector>());
+  });
+
+  test('deregister in the same order of registering', () async {
+    final getIt = GetIt.instance;
+    disposeCounter = 0;
+    constructorCounter = 0;
+
+    getIt.registerSingleton<TestClassDisposable>(TestClassDisposable());
+
+    final instance1 = getIt.get<TestClassDisposable>();
+
+    expect(instance1 is TestClassDisposable, true);
+
+    expect(constructorCounter, 1);
+
+    getIt.registerSingleton<TestClassDisposableWithDependency>(
+      TestClassDisposableWithDependency(getIt.get<TestClassDisposable>()),
+    );
+
+    final instance2 = getIt.get<TestClassDisposableWithDependency>();
+    expect(constructorCounter, 3);
+    expect(instance1 == instance2.testClass, true);
+
+    await getIt.unregister<TestClassDisposable>();
+    expect(disposeCounter, 1);
+
+    final instance3 = getIt.get<TestClassDisposableWithDependency>();
+
+    expect(instance2.testClass == instance3.testClass, true);
+
+    await getIt.unregister<TestClassDisposableWithDependency>();
+    expect(disposeCounter, 3);
+  });
+
+  test('deregister in reverse order of registering', () async {
+    final getIt = GetIt.instance;
+    disposeCounter = 0;
+    constructorCounter = 0;
+
+    getIt.registerSingleton<TestClassDisposable>(TestClassDisposable());
+
+    final instance1 = getIt.get<TestClassDisposable>();
+
+    expect(instance1 is TestClassDisposable, true);
+
+    expect(constructorCounter, 1);
+
+    getIt.registerSingleton<TestClassDisposableWithDependency>(
+      TestClassDisposableWithDependency(getIt.get<TestClassDisposable>()),
+    );
+
+    final instance2 = getIt.get<TestClassDisposableWithDependency>();
+    expect(constructorCounter, 3);
+    expect(instance1 == instance2.testClass, true);
+
+    await getIt.unregister<TestClassDisposableWithDependency>();
+    expect(disposeCounter, 0);
+
+    expect(
+      () => getIt<TestClassDisposableWithDependency>(),
+      throwsA(const TypeMatcher<StateError>()),
+    );
+
+    await getIt.unregister<TestClassDisposable>();
+    expect(disposeCounter, 1);
+  });
+
+  test('deregister in reverse order of registering using reset', () async {
+    final getIt = GetIt.instance;
+    disposeCounter = 0;
+    constructorCounter = 0;
+
+    getIt.registerSingleton<TestClassDisposable>(TestClassDisposable());
+
+    final instance1 = getIt.get<TestClassDisposable>();
+
+    expect(instance1 is TestClassDisposable, true);
+
+    expect(constructorCounter, 1);
+
+    getIt.registerSingleton<TestClassDisposableWithDependency>(
+      TestClassDisposableWithDependency(getIt.get<TestClassDisposable>()),
+    );
+
+    final instance2 = getIt.get<TestClassDisposableWithDependency>();
+    expect(constructorCounter, 3);
+    expect(instance1 == instance2.testClass, true);
+
+    await getIt.reset();
+    expect(
+      disposeCounter,
+      1,
+      reason: "getIt.reset() did not dispose in reverse order",
+    );
   });
 }
 

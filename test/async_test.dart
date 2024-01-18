@@ -1,4 +1,4 @@
-// ignore_for_file: unused_local_variable, unnecessary_type_check
+// ignore_for_file: unused_local_variable, unnecessary_type_check, unreachable_from_main, require_trailing_commas
 
 import 'package:get_it/get_it.dart';
 import 'package:test/test.dart';

@@ -4,6 +4,9 @@
 
 # get_it
 
+>Check out my new package [watch_it](https://github.com/escamoteur/watch_it) the state management addon to get_it
+>There is now a discord support channel for my packages https://discord.gg/ZHYHYCM38h
+
 This is a simple **Service Locator** for Dart and Flutter projects with some additional goodies highly inspired by [Splat](https://github.com/reactiveui/splat). It can be used instead of `InheritedWidget` or `Provider` to access objects e.g. from your UI.
 
 Typical usage:
@@ -11,7 +14,7 @@ Typical usage:
 - Accessing service objects like REST API clients or databases so that they easily can be mocked.
 - Accessing View/AppModels/Managers/BLoCs from Flutter Views
 
-> **V7.0 has some breaking changes** Please check the release notes to see what's new.
+
 
 ## Why GetIt
 
@@ -195,7 +198,8 @@ void resetLazySingleton<T>({Object instance,
 ### Resetting GetIt completely
 
 ```Dart
-/// Clears all registered types. Handy when writing unit tests
+/// Disposes all registered types in the reverse order in which they were registered.
+/// Handy when writing unit tests or before quitting your application.
 /// If you provided dispose function when registering they will be called
 /// [dispose] if `false` it only resets without calling any dispose
 /// functions
@@ -246,7 +250,7 @@ Another example could be a shopping basket where you want to ensure that not a c
   /// If no scope with [name] exists, nothing is popped and `false` is returned
   Future<bool> popScopesTill(String name, {bool inclusive = true});
 
-  /// Disposes all registered factories and singletons in the provided scope,
+  /// Clears all registered factories and singletons in the provided scope,
   /// then destroys (drops) the scope. If the dropped scope was the last one,
   /// the previous scope becomes active again.
   /// if you provided dispose functions on registration, they will be called.
@@ -258,7 +262,7 @@ Another example could be a shopping basket where you want to ensure that not a c
   /// Tests if the scope by name [scopeName] is registered in GetIt
   bool hasScope(String scopeName);
 
-  /// Clears all registered types for the current scope
+  /// Clears all registered types for the current scope in the reverse order in which they were registered.
   /// If you provided dispose function when registering they will be called
   /// [dispose] if `false` it only resets without calling any dispose
   /// functions

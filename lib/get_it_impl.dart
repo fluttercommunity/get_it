@@ -302,14 +302,15 @@ class _Scope {
   final String? name;
   final ScopeDisposeFunc? disposeFunc;
   bool isFinal = false;
-  final factoriesByName =
-      <String?, Map<Type, _ServiceFactory<Object, dynamic, dynamic>>>{};
+  // ignore: prefer_collection_literals
+  final factoriesByName = LinkedHashMap<String?,
+      LinkedHashMap<Type, _ServiceFactory<Object, dynamic, dynamic>>>();
 
   _Scope({this.name, this.disposeFunc});
 
   Future<void> reset({required bool dispose}) async {
     if (dispose) {
-      for (final factory in allFactories) {
+      for (final factory in allFactories.reversed) {
         await factory.dispose();
       }
     }
@@ -431,9 +432,11 @@ class _GetItImplementation implements GetIt {
             instanceFactory.factoryType == _ServiceFactoryType.lazy,
         "You can't use get with an async Factory of ${instanceName ?? T.toString()}.",
       );
-      assert(
+      throwIfNot(
         instanceFactory.isReady,
-        'You tried to access an instance of ${instanceName ?? T.toString()} that is not ready yet',
+        StateError(
+          'You tried to access an instance of ${instanceName ?? T.toString()} that is not ready yet',
+        ),
       );
       instance = instanceFactory.instance!;
     } else {
@@ -751,7 +754,7 @@ class _GetItImplementation implements GetIt {
     await resetScope(dispose: dispose);
   }
 
-  /// Clears all registered types of the current scope.
+  /// Clears all registered types of the current scope in the reverse order in which they were registered.
   @override
   Future<void> resetScope({bool dispose = true}) async {
     if (dispose) {
@@ -827,6 +830,7 @@ class _GetItImplementation implements GetIt {
   }
 
   /// Disposes all factories/Singletons that have been registered in this scope
+  /// (in the reverse order in which they were registered)
   /// and pops (destroys) the scope so that the previous scope gets active again.
   /// if you provided dispose functions on registration, they will be called.
   /// if you passed a dispose function when you pushed this scope it will be
@@ -840,6 +844,9 @@ class _GetItImplementation implements GetIt {
         "GetIt: You are already on the base scope. you can't pop this one",
       ),
     );
+    // make sure that nothing new can be registered in this scope
+    // while the scopes async dispose functions are running
+    _currentScope.isFinal = true;
     await _currentScope.dispose();
     await _currentScope.reset(dispose: true);
     _scopes.removeLast();
@@ -870,7 +877,8 @@ class _GetItImplementation implements GetIt {
     return true;
   }
 
-  /// Disposes all registered factories and singletons in the provided scope,
+  /// Disposes all registered factories and singletons in the provided scope
+  /// (in the reverse order in which they were registered),
   /// then drops (destroys) the scope. If the dropped scope was the last one,
   /// the previous scope becomes active again.
   /// if you provided dispose functions on registration, they will be called.
@@ -892,6 +900,9 @@ class _GetItImplementation implements GetIt {
       (s) => s.name == scopeName,
       orElse: () => throw ArgumentError("Scope $scopeName not found"),
     );
+    // make sure that nothing new can be registered in this scope
+    // while the scopes async dispose functions are running
+    scope.isFinal = true;
     await scope.dispose();
     await scope.reset(dispose: true);
     _scopes.remove(scope);
@@ -977,7 +988,7 @@ class _GetItImplementation implements GetIt {
 
     factoriesByName.putIfAbsent(
       instanceName,
-      () => <Type, _ServiceFactory<Object, dynamic, dynamic>>{},
+      () => LinkedHashMap<Type, _ServiceFactory<Object, dynamic, dynamic>>(),
     );
     factoriesByName[instanceName]![T] = serviceFactory;
 
