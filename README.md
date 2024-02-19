@@ -40,9 +40,10 @@ GetIt is:
 - Easy to learn/use
 - Doesn't clutter your UI tree with special Widgets to access your data like, Provider or Redux does.
 
-### The get_it_mixin
+### watch_it
 
-GetIt isn't a state management solution! It's a locator for your objects so you need some other way to notify your UI about changes like `Streams` or `ValueNotifiers`. But together with the [get_it_mixin](https://pub.dev/packages/get_it_mixin), it gets a full-featured easy state management solution that integrates with the Objects registered in get_it.
+GetIt isn't a state management solution! It's a locator for your objects so you need some other way to notify your UI about changes like `Streams` or `ValueNotifiers`. But together with my package [watch_it](https://pub.dev/packages/watch_it), it gets a full-featured easy to use state management solution that integrates with the Objects registered in get_it.
+
 
 ## Getting Started
 
