@@ -1,3 +1,5 @@
+// ignore_for_file: require_trailing_commas
+
 part of 'get_it.dart';
 
 /// Two handy functions that help me to express my intention clearer and shorter to check for runtime
@@ -46,6 +48,7 @@ class _ServiceFactory<T extends Object, P1, P2> {
   final _ServiceFactoryType factoryType;
 
   final _GetItImplementation _getItInstance;
+  final _TypeRegistration registeredIn;
   final _Scope registrationScope;
 
   late final Type param1Type;
@@ -107,6 +110,7 @@ class _ServiceFactory<T extends Object, P1, P2> {
     this.instanceName,
     required this.shouldSignalReady,
     required this.registrationScope,
+    required this.registeredIn,
     this.disposeFunction,
   }) : assert(
             !(disposeFunction != null &&
@@ -298,13 +302,36 @@ class _ServiceFactory<T extends Object, P1, P2> {
   }
 }
 
+class _TypeRegistration<T extends Object> {
+  final namedFactories =
+      // ignore: prefer_collection_literals
+      LinkedHashMap<String, _ServiceFactory<T, dynamic, dynamic>>();
+  final factories = <_ServiceFactory<T, dynamic, dynamic>>[];
+
+  void dispose() {
+    for (final factory in factories.reversed) {
+      factory.dispose();
+    }
+    factories.clear();
+    for (final factory in namedFactories.values.toList().reversed) {
+      factory.dispose();
+    }
+    namedFactories.clear();
+  }
+
+  _ServiceFactory<T, dynamic, dynamic>? getFactory(String? name) {
+    return name != null ? namedFactories[name] : factories.firstOrNull;
+  }
+}
+
 class _Scope {
   final String? name;
   final ScopeDisposeFunc? disposeFunc;
   bool isFinal = false;
   // ignore: prefer_collection_literals
-  final factoriesByName = LinkedHashMap<String?,
-      LinkedHashMap<Type, _ServiceFactory<Object, dynamic, dynamic>>>();
+  final typeRegistrations =
+      // ignore: prefer_collection_literals
+      LinkedHashMap<Type, _TypeRegistration>();
 
   _Scope({this.name, this.disposeFunc});
 
@@ -314,11 +341,14 @@ class _Scope {
         await factory.dispose();
       }
     }
-    factoriesByName.clear();
+    typeRegistrations.clear();
   }
 
-  List<_ServiceFactory> get allFactories => factoriesByName.values
-      .fold<List<_ServiceFactory>>([], (sum, x) => sum..addAll(x.values));
+  List<_ServiceFactory> get allFactories =>
+      typeRegistrations.values.fold<List<_ServiceFactory>>(
+          [],
+          (sum, x) =>
+              sum..addAll([...x.factories, ...x.namedFactories.values]));
 
   Future<void> dispose() async {
     await disposeFunc?.call();
@@ -366,20 +396,13 @@ class _GetItImplementation implements GetIt {
 
     int scopeLevel = _scopes.length - (lookInScopeBelow ? 2 : 1);
 
+    final lookUpType = type ?? T;
     while (instanceFactory == null && scopeLevel >= 0) {
-      final factoryByTypes = _scopes[scopeLevel].factoriesByName[instanceName];
-      if (type == null) {
-        instanceFactory = factoryByTypes != null
-            ? factoryByTypes[T] as _ServiceFactory<T, dynamic, dynamic>?
-            : null;
-      } else {
-        /// in most cases we can rely on the generic type T because it is passed
-        /// in by callers. In case of dependent types this does not work as these types
-        /// are dynamic
-        instanceFactory = factoryByTypes != null
-            ? factoryByTypes[type] as _ServiceFactory<T, dynamic, dynamic>?
-            : null;
-      }
+      final _TypeRegistration? typeRegistration =
+          _scopes[scopeLevel].typeRegistrations[lookUpType];
+
+      instanceFactory = typeRegistration?.getFactory(instanceName)
+          as _ServiceFactory<T, dynamic, dynamic>?;
       scopeLevel--;
     }
 
@@ -424,7 +447,7 @@ class _GetItImplementation implements GetIt {
         'if the receiving variable is of the wrong type, or you passed a gerenic type and a type parameter');
     final instanceFactory = _findFactoryByNameAndType<T>(instanceName, type);
 
-    Object instance = Object; //late
+    final Object instance;
     if (instanceFactory.isAsync || instanceFactory.pendingResult != null) {
       /// We use an assert here instead of an `if..throw` for performance reasons
       assert(
@@ -451,6 +474,57 @@ class _GetItImplementation implements GetIt {
     );
 
     return instance as T;
+  }
+
+  @override
+  Iterable<T> getAll<T extends Object>({
+    dynamic param1,
+    dynamic param2,
+    Type? type,
+  }) {
+    assert(
+        type == null || type is T,
+        'The type you passed is not a $T. This can happen '
+        'if the receiving variable is of the wrong type, or you passed a generic type and a type parameter');
+    final _TypeRegistration<T>? typeRegistration =
+        _currentScope.typeRegistrations[T] as _TypeRegistration<T>?;
+
+    throwIf(
+      typeRegistration == null,
+      StateError('GetIt: No Objects/factories with '
+          'type $T are not registered inside GetIt. '
+          '\n(Did you accidentally do GetIt sl=GetIt.instance(); instead of GetIt sl=GetIt.instance;'
+          '\nDid you forget to register it?)'),
+    );
+
+    final factories = [
+      ...typeRegistration!.factories,
+      ...typeRegistration.namedFactories.values
+    ];
+    final instances = <T>[];
+    for (final instanceFactory in factories) {
+      final Object instance;
+      if (instanceFactory.isAsync || instanceFactory.pendingResult != null) {
+        /// We use an assert here instead of an `if..throw` for performance reasons
+        assert(
+          instanceFactory.factoryType == _ServiceFactoryType.constant ||
+              instanceFactory.factoryType == _ServiceFactoryType.lazy,
+          "You can't use getAll with an async Factory of $T.",
+        );
+        throwIfNot(
+          instanceFactory.isReady,
+          StateError(
+            'You tried to access an instance of $T that is not ready yet',
+          ),
+        );
+        instance = instanceFactory.instance!;
+      } else {
+        instance = instanceFactory.getObject(param1, param2);
+      }
+
+      instances.add(instance as T);
+    }
+    return instances;
   }
 
   /// Callable class so that you can write `GetIt.instance<MyType>` instead of
@@ -947,17 +1021,28 @@ class _GetItImplementation implements GetIt {
       'The baseScope should always be open. If you see this error please file an issue at',
     );
 
-    final factoriesByName = registrationScope.factoriesByName;
-    throwIf(
-      factoriesByName.containsKey(instanceName) &&
-          factoriesByName[instanceName]!.containsKey(T) &&
-          !allowReassignment,
-      ArgumentError(
-        // ignore: missing_whitespace_between_adjacent_strings
-        'Object/factory with ${instanceName != null ? 'with name $instanceName and ' : ''}'
-        'type $T is already registered inside GetIt. ',
-      ),
-    );
+    final existingTypeRegistration = registrationScope.typeRegistrations[T];
+    // if we already a registration for this type we have to check if its a valid re-registration
+    if (existingTypeRegistration != null) {
+      if (instanceName != null) {
+        throwIf(
+          existingTypeRegistration.namedFactories.containsKey(instanceName) &&
+              !allowReassignment,
+          ArgumentError(
+            'Object/factory with name $instanceName and '
+            'type $T is already registered inside GetIt. ',
+          ),
+        );
+      } else {
+        if (existingTypeRegistration.factories.isNotEmpty) {
+          throwIfNot(
+            allowReassignment ||
+                GetIt.allowRegisterMultipleImplementationsOfoneType,
+            ArgumentError('Type $T is already registered inside GetIt. '),
+          );
+        }
+      }
+    }
 
     if (instance != null) {
       /// check if we are shadowing an existing Object
@@ -971,9 +1056,13 @@ class _GetItImplementation implements GetIt {
       }
     }
 
+    final typeRegistration = registrationScope.typeRegistrations
+        .putIfAbsent(T, () => _TypeRegistration());
+
     final serviceFactory = _ServiceFactory<T, P1, P2>(
       this,
       type,
+      registeredIn: typeRegistration,
       registrationScope: registrationScope,
       creationFunction: factoryFunc,
       creationFunctionParam: factoryFuncParam,
@@ -986,11 +1075,19 @@ class _GetItImplementation implements GetIt {
       disposeFunction: disposeFunc,
     );
 
-    factoriesByName.putIfAbsent(
-      instanceName,
-      () => LinkedHashMap<Type, _ServiceFactory<Object, dynamic, dynamic>>(),
-    );
-    factoriesByName[instanceName]![T] = serviceFactory;
+    if (instanceName != null) {
+      typeRegistration.namedFactories[instanceName] = serviceFactory;
+    } else {
+      if (GetIt.allowRegisterMultipleImplementationsOfoneType) {
+        typeRegistration.factories.add(serviceFactory);
+      } else {
+        if (typeRegistration.factories.isNotEmpty) {
+          typeRegistration.factories[0] = serviceFactory;
+        } else {
+          typeRegistration.factories.add(serviceFactory);
+        }
+      }
+    }
 
     // simple Singletons get are already created, nothing else has to be done
     if (type == _ServiceFactoryType.constant &&
@@ -1167,9 +1264,17 @@ class _GetItImplementation implements GetIt {
       ),
     );
 
-    factoryToRemove
-        .registrationScope.factoriesByName[factoryToRemove.instanceName]!
-        .remove(factoryToRemove.registrationType);
+    if (instanceName != null) {
+      factoryToRemove.registeredIn.namedFactories.remove(instanceName);
+    } else {
+      final factories = factoryToRemove.registeredIn.factories;
+      if (factories.contains(factoryToRemove)) {
+        factories.remove(factoryToRemove);
+        if (factories.isEmpty) {
+          factoryToRemove.registrationScope.typeRegistrations.remove(T);
+        }
+      }
+    }
 
     if (factoryToRemove.instance != null) {
       if (disposingFunction != null) {
