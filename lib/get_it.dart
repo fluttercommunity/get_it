@@ -151,6 +151,11 @@ abstract class GetIt {
   /// If you really need to you can disable the asserts by setting[allowReassignment]= true
   bool allowReassignment = false;
 
+  /// Till V7.6.7 GetIt didn't allow to register multiple instances of the same type.
+  /// if you want to register multiple instances of the same type you can enable this
+  /// and use `getAll()` to retrieve all instances of that parent type
+  static bool allowRegisterMultipleImplementationsOfoneType = false;
+
   /// retrieves or creates an instance of a registered type [T] depending on the registration
   /// function used for this type or based on a name.
   /// for factories you can pass up to 2 parameters [param1,param2] they have to match the types
@@ -172,6 +177,12 @@ abstract class GetIt {
   /// rarely be needed but can be useful if you have a runtime type and want to get an instance
   Future<T> getAsync<T extends Object>({
     String? instanceName,
+    dynamic param1,
+    dynamic param2,
+    Type? type,
+  });
+
+  Iterable<T> getAll<T extends Object>({
     dynamic param1,
     dynamic param2,
     Type? type,
