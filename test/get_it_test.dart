@@ -402,6 +402,31 @@ void main() {
     GetIt.I.reset();
   });
 
+  test('get all registered instances of the same type', () {
+    final getIt = GetIt.instance;
+    GetIt.allowRegisterMultipleImplementationsOfoneType = true;
+    constructorCounter = 0;
+
+    getIt.registerLazySingleton<TestBaseClass>(
+      () => TestClass(),
+    );
+    getIt.registerLazySingleton<TestBaseClass>(
+      () => TestClass(),
+    );
+
+    expect(constructorCounter, 0);
+
+    final Iterable<TestBaseClass> instances = getIt.getAll<TestBaseClass>();
+
+    expect(instances.length, 2);
+    expect(instances.first is TestClass, true);
+    expect(instances.last is TestClass, true);
+    expect(constructorCounter, 2);
+
+    GetIt.I.reset();
+    GetIt.allowRegisterMultipleImplementationsOfoneType = false;
+  });
+
   test('reset lazy Singleton when the disposing function is a future',
       () async {
     final getIt = GetIt.instance;

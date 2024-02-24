@@ -1057,7 +1057,7 @@ class _GetItImplementation implements GetIt {
     }
 
     final typeRegistration = registrationScope.typeRegistrations
-        .putIfAbsent(T, () => _TypeRegistration());
+        .putIfAbsent(T, () => _TypeRegistration<T>());
 
     final serviceFactory = _ServiceFactory<T, P1, P2>(
       this,
