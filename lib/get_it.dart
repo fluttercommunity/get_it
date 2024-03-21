@@ -151,6 +151,10 @@ abstract class GetIt {
   /// If you really need to you can disable the asserts by setting[allowReassignment]= true
   bool allowReassignment = false;
 
+  /// By default it's throws error when [allowReassignment]= false. and trying to register same type
+  /// If you really need, you can disable the Asserts / Errror by setting[ignoreReassignmentError]= true
+  bool ignoreReassignmentError = false;
+
   /// Till V7.6.7 GetIt didn't allow to register multiple instances of the same type.
   /// if you want to register multiple instances of the same type you can enable this
   /// and use `getAll()` to retrieve all instances of that parent type
