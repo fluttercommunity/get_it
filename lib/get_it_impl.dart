@@ -375,6 +375,12 @@ class _GetItImplementation implements GetIt {
   @override
   bool allowReassignment = false;
 
+  /// By default it's throws error when [allowReassignment]= false. and trying to register same type
+  /// If you really need, you can disable the Asserts / Errror by setting[skipDoubleRegistration]= true
+  @visibleForTesting
+  @override
+  bool skipDoubleRegistration = false;
+
   /// Is used by several other functions to retrieve the correct [_ServiceFactory]
   _ServiceFactory<T, dynamic, dynamic>?
       _findFirstFactoryByNameAndTypeOrNull<T extends Object>(
@@ -1027,19 +1033,31 @@ class _GetItImplementation implements GetIt {
       if (instanceName != null) {
         throwIf(
           existingTypeRegistration.namedFactories.containsKey(instanceName) &&
-              !allowReassignment,
+              !allowReassignment &&
+              !skipDoubleRegistration,
           ArgumentError(
             'Object/factory with name $instanceName and '
             'type $T is already registered inside GetIt. ',
           ),
         );
+
+        /// skip double registration
+        if (skipDoubleRegistration && !allowReassignment) {
+          return;
+        }
       } else {
         if (existingTypeRegistration.factories.isNotEmpty) {
           throwIfNot(
             allowReassignment ||
-                GetIt.allowRegisterMultipleImplementationsOfoneType,
+                GetIt.allowRegisterMultipleImplementationsOfoneType ||
+                skipDoubleRegistration,
             ArgumentError('Type $T is already registered inside GetIt. '),
           );
+
+          /// skip double registration
+          if (skipDoubleRegistration && !allowReassignment) {
+            return;
+          }
         }
       }
     }
