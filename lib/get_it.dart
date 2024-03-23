@@ -7,6 +7,7 @@ import 'dart:collection';
 
 import 'package:async/async.dart';
 import 'package:collection/collection.dart' show IterableExtension;
+import 'package:meta/meta.dart';
 
 part 'get_it_impl.dart';
 
@@ -152,8 +153,9 @@ abstract class GetIt {
   bool allowReassignment = false;
 
   /// By default it's throws error when [allowReassignment]= false. and trying to register same type
-  /// If you really need, you can disable the Asserts / Errror by setting[ignoreReassignmentError]= true
-  bool ignoreReassignmentError = false;
+  /// If you really need, you can disable the Asserts / Errror by setting[skipDoubleRegistration]= true
+  @visibleForTesting
+  bool skipDoubleRegistration = false;
 
   /// Till V7.6.7 GetIt didn't allow to register multiple instances of the same type.
   /// if you want to register multiple instances of the same type you can enable this

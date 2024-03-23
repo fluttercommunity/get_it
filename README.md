@@ -154,7 +154,12 @@ You have to pass a factory function `func` that returns an instance of an implem
 ### Overwriting registrations
 
 If you try to register a type more than once you will fail with an assertion in debug mode because normally this is not needed and probably a bug.
-If you really have to overwrite a registration, then you can by setting the property `allowReassignment==true`.
+If you really have to overwrite a registration, then you can by setting the property `allowReassignment = true`.
+
+### Skip Double registrations
+
+If you try to register a type more than once and when `allowReassignment = false`  you will fail with an assertion in debug mode.
+If you want to just skip this double registration silently without an error, then you can by setting the property `skipDoubleRegistration = true`.
 
 ### Testing if a Singleton is already registered
 

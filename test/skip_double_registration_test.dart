@@ -5,7 +5,7 @@ void main() {
   test(' Throws ArgumentError ', () async {
     final getIt = GetIt.instance;
     getIt.allowReassignment = false;
-    getIt.ignoreReassignmentError = false;
+    getIt.skipDoubleRegistration = false;
     getIt.reset();
     getIt.registerSingleton<DataStore>(MockDataStore());
 
@@ -19,18 +19,18 @@ void main() {
     final getIt = GetIt.instance;
     getIt.reset();
     getIt.allowReassignment = true;
-    getIt.ignoreReassignmentError = false;
+    getIt.skipDoubleRegistration = false;
     getIt.registerSingleton<DataStore>(MockDataStore());
     getIt.registerSingleton<DataStore>(RemoteDataStore());
 
     expect(getIt<DataStore>(), isA<RemoteDataStore>());
   });
 
-  test(' Ignores ReassignmentError ', () async {
+  test(' Ignores Double registration error ', () async {
     final getIt = GetIt.instance;
     getIt.reset();
     getIt.allowReassignment = false;
-    getIt.ignoreReassignmentError = true;
+    getIt.skipDoubleRegistration = true;
     getIt.registerSingleton<DataStore>(MockDataStore());
     final remoteDataStore = RemoteDataStore();
     getIt.registerSingleton<DataStore>(remoteDataStore);
@@ -38,11 +38,11 @@ void main() {
     expect(getIt<DataStore>(), isA<MockDataStore>());
   });
 
-  test(' does not care about [ignoreReassignmentError] varibale   ', () async {
+  test(' does not care about [skipDoubleRegistration] varibale   ', () async {
     final getIt = GetIt.instance;
     getIt.reset();
     getIt.allowReassignment = true;
-    getIt.ignoreReassignmentError = true;
+    getIt.skipDoubleRegistration = true;
     getIt.registerSingleton<DataStore>(MockDataStore());
     getIt.registerSingleton<DataStore>(RemoteDataStore());
 
