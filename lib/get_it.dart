@@ -160,7 +160,10 @@ abstract class GetIt {
   /// Till V7.6.7 GetIt didn't allow to register multiple instances of the same type.
   /// if you want to register multiple instances of the same type you can enable this
   /// and use `getAll()` to retrieve all instances of that parent type
-  static bool allowRegisterMultipleImplementationsOfoneType = false;
+  void enableRegisteringMultipleInstancesOfOneType();
+
+  @visibleForTesting
+  bool allowRegisterMultipleImplementationsOfoneType = false;
 
   /// retrieves or creates an instance of a registered type [T] depending on the registration
   /// function used for this type or based on a name.

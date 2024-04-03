@@ -404,7 +404,7 @@ void main() {
 
   test('get all registered instances of the same type', () {
     final getIt = GetIt.instance;
-    GetIt.allowRegisterMultipleImplementationsOfoneType = true;
+    getIt.enableRegisteringMultipleInstancesOfOneType();
     constructorCounter = 0;
 
     getIt.registerLazySingleton<TestBaseClass>(
@@ -424,7 +424,7 @@ void main() {
     expect(constructorCounter, 2);
 
     GetIt.I.reset();
-    GetIt.allowRegisterMultipleImplementationsOfoneType = false;
+    getIt.allowRegisterMultipleImplementationsOfoneType = false;
   });
 
   test('reset lazy Singleton when the disposing function is a future',

@@ -380,6 +380,13 @@ class _GetItImplementation implements GetIt {
   @visibleForTesting
   @override
   bool skipDoubleRegistration = false;
+  @override
+  void enableRegisteringMultipleInstancesOfOneType() {
+    allowRegisterMultipleImplementationsOfoneType = true;
+  }
+
+  @override
+  bool allowRegisterMultipleImplementationsOfoneType = false;
 
   /// Is used by several other functions to retrieve the correct [_ServiceFactory]
   _ServiceFactory<T, dynamic, dynamic>?
@@ -1049,7 +1056,7 @@ class _GetItImplementation implements GetIt {
         if (existingTypeRegistration.factories.isNotEmpty) {
           throwIfNot(
             allowReassignment ||
-                GetIt.allowRegisterMultipleImplementationsOfoneType ||
+                allowRegisterMultipleImplementationsOfoneType ||
                 skipDoubleRegistration,
             ArgumentError('Type $T is already registered inside GetIt. '),
           );
@@ -1096,7 +1103,7 @@ class _GetItImplementation implements GetIt {
     if (instanceName != null) {
       typeRegistration.namedFactories[instanceName] = serviceFactory;
     } else {
-      if (GetIt.allowRegisterMultipleImplementationsOfoneType) {
+      if (allowRegisterMultipleImplementationsOfoneType) {
         typeRegistration.factories.add(serviceFactory);
       } else {
         if (typeRegistration.factories.isNotEmpty) {

@@ -1,4 +1,7 @@
-## [7.6.7] - 18.01.204
+## [7.6.8] - 03.04.2024
+* merged PR by @venkata-reddy-dev https://github.com/fluttercommunity/get_it/pull/356 adding new `skipDoubleRegistration` flag for testing
+
+## [7.6.7] - 18.01.2024
 
 * merged PR by @subzero911  https://github.com/fluttercommunity/get_it/pull/330
 
