@@ -1,3 +1,6 @@
+## [7.6.9] - 11.04.2024
+* fig for bug that was introduced in 7.6.8 https://github.com/fluttercommunity/get_it/issues/358
+
 ## [7.6.8] - 03.04.2024
 * merged PR by @venkata-reddy-dev https://github.com/fluttercommunity/get_it/pull/356 adding new `skipDoubleRegistration` flag for testing
 

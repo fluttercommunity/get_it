@@ -319,6 +319,8 @@ class _TypeRegistration<T extends Object> {
     namedFactories.clear();
   }
 
+  bool get isEmpty => factories.isEmpty && namedFactories.isEmpty;
+
   _ServiceFactory<T, dynamic, dynamic>? getFactory(String? name) {
     return name != null ? namedFactories[name] : factories.firstOrNull;
   }
@@ -1289,16 +1291,15 @@ class _GetItImplementation implements GetIt {
       ),
     );
 
+    final typeRegistration = factoryToRemove.registeredIn;
+
     if (instanceName != null) {
-      factoryToRemove.registeredIn.namedFactories.remove(instanceName);
+      typeRegistration.namedFactories.remove(instanceName);
     } else {
-      final factories = factoryToRemove.registeredIn.factories;
-      if (factories.contains(factoryToRemove)) {
-        factories.remove(factoryToRemove);
-        if (factories.isEmpty) {
-          factoryToRemove.registrationScope.typeRegistrations.remove(T);
-        }
-      }
+      typeRegistration.factories.remove(factoryToRemove);
+    }
+    if (typeRegistration.isEmpty) {
+      factoryToRemove.registrationScope.typeRegistrations.remove(T);
     }
 
     if (factoryToRemove.instance != null) {
