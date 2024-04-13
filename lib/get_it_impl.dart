@@ -578,6 +578,44 @@ class _GetItImplementation implements GetIt {
     return factoryToGet.getObjectAsync<T>(param1, param2);
   }
 
+  @override
+  Future<Iterable<T>> getAllAsync<T extends Object>({
+    dynamic param1,
+    dynamic param2,
+    Type? type,
+  }) async {
+    assert(
+    type == null || type is T,
+    'The type you passed is not a $T. This can happen '
+        'if the receiving variable is of the wrong type, or you passed a generic type and a type parameter');
+    final _TypeRegistration<T>? typeRegistration =
+    _currentScope.typeRegistrations[T] as _TypeRegistration<T>?;
+
+    throwIf(
+      typeRegistration == null,
+      StateError('GetIt: No Objects/factories with '
+          'type $T are not registered inside GetIt. '
+          '\n(Did you accidentally do GetIt sl=GetIt.instance(); instead of GetIt sl=GetIt.instance;'
+          '\nDid you forget to register it?)'),
+    );
+
+    final factories = [
+      ...typeRegistration!.factories,
+      ...typeRegistration.namedFactories.values
+    ];
+    final instances = <T>[];
+    for (final instanceFactory in factories) {
+      final Object instance;
+      if (instanceFactory.isAsync || instanceFactory.pendingResult != null) {
+        instance = await instanceFactory.getObjectAsync(param1, param2);
+      } else {
+        instance = instanceFactory.getObject(param1, param2);
+      }
+      instances.add(instance as T);
+    }
+    return instances;
+  }
+
   /// registers a type so that a new instance will be created on each call of [get] on that type
   /// [T] type to register
   /// [factoryFunc] factory function for this type

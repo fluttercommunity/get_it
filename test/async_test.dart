@@ -165,6 +165,32 @@ void main() {
     );
   });
 
+  test('get all registered instances of the same type', () async {
+    final getIt = GetIt.instance;
+    getIt.enableRegisteringMultipleInstancesOfOneType();
+    constructorCounter = 0;
+
+    getIt.registerLazySingleton<TestBaseClass>(
+      () => TestClass2(internalCompletion: false, getIt: getIt),
+    );
+    getIt.registerLazySingletonAsync<TestBaseClass>(
+      () async => TestClass3(internalCompletion: false, getIt: getIt),
+    );
+
+    expect(constructorCounter, 0);
+
+    final Iterable<TestBaseClass> instances = await getIt.getAllAsync<TestBaseClass>();
+
+    expect(instances.length, 2);
+    expect(instances.first is TestClass, true);
+    expect(instances.last is TestClass, true);
+    expect(constructorCounter, 2);
+
+    GetIt.I.reset();
+    getIt.allowRegisterMultipleImplementationsOfoneType = false;
+  });
+
+
   test(
       'signalReady will throw if any Singletons that has signalsReady==true '
       'have not signaled completion', () async {
