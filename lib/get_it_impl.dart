@@ -585,11 +585,11 @@ class _GetItImplementation implements GetIt {
     Type? type,
   }) async {
     assert(
-    type == null || type is T,
-    'The type you passed is not a $T. This can happen '
+        type == null || type is T,
+        'The type you passed is not a $T. This can happen '
         'if the receiving variable is of the wrong type, or you passed a generic type and a type parameter');
     final _TypeRegistration<T>? typeRegistration =
-    _currentScope.typeRegistrations[T] as _TypeRegistration<T>?;
+        _currentScope.typeRegistrations[T] as _TypeRegistration<T>?;
 
     throwIf(
       typeRegistration == null,
