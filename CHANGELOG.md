@@ -1,3 +1,4 @@
+## [7.7.0] - 15.04.2024 thanks to the PR by @kasefuchs https://github.com/fluttercommunity/get_it/pull/361 `getAll` is now available in an async version too.
 ## [7.6.9] - 11.04.2024
 * fig for bug that was introduced in 7.6.8 https://github.com/fluttercommunity/get_it/issues/358
 
