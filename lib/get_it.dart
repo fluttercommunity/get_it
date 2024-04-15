@@ -197,6 +197,12 @@ abstract class GetIt {
     Type? type,
   });
 
+  Future<Iterable<T>> getAllAsync<T extends Object>({
+    dynamic param1,
+    dynamic param2,
+    Type? type,
+  });
+
   /// Callable class so that you can write `GetIt.instance<MyType>` instead of
   /// `GetIt.instance.get<MyType>`
   T call<T extends Object>({
