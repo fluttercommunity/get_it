@@ -151,6 +151,40 @@ void registerLazySingleton<T>(FactoryFunc<T> func)
 
 You have to pass a factory function `func` that returns an instance of an implementation of `T`. Only the first time you call `get<T>()` this factory function will be called to create a new instance. After that, you will always get the same instance returned.
 
+### Registering multiple implementations
+
+There are certain circumstances where you might wish to register multiple implementations of the same interface and then get a list of all of the relevant implementations later on. For instance, you might have a modular design where each module registers an interface defining a page and then all of these get injected into your navigation bar in your main layout without your layout needing to know about each module.
+
+> [!NOTE]  
+> To avoid this being a breaking change, this is an optional feature, to enable this you need to call:
+
+```dart
+getIt.enableRegisteringMultipleInstancesOfOneType();
+```
+
+Then, you just register your classes as you normally would:
+
+```dart
+getIt.registerLazySingleton<MyBase>(
+  () => ImplA(),
+);
+getIt.registerLazySingleton<MyBase>(
+  () => ImplB(),
+);
+```
+
+Then, later on you can fetch all instances of this interface by calling:
+
+```dart
+final Iterable<MyBase> instances = getIt.getAll<MyBase>();
+```
+
+There is also an `async` implementation available for this:
+
+```dart
+final Iterable<MyBase> instances = await getIt.getAllAsync<MyBase>();
+```
+
 ### Overwriting registrations
 
 If you try to register a type more than once you will fail with an assertion in debug mode because normally this is not needed and probably a bug.
