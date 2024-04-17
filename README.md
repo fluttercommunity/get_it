@@ -157,10 +157,10 @@ There are certain circumstances where you might wish to register multiple implem
 
 > [!NOTE]  
 > To avoid this being a breaking change, this is an optional feature, to enable this you need to call:
-
-```dart
-getIt.enableRegisteringMultipleInstancesOfOneType();
-```
+>
+>```dart
+>getIt.enableRegisteringMultipleInstancesOfOneType();
+>```
 
 Then, you just register your classes as you normally would:
 
