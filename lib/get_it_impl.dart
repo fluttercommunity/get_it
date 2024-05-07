@@ -142,8 +142,8 @@ class _ServiceFactory<T extends Object, P1, P2> {
     if (instance is Disposable) {
       return (instance! as Disposable).onDispose();
     }
+    //if a  LazySingletons was never accessed instance is null
     if (instance != null) {
-      // this can happen with LazySingletons that were never be used
       return disposeFunction?.call(instance!);
     }
   }
