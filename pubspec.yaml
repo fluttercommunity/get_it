@@ -12,8 +12,8 @@ environment:
 dependencies:
   async: ^2.11.0
   collection: ^1.17.1
-  meta: ^1.11.0
+  meta: ^1.9.1
 
 dev_dependencies:
   lint: ^2.1.2
-  test: ^1.24.6
+  test: ^1.25.5

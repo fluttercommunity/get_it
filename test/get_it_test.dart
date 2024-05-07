@@ -957,9 +957,27 @@ void main() {
 
     getIt.registerSingleton(TestClass(), instanceName: 'instanceName');
 
-    final instance1 = getIt.get(type: TestClass, instanceName: 'instanceName');
+    final TestBaseClass instance1 =
+        getIt.get(type: TestClass, instanceName: 'instanceName');
 
     expect(instance1 is TestClass, true);
+  });
+
+  test(
+      'can register a singleton with instanceName and retrieve it with Type parameter and instanceName '
+      'but with non matching receiving type', () {
+    final getIt = GetIt.instance;
+
+    getIt.registerSingleton(TestClass(), instanceName: 'instanceName');
+
+    expect(
+      () {
+        // ignore: unused_local_variable
+        final TestClass2 instance1 =
+            getIt.get(type: TestClass, instanceName: 'instanceName');
+      },
+      throwsA(isA<AssertionError>()),
+    );
   });
 
   test('GenericType test', () {

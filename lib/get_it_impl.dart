@@ -72,7 +72,7 @@ class _ServiceFactory<T extends Object, P1, P2> {
 
   /// If an existing Object gets registered or an async/lazy Singleton has finished
   /// its creation, it is stored here
-  Object? instance;
+  T? instance;
 
   /// the type that was used when registering, used for runtime checks
   late final Type registrationType;
@@ -144,7 +144,7 @@ class _ServiceFactory<T extends Object, P1, P2> {
     }
     if (instance != null) {
       // this can happen with LazySingletons that were never be used
-      return disposeFunction?.call(instance! as T);
+      return disposeFunction?.call(instance!);
     }
   }
 
@@ -176,12 +176,12 @@ class _ServiceFactory<T extends Object, P1, P2> {
             return creationFunction!();
           }
         case _ServiceFactoryType.constant:
-          return instance! as T;
+          return instance!;
         case _ServiceFactoryType.lazy:
           if (instance == null) {
             instance = creationFunction!();
             objectsWaiting.clear();
-            _readyCompleter.complete(instance! as T);
+            _readyCompleter.complete(instance!);
 
             /// check if we are shadowing an existing Object
             final factoryThatWouldbeShadowed =
@@ -198,7 +198,7 @@ class _ServiceFactory<T extends Object, P1, P2> {
               objectThatWouldbeShadowed.onGetShadowed(instance!);
             }
           }
-          return instance! as T;
+          return instance!;
         default:
           throw StateError('Impossible factoryType');
       }
@@ -416,8 +416,13 @@ class _GetItImplementation implements GetIt {
       final _TypeRegistration? typeRegistration =
           _scopes[scopeLevel].typeRegistrations[lookUpType];
 
-      instanceFactory = typeRegistration?.getFactory(instanceName)
-          as _ServiceFactory<T, dynamic, dynamic>?;
+      final foundFactory = typeRegistration?.getFactory(instanceName);
+      assert(
+          foundFactory is _ServiceFactory<T, dynamic, dynamic>?,
+          'It looks like you have passed your lookup type via the `type` but '
+          'but the receiving variable is not a compatible type.');
+
+      instanceFactory = foundFactory as _ServiceFactory<T, dynamic, dynamic>?;
       scopeLevel--;
     }
 
@@ -456,10 +461,6 @@ class _GetItImplementation implements GetIt {
     dynamic param2,
     Type? type,
   }) {
-    assert(
-        type == null || type is T,
-        'The type you passed is not a $T. This can happen '
-        'if the receiving variable is of the wrong type, or you passed a gerenic type and a type parameter');
     final instanceFactory = _findFactoryByNameAndType<T>(instanceName, type);
 
     final Object instance;
@@ -495,12 +496,7 @@ class _GetItImplementation implements GetIt {
   Iterable<T> getAll<T extends Object>({
     dynamic param1,
     dynamic param2,
-    Type? type,
   }) {
-    assert(
-        type == null || type is T,
-        'The type you passed is not a $T. This can happen '
-        'if the receiving variable is of the wrong type, or you passed a generic type and a type parameter');
     final _TypeRegistration<T>? typeRegistration =
         _currentScope.typeRegistrations[T] as _TypeRegistration<T>?;
 
@@ -518,7 +514,7 @@ class _GetItImplementation implements GetIt {
     ];
     final instances = <T>[];
     for (final instanceFactory in factories) {
-      final Object instance;
+      final T instance;
       if (instanceFactory.isAsync || instanceFactory.pendingResult != null) {
         /// We use an assert here instead of an `if..throw` for performance reasons
         assert(
@@ -537,7 +533,7 @@ class _GetItImplementation implements GetIt {
         instance = instanceFactory.getObject(param1, param2);
       }
 
-      instances.add(instance as T);
+      instances.add(instance);
     }
     return instances;
   }
@@ -570,10 +566,6 @@ class _GetItImplementation implements GetIt {
     dynamic param2,
     Type? type,
   }) {
-    assert(
-        type == null || type is T,
-        'The type you passed is not a $T. This can happen '
-        'if the receiving variable is of the wrong type, or you passed a gerenic type and a type parameter');
     final factoryToGet = _findFactoryByNameAndType<T>(instanceName, type);
     return factoryToGet.getObjectAsync<T>(param1, param2);
   }
@@ -582,12 +574,7 @@ class _GetItImplementation implements GetIt {
   Future<Iterable<T>> getAllAsync<T extends Object>({
     dynamic param1,
     dynamic param2,
-    Type? type,
   }) async {
-    assert(
-        type == null || type is T,
-        'The type you passed is not a $T. This can happen '
-        'if the receiving variable is of the wrong type, or you passed a generic type and a type parameter');
     final _TypeRegistration<T>? typeRegistration =
         _currentScope.typeRegistrations[T] as _TypeRegistration<T>?;
 
@@ -910,6 +897,10 @@ class _GetItImplementation implements GetIt {
     ScopeDisposeFunc? dispose,
     bool isFinal = false,
   }) {
+    throwIf(
+        _pushScopeInProgress,
+        StateError('you can not push a new scope '
+            'inside the init function of another scope'));
     assert(
       scopeName != _baseScopeName,
       'This name is reserved for the real base scope.',
@@ -919,13 +910,17 @@ class _GetItImplementation implements GetIt {
           _scopes.firstWhereOrNull((x) => x.name == scopeName) == null,
       'You already have used the scope name $scopeName',
     );
+    _pushScopeInProgress = true;
     _scopes.add(_Scope(name: scopeName, disposeFunc: dispose));
     init?.call(this);
     if (isFinal) {
       _scopes.last.isFinal = true;
     }
     onScopeChanged?.call(true);
+    _pushScopeInProgress = false;
   }
+
+  bool _pushScopeInProgress = false;
 
   /// Creates a new registration scope. If you register types after creating
   /// a new scope they will hide any previous registration of the same type.
@@ -936,12 +931,19 @@ class _GetItImplementation implements GetIt {
   /// is still valid while it is executed
   /// [init] optional asynchronous function to register Objects immediately after the new scope is
   /// pushed. This ensures that [onScopeChanged] will be called after their registration
+  /// if [isFinal] is set to true, you can't register any new objects in this scope after
+  /// this call. In Other words you have to register the objects for this scope inside
   @override
   Future<void> pushNewScopeAsync({
     Future<void> Function(GetIt getIt)? init,
     String? scopeName,
     ScopeDisposeFunc? dispose,
+    bool isFinal = false,
   }) async {
+    throwIf(
+        _pushScopeInProgress,
+        StateError('you can not push a new scope '
+            'inside the init function of another scope'));
     assert(
       scopeName != _baseScopeName,
       'This name is reserved for the real base scope.',
@@ -951,9 +953,14 @@ class _GetItImplementation implements GetIt {
           _scopes.firstWhereOrNull((x) => x.name == scopeName) == null,
       'You already have used the scope name $scopeName',
     );
+    _pushScopeInProgress = true;
     _scopes.add(_Scope(name: scopeName, disposeFunc: dispose));
     await init?.call(this);
+    if (isFinal) {
+      _scopes.last.isFinal = true;
+    }
     onScopeChanged?.call(true);
+    _pushScopeInProgress = false;
   }
 
   /// Disposes all factories/Singletons that have been registered in this scope
@@ -965,6 +972,10 @@ class _GetItImplementation implements GetIt {
   /// As dispose functions can be async, you should await this function.
   @override
   Future<void> popScope() async {
+    throwIf(
+        _pushScopeInProgress,
+        StateError('you can not pop a scope '
+            'inside the init function of another scope'));
     throwIfNot(
       _scopes.length > 1,
       StateError(
@@ -1014,6 +1025,10 @@ class _GetItImplementation implements GetIt {
   /// As dispose functions can be async, you should await this function.
   @override
   Future<void> dropScope(String scopeName) async {
+    throwIf(
+        _pushScopeInProgress,
+        StateError('you can not drop a scope '
+            'inside the init function of another scope'));
     if (currentScopeName == scopeName) {
       return popScope();
     }
@@ -1244,9 +1259,8 @@ class _GetItImplementation implements GetIt {
           if (!serviceFactory.shouldSignalReady) {
             /// As this isn't an async function we declare it as ready here
             /// if wasn't marked that it will signalReady
-            isReadyFuture = Future<T>.value(serviceFactory.instance! as T);
-            serviceFactory._readyCompleter
-                .complete(serviceFactory.instance! as T);
+            isReadyFuture = Future<T>.value(serviceFactory.instance!);
+            serviceFactory._readyCompleter.complete(serviceFactory.instance!);
             serviceFactory.objectsWaiting.clear();
           } else {
             isReadyFuture = serviceFactory._readyCompleter.future;
