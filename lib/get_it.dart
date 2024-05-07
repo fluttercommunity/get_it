@@ -194,18 +194,21 @@ abstract class GetIt {
   /// The returned `Iterable` will then contain all registered instances of the requested interface [T] with or without an instance name.
   /// if the registrations are factories they will each be called with the provided parameters [param1,param2] and
   /// the results will be returned in the Iterable.
+  /// [fromAllScopes] if `true` it will return all instances from all scopes otherwise only from the current scope
   Iterable<T> getAll<T extends Object>({
     dynamic param1,
     dynamic param2,
+    bool fromAllScopes = false,
   });
 
   /// The returned `Future<Iterable>` will then contain all registered async registrations of the requested interface [T] with or without an instance name.
   /// if the registrations are factories they will each be called with the provided parameters [param1,param2] and
   /// the results will be returned in the Iterable.
-  ///
+  /// [fromAllScopes] if `true` it will return all instances from all scopes otherwise only from the current scope
   Future<Iterable<T>> getAllAsync<T extends Object>({
     dynamic param1,
     dynamic param2,
+    bool fromAllScopes = false,
   });
 
   /// Callable class so that you can write `GetIt.instance<MyType>` instead of

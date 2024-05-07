@@ -1,3 +1,7 @@
+## [8.0.0] - 07.05.2024 
+* `getAll()` and `getAllAsync()` not have a `fromAllScopes` parameter.
+* adding safeguards according to https://github.com/fluttercommunity/get_it/issues/364 to make it impossilble to call `push/popScope` while the `init()` function of another pushScope is running.
+* fixed an usafe type check when using a runtime type to acess an object in get_it.
 ## [7.7.0] - 15.04.2024 thanks to the PR by @kasefuchs https://github.com/fluttercommunity/get_it/pull/361 `getAll` is now available in an async version too.
 ## [7.6.9] - 11.04.2024
 * fig for bug that was introduced in 7.6.8 https://github.com/fluttercommunity/get_it/issues/358

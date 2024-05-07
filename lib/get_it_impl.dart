@@ -355,6 +355,75 @@ class _Scope {
   Future<void> dispose() async {
     await disposeFunc?.call();
   }
+
+  Iterable<T> getAll<T extends Object>({
+    dynamic param1,
+    dynamic param2,
+  }) {
+    final _TypeRegistration<T>? typeRegistration =
+        typeRegistrations[T] as _TypeRegistration<T>?;
+
+    if (typeRegistration == null) {
+      return [];
+    }
+
+    final factories = [
+      ...typeRegistration!.factories,
+      ...typeRegistration.namedFactories.values
+    ];
+    final instances = <T>[];
+    for (final instanceFactory in factories) {
+      final T instance;
+      if (instanceFactory.isAsync || instanceFactory.pendingResult != null) {
+        /// We use an assert here instead of an `if..throw` for performance reasons
+        assert(
+          instanceFactory.factoryType == _ServiceFactoryType.constant ||
+              instanceFactory.factoryType == _ServiceFactoryType.lazy,
+          "You can't use getAll with an async Factory of $T.",
+        );
+        throwIfNot(
+          instanceFactory.isReady,
+          StateError(
+            'You tried to access an instance of $T that is not ready yet',
+          ),
+        );
+        instance = instanceFactory.instance!;
+      } else {
+        instance = instanceFactory.getObject(param1, param2);
+      }
+
+      instances.add(instance);
+    }
+    return instances;
+  }
+
+  Future<Iterable<T>> getAllAsync<T extends Object>({
+    dynamic param1,
+    dynamic param2,
+  }) async {
+    final _TypeRegistration<T>? typeRegistration =
+        typeRegistrations[T] as _TypeRegistration<T>?;
+
+    if (typeRegistration == null) {
+      return [];
+    }
+
+    final factories = [
+      ...typeRegistration!.factories,
+      ...typeRegistration.namedFactories.values
+    ];
+    final instances = <T>[];
+    for (final instanceFactory in factories) {
+      final Object instance;
+      if (instanceFactory.isAsync || instanceFactory.pendingResult != null) {
+        instance = await instanceFactory.getObjectAsync(param1, param2);
+      } else {
+        instance = instanceFactory.getObject(param1, param2);
+      }
+      instances.add(instance as T);
+    }
+    return instances;
+  }
 }
 
 class _GetItImplementation implements GetIt {
@@ -496,45 +565,32 @@ class _GetItImplementation implements GetIt {
   Iterable<T> getAll<T extends Object>({
     dynamic param1,
     dynamic param2,
+    bool fromAllScopes = false,
   }) {
-    final _TypeRegistration<T>? typeRegistration =
-        _currentScope.typeRegistrations[T] as _TypeRegistration<T>?;
+    final Iterable<T> instances;
+    if (!fromAllScopes) {
+      instances = _currentScope.getAll<T>(
+        param1: param1,
+        param2: param2,
+      );
+    } else {
+      instances = [
+        for (final scope in _scopes)
+          ...scope.getAll<T>(
+            param1: param1,
+            param2: param2,
+          )
+      ];
+    }
 
     throwIf(
-      typeRegistration == null,
+      instances.isEmpty,
       StateError('GetIt: No Objects/factories with '
           'type $T are not registered inside GetIt. '
           '\n(Did you accidentally do GetIt sl=GetIt.instance(); instead of GetIt sl=GetIt.instance;'
           '\nDid you forget to register it?)'),
     );
 
-    final factories = [
-      ...typeRegistration!.factories,
-      ...typeRegistration.namedFactories.values
-    ];
-    final instances = <T>[];
-    for (final instanceFactory in factories) {
-      final T instance;
-      if (instanceFactory.isAsync || instanceFactory.pendingResult != null) {
-        /// We use an assert here instead of an `if..throw` for performance reasons
-        assert(
-          instanceFactory.factoryType == _ServiceFactoryType.constant ||
-              instanceFactory.factoryType == _ServiceFactoryType.lazy,
-          "You can't use getAll with an async Factory of $T.",
-        );
-        throwIfNot(
-          instanceFactory.isReady,
-          StateError(
-            'You tried to access an instance of $T that is not ready yet',
-          ),
-        );
-        instance = instanceFactory.instance!;
-      } else {
-        instance = instanceFactory.getObject(param1, param2);
-      }
-
-      instances.add(instance);
-    }
     return instances;
   }
 
@@ -574,32 +630,32 @@ class _GetItImplementation implements GetIt {
   Future<Iterable<T>> getAllAsync<T extends Object>({
     dynamic param1,
     dynamic param2,
+    bool fromAllScopes = false,
   }) async {
-    final _TypeRegistration<T>? typeRegistration =
-        _currentScope.typeRegistrations[T] as _TypeRegistration<T>?;
+    final Iterable<T> instances;
+    if (!fromAllScopes) {
+      instances = await _currentScope.getAllAsync<T>(
+        param1: param1,
+        param2: param2,
+      );
+    } else {
+      instances = [
+        for (final scope in _scopes)
+          ...await scope.getAllAsync<T>(
+            param1: param1,
+            param2: param2,
+          )
+      ];
+    }
 
     throwIf(
-      typeRegistration == null,
+      instances.isEmpty,
       StateError('GetIt: No Objects/factories with '
           'type $T are not registered inside GetIt. '
           '\n(Did you accidentally do GetIt sl=GetIt.instance(); instead of GetIt sl=GetIt.instance;'
           '\nDid you forget to register it?)'),
     );
 
-    final factories = [
-      ...typeRegistration!.factories,
-      ...typeRegistration.namedFactories.values
-    ];
-    final instances = <T>[];
-    for (final instanceFactory in factories) {
-      final Object instance;
-      if (instanceFactory.isAsync || instanceFactory.pendingResult != null) {
-        instance = await instanceFactory.getObjectAsync(param1, param2);
-      } else {
-        instance = instanceFactory.getObject(param1, param2);
-      }
-      instances.add(instance as T);
-    }
     return instances;
   }
 
