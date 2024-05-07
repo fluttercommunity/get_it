@@ -368,7 +368,7 @@ class _Scope {
     }
 
     final factories = [
-      ...typeRegistration!.factories,
+      ...typeRegistration.factories,
       ...typeRegistration.namedFactories.values
     ];
     final instances = <T>[];
@@ -409,18 +409,18 @@ class _Scope {
     }
 
     final factories = [
-      ...typeRegistration!.factories,
+      ...typeRegistration.factories,
       ...typeRegistration.namedFactories.values
     ];
     final instances = <T>[];
     for (final instanceFactory in factories) {
-      final Object instance;
+      final T instance;
       if (instanceFactory.isAsync || instanceFactory.pendingResult != null) {
         instance = await instanceFactory.getObjectAsync(param1, param2);
       } else {
         instance = instanceFactory.getObject(param1, param2);
       }
-      instances.add(instance as T);
+      instances.add(instance);
     }
     return instances;
   }
