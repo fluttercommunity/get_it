@@ -26,24 +26,21 @@ void _debugOutput(Object message) {
   }
 }
 
-/// You will see a rather esoteric looking test `(const Object() is! T)` at several places
-/// /// it tests if [T] is a real type and not Object or dynamic
+/// You will see a rather esoteric looking test `(const Object() is! T)` at several places.
+/// It tests if [T] is a real type and not Object or dynamic.
 
 /// For each registered factory/singleton a [_ServiceFactory<T>] is created
 /// it holds either the instance of a Singleton or/and the creation functions
 /// for creating an instance when [get] is called
 ///
-/// There are three different types
+/// There are three different types:
 enum _ServiceFactoryType {
-  alwaysNew,
-
-  /// factory which means on every call of [get] a new instance is created
+  alwaysNew, // factory which means on every call of [get] a new instance is created
   constant, // normal singleton
   lazy, // lazy
 }
 
 /// If I use `Singleton` without specifier in the comments I mean normal and lazy
-
 class _ServiceFactory<T extends Object, P1, P2> {
   final _ServiceFactoryType factoryType;
 
