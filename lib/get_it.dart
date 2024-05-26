@@ -309,6 +309,34 @@ abstract class GetIt {
     DisposingFunc<T>? dispose,
   });
 
+  /// ---- With reference counting ----
+  ///
+  /// [registerSingletonIfAbsent] and [releaseInstance] are used to manage the lifecycle of
+  /// a Singleton. This is useful if you register an object when you push a Page and this page can get
+  /// pused recursively. In that case you don't want to dispose the object when first of these pages is popped
+  ///
+
+  /// Only registers a type new as Singleton if it is not already registered. Otherwise it returns
+  /// the existing instance and increments an internal reference counter to ensure that matching
+  /// [unregister] or [releaseInstance] calls will decrement the reference counter an won't unregister
+  /// and dispose the registration as long as the reference counter is > 0.
+  /// [T] type/interface that is used for the registration and the access via [get]
+  /// [factoryFunc] that is callled to create the instance if it is not already registered
+  /// [instanceName] optional key to register more than one instance of one type
+  /// [dispose] disposing function that is autmatically called before the object is removed from get_it
+  T registerSingletonIfAbsent<T extends Object>(
+    T Function() factoryFunc, {
+    String? instanceName,
+    DisposingFunc<T>? dispose,
+  });
+
+  /// checks if a regiserter Singleton has an reference counter > 0
+  /// if so it decrements the reference counter and if it reaches 0 it
+  /// unregisters the Singleton
+  /// if called on an object that's reference counter was never incremented
+  /// it will immediately unregister and dispose the object
+  void releaseInstance(Object instance);
+
   /// registers a type as Singleton by passing a factory function of that type
   /// that will be called when all dependent Singletons are ready
   /// [T] type to register
@@ -494,10 +522,15 @@ abstract class GetIt {
   /// [instanceName] if you need to dispose any resources you can do it using
   /// [disposingFunction] function that provides an instance of your class to be disposed.
   /// This function overrides the disposing you might have provided when registering.
+  /// If you have enabled referece counting when registering, [unregister] will only unregister and dispose the object
+  /// if referenceCount is 0
+  /// [ignoreReferenceCount] if `true` it will ignore the reference count and unregister the object
+  /// only use this if you know what you are doing
   FutureOr unregister<T extends Object>({
     Object? instance,
     String? instanceName,
     FutureOr Function(T)? disposingFunction,
+    bool ignoreReferenceCount = false,
   });
 
   /// returns a Future that completes if all asynchronously created Singletons and any

@@ -797,6 +797,82 @@ void main() {
       throwsA(const TypeMatcher<StateError>()),
     );
   });
+  test('testing reference counting', () async {
+    final getIt = GetIt.instance;
+    disposeCounter = 0;
+    constructorCounter = 0;
+
+    getIt.registerSingletonIfAbsent<TestClass>(
+      () => TestClass(),
+      dispose: (param) => disposeCounter++,
+    );
+
+    final instance1 = getIt.get<TestClass>();
+
+    expect(instance1 is TestClass, true);
+
+    final instance2 = getIt.registerSingletonIfAbsent<TestClass>(() {
+      assert(false, 'This should not be called');
+      return TestClass();
+    }, dispose: (param) {
+      assert(false, 'This should not be called');
+    });
+
+    expect(instance1, instance2);
+
+    expect(constructorCounter, 1);
+
+    getIt.releaseInstance(instance2);
+
+    expect(getIt.isRegistered<TestClass>(), true);
+
+    getIt.releaseInstance(instance2);
+
+    expect(disposeCounter, 1);
+
+    expect(
+      () => getIt.get<TestClass>(),
+      throwsA(const TypeMatcher<StateError>()),
+    );
+  });
+  test('testing reference counting - unregister', () async {
+    final getIt = GetIt.instance;
+    disposeCounter = 0;
+    constructorCounter = 0;
+
+    getIt.registerSingletonIfAbsent<TestClass>(
+      () => TestClass(),
+      dispose: (param) => disposeCounter++,
+    );
+
+    final instance1 = getIt.get<TestClass>();
+
+    expect(instance1 is TestClass, true);
+
+    final instance2 = getIt.registerSingletonIfAbsent<TestClass>(() {
+      assert(false, 'This should not be called');
+      return TestClass();
+    }, dispose: (param) {
+      assert(false, 'This should not be called');
+    });
+
+    expect(instance1, instance2);
+
+    expect(constructorCounter, 1);
+
+    getIt.unregister<TestClass>();
+
+    expect(getIt.isRegistered<TestClass>(), true);
+
+    getIt.unregister<TestClass>();
+
+    expect(disposeCounter, 1);
+
+    expect(
+      () => getIt.get<TestClass>(),
+      throwsA(const TypeMatcher<StateError>()),
+    );
+  });
 
   test('unregister by name', () async {
     final getIt = GetIt.instance;

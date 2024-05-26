@@ -95,6 +95,8 @@ class _ServiceFactory<T extends Object, P1, P2> {
 
   final bool shouldSignalReady;
 
+  int _refenceCount = 0;
+
   _ServiceFactory(
     this._getItInstance,
     this.factoryType, {
@@ -810,6 +812,60 @@ class _GetItImplementation implements GetIt {
     return instance;
   }
 
+  /// Only registers a type new as Singleton if it is not already registered. Otherwise it returns
+  /// the existing instance and increments an internal reference counter to ensure that matching
+  /// [unregister] or [releaseInstance] calls will decrement the reference counter an won't unregister
+  /// and dispose the registration as long as the reference counter is > 0.
+  /// [T] type/interface that is used for the registration and the access via [get]
+  /// [factoryFunc] that is callled to create the instance if it is not already registered
+  /// [instanceName] optional key to register more than one instance of one type
+  /// [dispose] disposing function that is autmatically called before the object is removed from get_it
+  @override
+  T registerSingletonIfAbsent<T extends Object>(
+    T Function() factoryFunc, {
+    String? instanceName,
+    DisposingFunc<T>? dispose,
+  }) {
+    final existingFactory =
+        _findFirstFactoryByNameAndTypeOrNull<T>(instanceName);
+    if (existingFactory != null) {
+      throwIfNot(
+          existingFactory.factoryType == _ServiceFactoryType.constant &&
+              !existingFactory.isAsync,
+          StateError(
+              'registerSingletonIfAbsent can only be called for a type that is already registered as Singleton and not for factories or async/lazy Singletons'));
+      existingFactory._refenceCount++;
+      return existingFactory.instance!;
+    }
+
+    final instance = factoryFunc();
+    _register<T, void, void>(
+      type: _ServiceFactoryType.constant,
+      instance: instance,
+      instanceName: instanceName,
+      isAsync: false,
+      shouldSignalReady: false,
+      disposeFunc: dispose,
+    );
+    return instance;
+  }
+
+  /// checks if a regiserter Singleton has an reference counter > 0
+  /// if so it decrements the reference counter and if it reaches 0 it
+  /// unregisters the Singleton
+  /// if called on an object that's reference counter was never incremented
+  /// it will immediately unregister and dispose the object
+  @override
+  void releaseInstance(Object instance) {
+    final registerdFactory = _findFirstFactoryByInstanceOrNull(instance);
+    if (registerdFactory != null) {
+      if (registerdFactory._refenceCount < 1) {
+        unregister(instance: instance);
+      }
+      registerdFactory._refenceCount--;
+    }
+  }
+
   /// registers a type as Singleton by passing an factory function of that type
   /// that will be called on each call of [get] on that type
   /// [T] type to register
@@ -906,6 +962,145 @@ class _GetItImplementation implements GetIt {
       shouldSignalReady: false,
       disposeFunc: dispose,
     );
+  }
+
+  /// Tests if an [instance] of an object or aType [T] or a name [instanceName]
+  /// is registered inside GetIt
+  @override
+  bool isRegistered<T extends Object>({
+    Object? instance,
+    String? instanceName,
+  }) {
+    if (instance != null) {
+      return _findFirstFactoryByInstanceOrNull(instance) != null;
+    } else {
+      return _findFirstFactoryByNameAndTypeOrNull<T>(instanceName) != null;
+    }
+  }
+
+  /// Unregister an instance of an object or a factory/singleton by Type [T] or by name [instanceName]
+  /// if you need to dispose any resources you can pass in a [disposingFunction] function
+  /// that provides an instance of your class to be disposed
+  /// If you have provided an disposing functin when you registered the object that one will be called automatically
+  /// If you have enabled referece counting when registering, [unregister] will only unregister and dispose the object
+  /// if referenceCount is 0
+  ///
+  @override
+  FutureOr unregister<T extends Object>({
+    Object? instance,
+    String? instanceName,
+    FutureOr Function(T)? disposingFunction,
+    bool ignoreReferenceCount = false,
+  }) async {
+    final factoryToRemove = instance != null
+        ? _findFactoryByInstance(instance)
+        : _findFactoryByNameAndType<T>(instanceName);
+
+    throwIf(
+      factoryToRemove.objectsWaiting.isNotEmpty,
+      StateError(
+        'There are still other objects waiting for this instance so signal ready',
+      ),
+    );
+
+    if (factoryToRemove._refenceCount > 0) {
+      factoryToRemove._refenceCount--;
+      return;
+    }
+    final typeRegistration = factoryToRemove.registeredIn;
+
+    if (instanceName != null) {
+      typeRegistration.namedFactories.remove(instanceName);
+    } else {
+      typeRegistration.factories.remove(factoryToRemove);
+    }
+    if (typeRegistration.isEmpty) {
+      factoryToRemove.registrationScope.typeRegistrations.remove(T);
+    }
+
+    if (factoryToRemove.instance != null) {
+      if (disposingFunction != null) {
+        final dispose = disposingFunction.call(factoryToRemove.instance! as T);
+        if (dispose is Future) {
+          await dispose;
+        }
+      } else {
+        final dispose = factoryToRemove.dispose();
+        if (dispose is Future) {
+          await dispose;
+        }
+      }
+    }
+  }
+
+  /// Clears the instance of a lazy singleton,
+  /// being able to call the factory function on the next call
+  /// of [get] on that type again.
+  /// you select the lazy Singleton you want to reset by either providing
+  /// an [instance], its registered type [T] or its registration name.
+  /// if you need to dispose some resources before the reset, you can
+  /// provide a [disposingFunction]
+  @override
+  FutureOr resetLazySingleton<T extends Object>({
+    T? instance,
+    String? instanceName,
+    FutureOr Function(T)? disposingFunction,
+  }) async {
+    _ServiceFactory instanceFactory;
+
+    if (instance != null) {
+      instanceFactory = _findFactoryByInstance(instance);
+    } else {
+      instanceFactory = _findFactoryByNameAndType<T>(instanceName);
+    }
+    throwIfNot(
+      instanceFactory.factoryType == _ServiceFactoryType.lazy,
+      StateError(
+        'There is no type ${instance.runtimeType} registered as LazySingleton in GetIt',
+      ),
+    );
+
+    dynamic disposeReturn;
+    if (instanceFactory.instance != null) {
+      if (disposingFunction != null) {
+        disposeReturn = disposingFunction.call(instanceFactory.instance! as T);
+      } else {
+        disposeReturn = instanceFactory.dispose();
+      }
+    }
+
+    instanceFactory.instance = null;
+    instanceFactory.pendingResult = null;
+    instanceFactory._readyCompleter = Completer<T>();
+    if (disposeReturn is Future) {
+      await disposeReturn;
+    }
+  }
+
+  List<_ServiceFactory> get _allFactories =>
+      _scopes.fold<List<_ServiceFactory>>(
+        [],
+        (sum, x) => sum..addAll(x.allFactories),
+      );
+
+  _ServiceFactory? _findFirstFactoryByInstanceOrNull(Object instance) {
+    final registeredFactories =
+        _allFactories.where((x) => identical(x.instance, instance));
+    return registeredFactories.isEmpty ? null : registeredFactories.first;
+  }
+
+  _ServiceFactory _findFactoryByInstance(Object instance) {
+    final registeredFactory = _findFirstFactoryByInstanceOrNull(instance);
+
+    throwIf(
+      registeredFactory == null,
+      StateError(
+          'This instance of the type ${instance.runtimeType} is not available in GetIt '
+          'If you have registered it as LazySingleton, are you sure you have used '
+          'it at least once?'),
+    );
+
+    return registeredFactory!;
   }
 
   /// Clears all registered types. Handy when writing unit tests.
@@ -1133,6 +1328,7 @@ class _GetItImplementation implements GetIt {
 
     _Scope registrationScope;
     int i = _scopes.length;
+    // find the first not final scope
     do {
       i--;
       registrationScope = _scopes[i];
@@ -1143,7 +1339,7 @@ class _GetItImplementation implements GetIt {
     );
 
     final existingTypeRegistration = registrationScope.typeRegistrations[T];
-    // if we already a registration for this type we have to check if its a valid re-registration
+    // if we already have a registration for this type we have to check if its a valid re-registration
     if (existingTypeRegistration != null) {
       if (instanceName != null) {
         throwIf(
@@ -1360,136 +1556,6 @@ class _GetItImplementation implements GetIt {
         return completedFutures.last as T;
       });
     }
-  }
-
-  /// Tests if an [instance] of an object or aType [T] or a name [instanceName]
-  /// is registered inside GetIt
-  @override
-  bool isRegistered<T extends Object>({
-    Object? instance,
-    String? instanceName,
-  }) {
-    if (instance != null) {
-      return _findFirstFactoryByInstanceOrNull(instance) != null;
-    } else {
-      return _findFirstFactoryByNameAndTypeOrNull<T>(instanceName) != null;
-    }
-  }
-
-  /// Unregister an instance of an object or a factory/singleton by Type [T] or by name [instanceName]
-  /// if you need to dispose any resources you can do it using [disposingFunction] function
-  /// that provides an instance of your class to be disposed
-  @override
-  FutureOr unregister<T extends Object>({
-    Object? instance,
-    String? instanceName,
-    FutureOr Function(T)? disposingFunction,
-  }) async {
-    final factoryToRemove = instance != null
-        ? _findFactoryByInstance(instance)
-        : _findFactoryByNameAndType<T>(instanceName);
-
-    throwIf(
-      factoryToRemove.objectsWaiting.isNotEmpty,
-      StateError(
-        'There are still other objects waiting for this instance so signal ready',
-      ),
-    );
-
-    final typeRegistration = factoryToRemove.registeredIn;
-
-    if (instanceName != null) {
-      typeRegistration.namedFactories.remove(instanceName);
-    } else {
-      typeRegistration.factories.remove(factoryToRemove);
-    }
-    if (typeRegistration.isEmpty) {
-      factoryToRemove.registrationScope.typeRegistrations.remove(T);
-    }
-
-    if (factoryToRemove.instance != null) {
-      if (disposingFunction != null) {
-        final dispose = disposingFunction.call(factoryToRemove.instance! as T);
-        if (dispose is Future) {
-          await dispose;
-        }
-      } else {
-        final dispose = factoryToRemove.dispose();
-        if (dispose is Future) {
-          await dispose;
-        }
-      }
-    }
-  }
-
-  /// Clears the instance of a lazy singleton,
-  /// being able to call the factory function on the next call
-  /// of [get] on that type again.
-  /// you select the lazy Singleton you want to reset by either providing
-  /// an [instance], its registered type [T] or its registration name.
-  /// if you need to dispose some resources before the reset, you can
-  /// provide a [disposingFunction]
-  @override
-  FutureOr resetLazySingleton<T extends Object>({
-    T? instance,
-    String? instanceName,
-    FutureOr Function(T)? disposingFunction,
-  }) async {
-    _ServiceFactory instanceFactory;
-
-    if (instance != null) {
-      instanceFactory = _findFactoryByInstance(instance);
-    } else {
-      instanceFactory = _findFactoryByNameAndType<T>(instanceName);
-    }
-    throwIfNot(
-      instanceFactory.factoryType == _ServiceFactoryType.lazy,
-      StateError(
-        'There is no type ${instance.runtimeType} registered as LazySingleton in GetIt',
-      ),
-    );
-
-    dynamic disposeReturn;
-    if (instanceFactory.instance != null) {
-      if (disposingFunction != null) {
-        disposeReturn = disposingFunction.call(instanceFactory.instance! as T);
-      } else {
-        disposeReturn = instanceFactory.dispose();
-      }
-    }
-
-    instanceFactory.instance = null;
-    instanceFactory.pendingResult = null;
-    instanceFactory._readyCompleter = Completer<T>();
-    if (disposeReturn is Future) {
-      await disposeReturn;
-    }
-  }
-
-  List<_ServiceFactory> get _allFactories =>
-      _scopes.fold<List<_ServiceFactory>>(
-        [],
-        (sum, x) => sum..addAll(x.allFactories),
-      );
-
-  _ServiceFactory? _findFirstFactoryByInstanceOrNull(Object instance) {
-    final registeredFactories =
-        _allFactories.where((x) => identical(x.instance, instance));
-    return registeredFactories.isEmpty ? null : registeredFactories.first;
-  }
-
-  _ServiceFactory _findFactoryByInstance(Object instance) {
-    final registeredFactory = _findFirstFactoryByInstanceOrNull(instance);
-
-    throwIf(
-      registeredFactory == null,
-      StateError(
-          'This instance of the type ${instance.runtimeType} is not available in GetIt '
-          'If you have registered it as LazySingleton, are you sure you have used '
-          'it at least once?'),
-    );
-
-    return registeredFactory!;
   }
 
   /// Used to manually signal the ready state of a Singleton.
