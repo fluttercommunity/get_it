@@ -811,12 +811,15 @@ void main() {
 
     expect(instance1 is TestClass, true);
 
-    final instance2 = getIt.registerSingletonIfAbsent<TestClass>(() {
-      assert(false, 'This should not be called');
-      return TestClass();
-    }, dispose: (param) {
-      assert(false, 'This should not be called');
-    });
+    final instance2 = getIt.registerSingletonIfAbsent<TestClass>(
+      () {
+        assert(false, 'This should not be called');
+        return TestClass();
+      },
+      dispose: (param) {
+        assert(false, 'This should not be called');
+      },
+    );
 
     expect(instance1, instance2);
 
@@ -849,12 +852,15 @@ void main() {
 
     expect(instance1 is TestClass, true);
 
-    final instance2 = getIt.registerSingletonIfAbsent<TestClass>(() {
-      assert(false, 'This should not be called');
-      return TestClass();
-    }, dispose: (param) {
-      assert(false, 'This should not be called');
-    });
+    final instance2 = getIt.registerSingletonIfAbsent<TestClass>(
+      () {
+        assert(false, 'This should not be called');
+        return TestClass();
+      },
+      dispose: (param) {
+        assert(false, 'This should not be called');
+      },
+    );
 
     expect(instance1, instance2);
 
