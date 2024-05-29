@@ -860,9 +860,12 @@ class _GetItImplementation implements GetIt {
     final registerdFactory = _findFirstFactoryByInstanceOrNull(instance);
     if (registerdFactory != null) {
       if (registerdFactory._refenceCount < 1) {
+        assert(registerdFactory._refenceCount == 0,
+            'GetIt: releaseInstance was called on an object that was already released');
         unregister(instance: instance);
+      } else {
+        registerdFactory._refenceCount--;
       }
-      registerdFactory._refenceCount--;
     }
   }
 

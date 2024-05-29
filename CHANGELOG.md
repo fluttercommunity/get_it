@@ -1,4 +1,5 @@
-## [8.0.0-pre-1] - 07.05.2024 
+## [8.0.0-pre-2] - 29.05.2024 fixing negitiv reference count
+## [8.0.0-pre-1] - 26.05.2024 
 * `getAll()` and `getAllAsync()` now have a `fromAllScopes` parameter.
 * adding safeguards according to https://github.com/fluttercommunity/get_it/issues/364 to make it impossilble to call `push/popScope` while the `init()` function of another pushScope is running.
 * fixed an usafe type check when using a runtime type to acess an object in get_it.
