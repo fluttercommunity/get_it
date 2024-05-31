@@ -857,15 +857,13 @@ class _GetItImplementation implements GetIt {
   /// it will immediately unregister and dispose the object
   @override
   void releaseInstance(Object instance) {
-    final registerdFactory = _findFirstFactoryByInstanceOrNull(instance);
-    if (registerdFactory != null) {
-      if (registerdFactory._refenceCount < 1) {
-        assert(registerdFactory._refenceCount == 0,
-            'GetIt: releaseInstance was called on an object that was already released');
-        unregister(instance: instance);
-      } else {
-        registerdFactory._refenceCount--;
-      }
+    final registerdFactory = _findFactoryByInstance(instance);
+    if (registerdFactory._refenceCount < 1) {
+      assert(registerdFactory._refenceCount == 0,
+          'GetIt: releaseInstance was called on an object that was already released');
+      unregister(instance: instance);
+    } else {
+      registerdFactory._refenceCount--;
     }
   }
 
@@ -1087,9 +1085,8 @@ class _GetItImplementation implements GetIt {
       );
 
   _ServiceFactory? _findFirstFactoryByInstanceOrNull(Object instance) {
-    final registeredFactories =
-        _allFactories.where((x) => identical(x.instance, instance));
-    return registeredFactories.isEmpty ? null : registeredFactories.first;
+    return _allFactories
+        .firstWhereOrNull((x) => identical(x.instance, instance));
   }
 
   _ServiceFactory _findFactoryByInstance(Object instance) {
