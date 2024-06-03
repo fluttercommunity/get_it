@@ -1,3 +1,4 @@
+## [8.0.0-pre-4] - 03.06.2024 fixing bug in `unregister` that happened if you tried to unregister a named registration by providing an istance instead of the type and the instance name
 ## [8.0.0-pre-3] - 31.05.2024 releaseInstance will now throw if the instance isn't registered
 ## [8.0.0-pre-2] - 29.05.2024 fixing negitiv reference count
 ## [8.0.0-pre-1] - 26.05.2024 

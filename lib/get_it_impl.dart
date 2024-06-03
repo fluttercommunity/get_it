@@ -1010,8 +1010,8 @@ class _GetItImplementation implements GetIt {
     }
     final typeRegistration = factoryToRemove.registeredIn;
 
-    if (instanceName != null) {
-      typeRegistration.namedFactories.remove(instanceName);
+    if (factoryToRemove.isNamedRegistration) {
+      typeRegistration.namedFactories.remove(factoryToRemove.instanceName);
     } else {
       typeRegistration.factories.remove(factoryToRemove);
     }
