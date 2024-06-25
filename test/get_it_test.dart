@@ -1056,12 +1056,15 @@ void main() {
 
     expect(instance1 is TestClass, true);
 
-    expect(() {
-      getIt.changeTypeInstanceName<TestClass>(
-        instanceName: 'instanceName',
-        newInstanceName: 'instanceNameExisting',
-      );
-    }, throwsA(const TypeMatcher<StateError>()));
+    expect(
+      () {
+        getIt.changeTypeInstanceName<TestClass>(
+          instanceName: 'instanceName',
+          newInstanceName: 'instanceNameExisting',
+        );
+      },
+      throwsA(const TypeMatcher<StateError>()),
+    );
   });
 
   test('change registration name of instance', () async {
