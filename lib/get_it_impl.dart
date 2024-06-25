@@ -62,7 +62,7 @@ class _ServiceFactory<T extends Object, P1, P2> {
   final DisposingFunc<T>? disposeFunction;
 
   /// In case of a named registration the instance name is here stored for easy access
-  final String? instanceName;
+  String? instanceName;
 
   /// true if one of the async registration functions have been used
   final bool isAsync;
@@ -1032,6 +1032,55 @@ class _GetItImplementation implements GetIt {
         }
       }
     }
+  }
+
+  /// In some cases it can be necessary to change the name of a registered instance
+  /// This avoids to unregister and reregister the instance which might cause trouble
+  /// with disposing functions.
+  /// IMPORTANT: This will only change the the first instance that is found while
+  /// searching the scopes.
+  /// If the new name is already in use in the current scope it will throw a
+  /// StateError
+  /// [instanceName] the current name of the instance
+  /// [newInstanceName] the new name of the instance
+  /// [instance] the instance itself that can be used instead of
+  /// providing the type and the name. If [instance] is null the type and the name
+  /// have to be provided
+  @override
+  void changeTypeInstanceName<T extends Object>({
+    String? instanceName,
+    required String newInstanceName,
+    T? instance,
+  }) {
+    assert(instance != null || instanceName != null,
+        'You have to provide either an instance or an instanceName');
+
+    final factoryToRename = instance != null
+        ? _findFactoryByInstance(instance)
+        : _findFactoryByNameAndType<T>(instanceName);
+
+    if (instance != null) {
+      instanceName = factoryToRename.instanceName;
+    }
+
+    throwIfNot(
+      factoryToRename.isNamedRegistration,
+      StateError(
+        'This instance $instance is not registered with a name',
+      ),
+    );
+
+    final typeRegistration = factoryToRename.registeredIn;
+    throwIf(
+      typeRegistration.namedFactories.containsKey(newInstanceName),
+      StateError(
+        'There is already an instance of type ${factoryToRename.registrationType} registered with the name $newInstanceName',
+      ),
+    );
+
+    typeRegistration.namedFactories[newInstanceName] = factoryToRename;
+    typeRegistration.namedFactories.remove(instanceName);
+    factoryToRename.instanceName = newInstanceName;
   }
 
   /// Clears the instance of a lazy singleton,

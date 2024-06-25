@@ -1019,6 +1019,77 @@ void main() {
       throwsA(const TypeMatcher<StateError>()),
     );
   });
+  test('change registration name with type and name', () async {
+    final getIt = GetIt.instance;
+    disposeCounter = 0;
+
+    getIt.registerSingleton(TestClass(), instanceName: 'instanceName');
+
+    final TestClass instance1 = getIt.get(instanceName: 'instanceName');
+
+    expect(instance1 is TestClass, true);
+
+    getIt.changeTypeInstanceName<TestClass>(
+      instanceName: 'instanceName',
+      newInstanceName: 'instanceName2',
+    );
+
+    expect(disposeCounter, 0);
+
+    expect(
+      () => getIt<TestClass>(instanceName: 'instanceName'),
+      throwsA(const TypeMatcher<StateError>()),
+    );
+    expect(
+      getIt<TestClass>(instanceName: 'instanceName2'),
+      const TypeMatcher<TestClass>(),
+    );
+  });
+
+  test('change registration name with type and name existing name', () async {
+    final getIt = GetIt.instance;
+
+    getIt.registerSingleton(TestClass(), instanceName: 'instanceName');
+    getIt.registerSingleton(TestClass(), instanceName: 'instanceNameExisting');
+
+    final TestClass instance1 = getIt.get(instanceName: 'instanceName');
+
+    expect(instance1 is TestClass, true);
+
+    expect(() {
+      getIt.changeTypeInstanceName<TestClass>(
+        instanceName: 'instanceName',
+        newInstanceName: 'instanceNameExisting',
+      );
+    }, throwsA(const TypeMatcher<StateError>()));
+  });
+
+  test('change registration name of instance', () async {
+    final getIt = GetIt.instance;
+    disposeCounter = 0;
+
+    getIt.registerSingleton(TestClass(), instanceName: 'instanceName');
+
+    final TestClass instance1 = getIt.get(instanceName: 'instanceName');
+
+    expect(instance1 is TestClass, true);
+
+    getIt.changeTypeInstanceName(
+      instance: instance1,
+      newInstanceName: 'instanceName2',
+    );
+
+    expect(disposeCounter, 0);
+
+    expect(
+      () => getIt<TestClass>(instanceName: 'instanceName'),
+      throwsA(const TypeMatcher<StateError>()),
+    );
+    expect(
+      getIt<TestClass>(instanceName: 'instanceName2'),
+      const TypeMatcher<TestClass>(),
+    );
+  });
 
   test(
       'can register a singleton with instanceName and retrieve it with generic parameters and instanceName',

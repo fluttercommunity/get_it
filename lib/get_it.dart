@@ -422,6 +422,24 @@ abstract class GetIt {
   /// is registered inside GetIt
   bool isRegistered<T extends Object>({Object? instance, String? instanceName});
 
+  /// In some cases it can be necessary to change the name of a registered instance
+  /// This avoids to unregister and reregister the instance which might cause trouble
+  /// with disposing functions.
+  /// IMPORTANT: This will only change the the first instance that is found while
+  /// searching the scopes.
+  /// If the new name is already in use in the current scope it will throw a
+  /// StateError
+  /// [instanceName] the current name of the instance
+  /// [newInstanceName] the new name of the instance
+  /// [instance] the instance itself that can be used instead of
+  /// providing the type and the name. If [instance] is null the type and the name
+  /// have to be provided
+  void changeTypeInstanceName<T extends Object>({
+    String? instanceName,
+    required String newInstanceName,
+    T? instance,
+  });
+
   /// Clears all registered types in the reverse order in which they were registered.
   /// Handy when writing unit tests or when disposing services that depend on each other.
   /// If you provided dispose function when registering they will be called
