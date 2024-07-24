@@ -239,7 +239,7 @@ void resetLazySingleton<T>({Object instance,
 ### Resetting GetIt completely
 
 ```Dart
-/// Disposes all registered types in the reverse order in which they were registered.
+/// Clears all registered types in the reverse order in which they were registered.
 /// Handy when writing unit tests or before quitting your application.
 /// If you provided dispose function when registering they will be called
 /// [dispose] if `false` it only resets without calling any dispose
