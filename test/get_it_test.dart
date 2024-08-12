@@ -1,6 +1,5 @@
 // ignore_for_file: unnecessary_type_check, avoid_redundant_argument_values, avoid_classes_with_only_static_members
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:get_it/get_it.dart';
 import 'package:test/test.dart';
@@ -332,8 +331,8 @@ void main() {
     await Future.delayed(const Duration(milliseconds: 1000));
     storage.clear();
     await Future.delayed(const Duration(milliseconds: 10));
-    NativeRuntime.writeHeapSnapshotToFile('dump.heapsnapshot');
-    final TestBaseClass? instance3 = getIt.get<TestBaseClass>();
+    // NativeRuntime.writeHeapSnapshotToFile('dump.heapsnapshot');
+    getIt.get<TestBaseClass>();
     expect(constructorCounter, 2);
 
     GetIt.I.reset();
