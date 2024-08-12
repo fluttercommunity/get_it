@@ -231,6 +231,13 @@ abstract class GetIt {
     String? instanceName,
   });
 
+  /// Like registerFactory but holds a week reference to the last created instance
+  /// if the instance wasn't garbage collected yet it will return this instance instead of creating a new one
+  void registerCachedFactory<T extends Object>(
+    FactoryFunc<T> factoryFunc, {
+    String? instanceName,
+  });
+
   /// registers a type so that a new instance will be created on each call of [get] on that type
   /// based on up to two parameters provided to [get()]
   /// [T] type to register
@@ -255,6 +262,14 @@ abstract class GetIt {
     String? instanceName,
   });
 
+  /// Like registerFactoryParam but holds a week reference to the last created instance
+  /// if the instance wasn't garbage collected yet, and if the passed parameter haven't changed,
+  /// it will return this instance instead of creating a new one
+  void registerCachedFactoryParam<T extends Object, P1, P2>(
+    FactoryFuncParam<T, P1, P2> factoryFunc, {
+    String? instanceName,
+  });
+
   /// registers a type so that a new instance will be created on each call of [getAsync] on that type
   /// the creation function is executed asynchronously and has to be accessed with [getAsync]
   /// [T] type to register
@@ -264,6 +279,13 @@ abstract class GetIt {
   /// than one instance of one type.
   void registerFactoryAsync<T extends Object>(
     FactoryFuncAsync<T> factoryFunc, {
+    String? instanceName,
+  });
+
+  /// Like registerFactoryAsync but holds a week reference to the last created instance
+  /// if the instance wasn't garbage collected yet it will return this instance instead of creating a new one
+  void registerCachedFactoryAsync<T extends Object>(
+    FactoryFunc<T> factoryFunc, {
     String? instanceName,
   });
 
@@ -289,6 +311,14 @@ abstract class GetIt {
   ///        => TestClassParam(param1:s);
   void registerFactoryParamAsync<T extends Object, P1, P2>(
     FactoryFuncParamAsync<T, P1?, P2?> factoryFunc, {
+    String? instanceName,
+  });
+
+  /// Like registerFactoryParamAsync but holds a week reference to the last created instance
+  /// if the instance wasn't garbage collected yet, and if the passed parameter haven't changed,
+  /// it will return this instance instead of creating a new one
+  void registerCachedFactoryParamAsync<T extends Object, P1, P2>(
+    FactoryFuncParam<T, P1, P2> factoryFunc, {
     String? instanceName,
   });
 
@@ -395,6 +425,7 @@ abstract class GetIt {
     FactoryFunc<T> factoryFunc, {
     String? instanceName,
     DisposingFunc<T>? dispose,
+    bool useWeakReference = false,
   });
 
   /// registers a type as Singleton by passing an async factory function that will be called
@@ -416,6 +447,7 @@ abstract class GetIt {
     FactoryFuncAsync<T> factoryFunc, {
     String? instanceName,
     DisposingFunc<T>? dispose,
+    bool useWeakReference = false,
   });
 
   /// Tests if an [instance] of an object or aType [T] or a name [instanceName]
@@ -534,6 +566,10 @@ abstract class GetIt {
     T? instance,
     String? instanceName,
     FutureOr Function(T)? disposingFunction,
+  });
+
+  bool checkLazySingletonInstanceExists<T extends Object>({
+    String? instanceName,
   });
 
   /// Unregister an [instance] of an object or a factory/singleton by Type [T] or by name

@@ -38,6 +38,7 @@ enum _ServiceFactoryType {
   alwaysNew, // factory which means on every call of [get] a new instance is created
   constant, // normal singleton
   lazy, // lazy
+  cachedFactory, // cached factoryj
 }
 
 /// If I use `Singleton` without specifier in the comments I mean normal and lazy
@@ -50,6 +51,9 @@ class _ServiceFactory<T extends Object, P1, P2> {
 
   late final Type param1Type;
   late final Type param2Type;
+
+  P1? lastParam1;
+  P2? lastParam2;
 
   /// Because of the different creation methods we need alternative factory functions
   /// only one of them is always set.
@@ -69,13 +73,28 @@ class _ServiceFactory<T extends Object, P1, P2> {
 
   /// If an existing Object gets registered or an async/lazy Singleton has finished
   /// its creation, it is stored here
-  T? instance;
+  T? _instance;
+  WeakReference<T>? weakReferenceInstance;
+  final bool useWeakReference;
+
+  T? get instance =>
+      weakReferenceInstance != null && weakReferenceInstance!.target != null
+          ? weakReferenceInstance!.target
+          : _instance;
+
+  void resetInstance() {
+    if (useWeakReference) {
+      weakReferenceInstance = null;
+    } else {
+      _instance = null;
+    }
+  }
 
   /// the type that was used when registering, used for runtime checks
   late final Type registrationType;
 
   /// to enable Singletons to signal that they are ready (their initialization is finished)
-  late Completer<T> _readyCompleter;
+  late Completer _readyCompleter;
 
   /// the returned future of pending async factory calls or factory call with dependencies
   Future<T>? pendingResult;
@@ -104,14 +123,16 @@ class _ServiceFactory<T extends Object, P1, P2> {
     this.asyncCreationFunction,
     this.creationFunctionParam,
     this.asyncCreationFunctionParam,
-    this.instance,
+    T? instance,
     this.isAsync = false,
     this.instanceName,
+    this.useWeakReference = false,
     required this.shouldSignalReady,
     required this.registrationScope,
     required this.registeredIn,
     this.disposeFunction,
-  }) : assert(
+  })  : _instance = instance,
+        assert(
             !(disposeFunction != null &&
                 instance != null &&
                 instance is Disposable),
@@ -174,13 +195,36 @@ class _ServiceFactory<T extends Object, P1, P2> {
           } else {
             return creationFunction!();
           }
+        case _ServiceFactoryType.cachedFactory:
+          if (weakReferenceInstance?.target != null &&
+              param1 == lastParam1 &&
+              param2 == lastParam2) {
+            return weakReferenceInstance!.target!;
+          } else {
+            T newInstance;
+            if (creationFunctionParam != null) {
+              newInstance = creationFunctionParam!(param1 as P1, param2 as P2);
+            } else {
+              newInstance = creationFunction!();
+            }
+            weakReferenceInstance = WeakReference(newInstance);
+            return newInstance;
+          }
         case _ServiceFactoryType.constant:
           return instance!;
         case _ServiceFactoryType.lazy:
           if (instance == null) {
-            instance = creationFunction!();
+            if (useWeakReference) {
+              if (weakReferenceInstance != null) {
+                /// this means that the instance was already created and disposed
+                _readyCompleter = Completer();
+              }
+              weakReferenceInstance = WeakReference(creationFunction!());
+            } else {
+              _instance = creationFunction!();
+            }
             objectsWaiting.clear();
-            _readyCompleter.complete(instance!);
+            _readyCompleter.complete();
 
             /// check if we are shadowing an existing Object
             final factoryThatWouldbeShadowed =
@@ -198,8 +242,6 @@ class _ServiceFactory<T extends Object, P1, P2> {
             }
           }
           return instance!;
-        default:
-          throw StateError('Impossible factoryType');
       }
     } catch (e, s) {
       _debugOutput('Error while creating $T');
@@ -242,6 +284,25 @@ class _ServiceFactory<T extends Object, P1, P2> {
           } else {
             return asyncCreationFunction!() as Future<R>;
           }
+        case _ServiceFactoryType.cachedFactory:
+          if (weakReferenceInstance?.target != null &&
+              param1 == lastParam1 &&
+              param2 == lastParam2) {
+            return Future<R>.value(weakReferenceInstance!.target! as R);
+          } else {
+            if (creationFunctionParam != null) {
+              return asyncCreationFunctionParam!(param1 as P1, param2 as P2)
+                  .then((value) {
+                weakReferenceInstance = WeakReference(value);
+                return value;
+              }) as Future<R>;
+            } else {
+              return asyncCreationFunction!().then((value) {
+                weakReferenceInstance = WeakReference(value);
+                return value;
+              }) as Future<R>;
+            }
+          }
         case _ServiceFactoryType.constant:
           if (instance != null) {
             return Future<R>.value(instance as R);
@@ -267,10 +328,14 @@ class _ServiceFactory<T extends Object, P1, P2> {
               if (!shouldSignalReady) {
                 /// only complete automatically if the registration wasn't marked with
                 /// [signalsReady==true]
-                _readyCompleter.complete(newInstance);
+                _readyCompleter.complete();
                 objectsWaiting.clear();
               }
-              instance = newInstance;
+              if (useWeakReference) {
+                weakReferenceInstance = WeakReference(newInstance);
+              } else {
+                _instance = newInstance;
+              }
 
               /// check if we are shadowing an existing Object
               final factoryThatWouldbeShadowed =
@@ -329,6 +394,7 @@ class _Scope {
   final String? name;
   final ScopeDisposeFunc? disposeFunc;
   bool isFinal = false;
+  bool isPopping = false;
   // ignore: prefer_collection_literals
   final typeRegistrations =
       // ignore: prefer_collection_literals
@@ -678,6 +744,64 @@ class _GetItImplementation implements GetIt {
     );
   }
 
+  @override
+  void registerCachedFactory<T extends Object>(
+    FactoryFunc<T> factoryFunc, {
+    String? instanceName,
+  }) {
+    _register<T, void, void>(
+      type: _ServiceFactoryType.cachedFactory,
+      instanceName: instanceName,
+      factoryFunc: factoryFunc,
+      isAsync: false,
+      shouldSignalReady: false,
+      useWeakReference: true,
+    );
+  }
+
+  @override
+  void registerCachedFactoryParam<T extends Object, P1, P2>(
+    FactoryFuncParam<T, P1, P2> factoryFunc, {
+    String? instanceName,
+  }) {
+    _register<T, P1, P2>(
+      type: _ServiceFactoryType.cachedFactory,
+      instanceName: instanceName,
+      factoryFuncParam: factoryFunc,
+      isAsync: false,
+      shouldSignalReady: false,
+      useWeakReference: true,
+    );
+  }
+
+  @override
+  void registerCachedFactoryAsync<T extends Object>(FactoryFunc<T> factoryFunc,
+      {String? instanceName}) {
+    _register<T, void, void>(
+      type: _ServiceFactoryType.cachedFactory,
+      instanceName: instanceName,
+      factoryFunc: factoryFunc,
+      isAsync: true,
+      shouldSignalReady: false,
+      useWeakReference: true,
+    );
+  }
+
+  @override
+  void registerCachedFactoryParamAsync<T extends Object, P1, P2>(
+    FactoryFuncParam<T, P1, P2> factoryFunc, {
+    String? instanceName,
+  }) {
+    _register<T, P1, P2>(
+      type: _ServiceFactoryType.cachedFactory,
+      instanceName: instanceName,
+      factoryFuncParam: factoryFunc,
+      isAsync: true,
+      shouldSignalReady: false,
+      useWeakReference: true,
+    );
+  }
+
   /// registers a type so that a new instance will be created on each call of [get] on that
   /// type based on up to two parameters provided to [get()]
   /// [T] type to register
@@ -775,6 +899,7 @@ class _GetItImplementation implements GetIt {
     FactoryFunc<T> factoryFunc, {
     String? instanceName,
     DisposingFunc<T>? dispose,
+    bool useWeakReference = false,
   }) {
     _register<T, void, void>(
       type: _ServiceFactoryType.lazy,
@@ -783,6 +908,7 @@ class _GetItImplementation implements GetIt {
       isAsync: false,
       shouldSignalReady: false,
       disposeFunc: dispose,
+      useWeakReference: useWeakReference,
     );
   }
 
@@ -954,6 +1080,7 @@ class _GetItImplementation implements GetIt {
     FactoryFuncAsync<T> factoryFunc, {
     String? instanceName,
     DisposingFunc<T>? dispose,
+    bool useWeakReference = false,
   }) {
     _register<T, void, void>(
       isAsync: true,
@@ -962,6 +1089,7 @@ class _GetItImplementation implements GetIt {
       factoryFuncAsync: factoryFunc,
       shouldSignalReady: false,
       disposeFunc: dispose,
+      useWeakReference: useWeakReference,
     );
   }
 
@@ -1119,12 +1247,27 @@ class _GetItImplementation implements GetIt {
       }
     }
 
-    instanceFactory.instance = null;
+    instanceFactory.resetInstance();
     instanceFactory.pendingResult = null;
-    instanceFactory._readyCompleter = Completer<T>();
+    instanceFactory._readyCompleter = Completer();
     if (disposeReturn is Future) {
       await disposeReturn;
     }
+  }
+
+  @override
+  bool checkLazySingletonInstanceExists<T extends Object>({
+    String? instanceName,
+  }) {
+    final instanceFactory = _findFactoryByNameAndType<T>(instanceName);
+    throwIfNot(
+      instanceFactory.factoryType == _ServiceFactoryType.lazy,
+      StateError(
+        'There is no type $T  with name $instanceName registered as LazySingleton in GetIt',
+      ),
+    );
+
+    return instanceFactory.instance != null;
   }
 
   List<_ServiceFactory> get _allFactories =>
@@ -1269,6 +1412,9 @@ class _GetItImplementation implements GetIt {
   /// As dispose functions can be async, you should await this function.
   @override
   Future<void> popScope() async {
+    if (_currentScope.isPopping) {
+      return;
+    }
     throwIf(
         _pushScopeInProgress,
         StateError('you can not pop a scope '
@@ -1281,10 +1427,12 @@ class _GetItImplementation implements GetIt {
     );
     // make sure that nothing new can be registered in this scope
     // while the scopes async dispose functions are running
-    _currentScope.isFinal = true;
-    await _currentScope.dispose();
-    await _currentScope.reset(dispose: true);
-    _scopes.removeLast();
+    final scopeToPop = _currentScope;
+    scopeToPop.isFinal = true;
+    scopeToPop.isPopping = true;
+    await scopeToPop.dispose();
+    await scopeToPop.reset(dispose: true);
+    _scopes.remove(scopeToPop);
     onScopeChanged?.call(false);
   }
 
@@ -1298,16 +1446,21 @@ class _GetItImplementation implements GetIt {
       scopeName != _baseScopeName || !inclusive,
       "You can't pop the base scope",
     );
-    if (_scopes.firstWhereOrNull((x) => x.name == scopeName) == null) {
+    if (!hasScope(scopeName)) {
       return false;
     }
     String? poppedScopeName;
+    _Scope nextScopeToPop = _currentScope;
     do {
-      poppedScopeName = _currentScope.name;
-      await popScope();
-    } while (inclusive
+      poppedScopeName = nextScopeToPop.name;
+      await dropScope(poppedScopeName!);
+      nextScopeToPop = _scopes.lastWhere((x) => x.isPopping == false);
+      if (nextScopeToPop.name == _baseScopeName) {
+        return true;
+      }
+    } while (hasScope(scopeName) && inclusive
         ? (poppedScopeName != scopeName)
-        : (_currentScope.name != scopeName));
+        : (nextScopeToPop.name != scopeName));
     onScopeChanged?.call(false);
     return true;
   }
@@ -1329,6 +1482,7 @@ class _GetItImplementation implements GetIt {
     if (currentScopeName == scopeName) {
       return popScope();
     }
+
     throwIfNot(
       _scopes.length > 1,
       StateError(
@@ -1339,9 +1493,15 @@ class _GetItImplementation implements GetIt {
       (s) => s.name == scopeName,
       orElse: () => throw ArgumentError("Scope $scopeName not found"),
     );
+    if (scope.isPopping) {
+      /// due to some race conditions it is possible that a scope is already
+      /// popping when we try to drop it.
+      return;
+    }
     // make sure that nothing new can be registered in this scope
     // while the scopes async dispose functions are running
     scope.isFinal = true;
+    scope.isPopping = true;
     await scope.dispose();
     await scope.reset(dispose: true);
     _scopes.remove(scope);
@@ -1368,6 +1528,7 @@ class _GetItImplementation implements GetIt {
     Iterable<Type>? dependsOn,
     required bool shouldSignalReady,
     DisposingFunc<T>? disposeFunc,
+    bool useWeakReference = false,
   }) {
     throwIfNot(
       const Object() is! T,
@@ -1437,21 +1598,19 @@ class _GetItImplementation implements GetIt {
     final typeRegistration = registrationScope.typeRegistrations
         .putIfAbsent(T, () => _TypeRegistration<T>());
 
-    final serviceFactory = _ServiceFactory<T, P1, P2>(
-      this,
-      type,
-      registeredIn: typeRegistration,
-      registrationScope: registrationScope,
-      creationFunction: factoryFunc,
-      creationFunctionParam: factoryFuncParam,
-      asyncCreationFunctionParam: factoryFuncParamAsync,
-      asyncCreationFunction: factoryFuncAsync,
-      instance: instance,
-      isAsync: isAsync,
-      instanceName: instanceName,
-      shouldSignalReady: shouldSignalReady,
-      disposeFunction: disposeFunc,
-    );
+    final serviceFactory = _ServiceFactory<T, P1, P2>(this, type,
+        registeredIn: typeRegistration,
+        registrationScope: registrationScope,
+        creationFunction: factoryFunc,
+        creationFunctionParam: factoryFuncParam,
+        asyncCreationFunctionParam: factoryFuncParamAsync,
+        asyncCreationFunction: factoryFuncAsync,
+        instance: instance,
+        isAsync: isAsync,
+        instanceName: instanceName,
+        shouldSignalReady: shouldSignalReady,
+        disposeFunction: disposeFunc,
+        useWeakReference: useWeakReference);
 
     if (instanceName != null) {
       typeRegistration.namedFactories[instanceName] = serviceFactory;
@@ -1534,10 +1693,10 @@ class _GetItImplementation implements GetIt {
       /// because its dependent on other objects this doesn't work because [pendingResult] is
       /// not set in that case. Therefore we have to set [outerFutureGroup] as [pendingResult]
       dependentFuture.then((_) {
-        Future<T> isReadyFuture;
+        Future isReadyFuture;
         if (!isAsync) {
           /// SingletonWithDependencies
-          serviceFactory.instance = factoryFunc!();
+          serviceFactory._instance = factoryFunc!();
 
           /// check if we are shadowing an existing Object
           final factoryThatWouldbeShadowed =
@@ -1568,7 +1727,7 @@ class _GetItImplementation implements GetIt {
           final asyncResult = factoryFuncAsync!();
 
           isReadyFuture = asyncResult.then((instance) {
-            serviceFactory.instance = instance;
+            serviceFactory._instance = instance;
 
             /// check if we are shadowing an existing Object
             final factoryThatWouldbeShadowed =
@@ -1586,7 +1745,7 @@ class _GetItImplementation implements GetIt {
             }
 
             if (!serviceFactory.shouldSignalReady && !serviceFactory.isReady) {
-              serviceFactory._readyCompleter.complete(instance);
+              serviceFactory._readyCompleter.complete();
               serviceFactory.objectsWaiting.clear();
             }
 
@@ -1602,7 +1761,7 @@ class _GetItImplementation implements GetIt {
       /// we just use that one
       serviceFactory.pendingResult =
           outerFutureGroup.future.then((completedFutures) {
-        return completedFutures.last as T;
+        return serviceFactory.instance!;
       });
     }
   }
@@ -1648,7 +1807,7 @@ class _GetItImplementation implements GetIt {
         ),
       );
 
-      registeredInstance._readyCompleter.complete(instance);
+      registeredInstance._readyCompleter.complete();
       registeredInstance.objectsWaiting.clear();
     } else {
       /// Manual signalReady without an instance
@@ -1810,13 +1969,13 @@ class _GetItImplementation implements GetIt {
     } else {
       factoryToCheck = _findFactoryByNameAndType<T>(instanceName);
     }
-    throwIfNot(
-      factoryToCheck.canBeWaitedFor &&
-          factoryToCheck.factoryType != _ServiceFactoryType.alwaysNew,
-      ArgumentError(
-          'You only can use this function on Singletons that are async, that are marked as '
-          'dependent or that are marked with "signalsReady==true"'),
-    );
+    // throwIfNot(
+    //   factoryToCheck.canBeWaitedFor &&
+    //       factoryToCheck.factoryType != _ServiceFactoryType.alwaysNew,
+    //   ArgumentError(
+    //       'You only can use this function on Singletons that are async, that are marked as '
+    //       'dependent or that are marked with "signalsReady==true"'),
+    // );
     if (!factoryToCheck.isReady) {
       factoryToCheck.objectsWaiting.add(callee.runtimeType);
     }

@@ -1,3 +1,4 @@
+## [8.0.0-pre-6] - 11.08.2024 testing weak references in lazySingeltons
 ## [8.0.0-pre-5] - 25.06.2024 adding `changeTypeInstanceName`
 ## [8.0.0-pre-4] - 03.06.2024 fixing bug in `unregister` that happened if you tried to unregister a named registration by providing an istance instead of the type and the instance name
 ## [8.0.0-pre-3] - 31.05.2024 releaseInstance will now throw if the instance isn't registered

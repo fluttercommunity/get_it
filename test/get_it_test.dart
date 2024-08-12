@@ -1,5 +1,6 @@
 // ignore_for_file: unnecessary_type_check, avoid_redundant_argument_values, avoid_classes_with_only_static_members
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:get_it/get_it.dart';
 import 'package:test/test.dart';
@@ -289,6 +290,51 @@ void main() {
     expect(instance1, instance2);
 
     expect(constructorCounter, 1);
+
+    GetIt.I.reset();
+  });
+  test('register lazySingleton with weakReference', () async {
+    final storage = <List<int>>[];
+
+    void allocateMemory() {
+      storage.add(List.generate(3000, (n) => n));
+      if (storage.length > 1000) {
+        storage.removeAt(0);
+      }
+    }
+
+    final getIt = GetIt.instance;
+    constructorCounter = 0;
+    getIt.registerLazySingleton<TestBaseClass>(
+      () => TestClass(),
+      useWeakReference: true,
+    );
+
+    expect(constructorCounter, 0);
+
+    TestBaseClass? instance1 = getIt.get<TestBaseClass>();
+
+    expect(instance1 is TestClass, true);
+    expect(constructorCounter, 1);
+
+    TestBaseClass? instance2 = getIt.get<TestBaseClass>();
+
+    expect(instance1, instance2);
+
+    expect(constructorCounter, 1);
+
+    getIt.isReady<TestBaseClass>();
+    instance1 = null;
+    instance2 = null;
+    for (var i = 0; i < 300; i++) {
+      allocateMemory();
+    }
+    await Future.delayed(const Duration(milliseconds: 1000));
+    storage.clear();
+    await Future.delayed(const Duration(milliseconds: 10));
+    NativeRuntime.writeHeapSnapshotToFile('dump.heapsnapshot');
+    final TestBaseClass? instance3 = getIt.get<TestBaseClass>();
+    expect(constructorCounter, 2);
 
     GetIt.I.reset();
   });
