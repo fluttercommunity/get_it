@@ -1,3 +1,4 @@
+## [8.0.0] official new release with all the changes
 ## [8.0.0-pre-7] - 12.08.2024 
 * adding cachedFatories and better scope protection against race conditions
 ## [8.0.0-pre-6] - 11.08.2024 testing weak references in lazySingeltons
