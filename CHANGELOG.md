@@ -3,13 +3,13 @@
 * adding cachedFatories and better scope protection against race conditions
 ## [8.0.0-pre-6] - 11.08.2024 testing weak references in lazySingeltons
 ## [8.0.0-pre-5] - 25.06.2024 adding `changeTypeInstanceName`
-## [8.0.0-pre-4] - 03.06.2024 fixing bug in `unregister` that happened if you tried to unregister a named registration by providing an istance instead of the type and the instance name
+## [8.0.0-pre-4] - 03.06.2024 fixing bug in `unregister` that happened if you tried to unregister a named registration by providing an instance instead of the type and the instance name
 ## [8.0.0-pre-3] - 31.05.2024 releaseInstance will now throw if the instance isn't registered
-## [8.0.0-pre-2] - 29.05.2024 fixing negitiv reference count
+## [8.0.0-pre-2] - 29.05.2024 fixing negative reference count
 ## [8.0.0-pre-1] - 26.05.2024 
 * `getAll()` and `getAllAsync()` now have a `fromAllScopes` parameter.
-* adding safeguards according to https://github.com/fluttercommunity/get_it/issues/364 to make it impossilble to call `push/popScope` while the `init()` function of another pushScope is running.
-* fixed an usafe type check when using a runtime type to acess an object in get_it.
+* adding safeguards according to https://github.com/fluttercommunity/get_it/issues/364 to make it impossible to call `push/popScope` while the `init()` function of another pushScope is running.
+* fixed an unsafe type check when using a runtime type to access an object in get_it.
 ## [7.7.0] - 15.04.2024 thanks to the PR by @kasefuchs https://github.com/fluttercommunity/get_it/pull/361 `getAll` is now available in an async version too.
 ## [7.6.9] - 11.04.2024
 * fig for bug that was introduced in 7.6.8 https://github.com/fluttercommunity/get_it/issues/358
