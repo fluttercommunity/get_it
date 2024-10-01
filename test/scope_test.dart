@@ -82,7 +82,7 @@ void main() {
 
     getIt.unregister<TestClass2>();
 
-    expect(() => getIt.get<TestClass2>(), throwsA(isA<StateError>()));
+    expect(() => getIt.get<TestClass2>(), throwsStateError);
   });
 
   test('register constant in two scopes', () {
@@ -358,7 +358,7 @@ void main() {
     expect(instanceTestClassScope1.id, 'Basescope');
     expect(
       () => getIt.get<TestClass2>(),
-      throwsA(const TypeMatcher<StateError>()),
+      throwsStateError,
     );
   });
 
@@ -387,7 +387,7 @@ void main() {
     expect(instanceTestClassScope1.id, 'Basescope');
     expect(
       () => getIt.get<TestClass2>(),
-      throwsA(const TypeMatcher<StateError>()),
+      throwsStateError,
     );
   });
   test('popscopeuntil inclusive=false', () async {
@@ -415,7 +415,7 @@ void main() {
     expect(instanceTestClassScope1.id, '2. scope');
     expect(
       () => getIt.get<TestClass2>(),
-      throwsA(const TypeMatcher<StateError>()),
+      throwsStateError,
     );
   });
 
@@ -477,7 +477,7 @@ void main() {
   test('popscope throws if already on the base scope', () async {
     final getIt = GetIt.instance;
 
-    expect(() => getIt.popScope(), throwsA(const TypeMatcher<StateError>()));
+    expect(() => getIt.popScope(), throwsStateError);
   });
 
   test('dropScope', () async {
@@ -504,7 +504,7 @@ void main() {
     expect(instanceTestClassScope1.id, 'Basescope');
     expect(
       () => getIt.get<TestClass2>(),
-      throwsA(const TypeMatcher<StateError>()),
+      throwsStateError,
     );
 
     final instanceTestClass3Scope3 = getIt.get<TestClass3>();
@@ -517,7 +517,7 @@ void main() {
     getIt.pushNewScope(scopeName: 'scope2');
     await expectLater(
       () => getIt.dropScope('scope'),
-      throwsA(const TypeMatcher<ArgumentError>()),
+      throwsA(isA<ArgumentError>()),
     );
   });
 
@@ -541,7 +541,7 @@ void main() {
 
     expect(
       () => getIt.get<TestClass>(),
-      throwsA(const TypeMatcher<StateError>()),
+      throwsStateError,
     );
     expect(getIt.get<TestClass2>(), isNotNull);
   });
@@ -584,7 +584,7 @@ void main() {
     expect(getIt<TestClass>(instanceName: 'scope2'), isNotNull);
     expect(
       () => getIt.get<TestClass>(instanceName: 'scope3'),
-      throwsA(const TypeMatcher<StateError>()),
+      throwsStateError,
     );
 
     expect(disposeCounter, 2);
@@ -635,7 +635,7 @@ void main() {
     expect(getIt<TestClass>(instanceName: 'scope2'), isNotNull);
     expect(
       () => getIt.get<TestClass>(instanceName: 'scope3'),
-      throwsA(const TypeMatcher<StateError>()),
+      throwsStateError,
     );
 
     expect(disposeCounter, 0);
@@ -682,19 +682,19 @@ void main() {
 
     expect(
       () => getIt.get<TestClass>(instanceName: 'scope0'),
-      throwsA(const TypeMatcher<StateError>()),
+      throwsStateError,
     );
     expect(
       () => getIt.get<TestClass>(instanceName: 'scope1'),
-      throwsA(const TypeMatcher<StateError>()),
+      throwsStateError,
     );
     expect(
       () => getIt.get<TestClass>(instanceName: 'scope2'),
-      throwsA(const TypeMatcher<StateError>()),
+      throwsStateError,
     );
     expect(
       () => getIt.get<TestClass>(instanceName: 'scope3'),
-      throwsA(const TypeMatcher<StateError>()),
+      throwsStateError,
     );
 
     expect(disposeCounter, 7);
@@ -759,19 +759,19 @@ void main() {
 
     expect(
       () => getIt.get<TestClass>(instanceName: 'scope0'),
-      throwsA(const TypeMatcher<StateError>()),
+      throwsStateError,
     );
     expect(
       () => getIt.get<TestClass>(instanceName: 'scope1'),
-      throwsA(const TypeMatcher<StateError>()),
+      throwsStateError,
     );
     expect(
       () => getIt.get<TestClass>(instanceName: 'scope2'),
-      throwsA(const TypeMatcher<StateError>()),
+      throwsStateError,
     );
     expect(
       () => getIt.get<TestClass>(instanceName: 'scope3'),
-      throwsA(const TypeMatcher<StateError>()),
+      throwsStateError,
     );
 
     expect(disposeCounter, 0);

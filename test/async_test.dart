@@ -161,7 +161,7 @@ void main() {
     /// We call [signalReady] before the last has completed
     expect(
       () => getIt.signalReady(null),
-      throwsA(const TypeMatcher<StateError>()),
+      throwsStateError,
     );
   });
 
@@ -222,7 +222,7 @@ void main() {
     /// We call [signalReady] before the last has completed
     expect(
       () => getIt.signalReady(null),
-      throwsA(const TypeMatcher<StateError>()),
+      throwsStateError,
     );
   });
   test('all ready ignoring pending async Singletons', () async {
@@ -396,7 +396,7 @@ void main() {
       instanceName: 'Second Instance',
     );
 
-    expect(getIt.allReady(), throwsA(isA<StateError>()));
+    expect(getIt.allReady(), throwsStateError);
   });
   test('ready manual synchronisation of sequence', () async {
     final getIt = GetIt.instance;
@@ -639,7 +639,7 @@ void main() {
     try {
       await getIt.allReady(timeout: const Duration(seconds: 1));
     } catch (ex) {
-      expect(ex, const TypeMatcher<WaitingTimeOutException>());
+      expect(ex, isA<WaitingTimeOutException>());
       final timeOut = ex as WaitingTimeOutException;
       expect(timeOut.notReadyYet.contains('null : TestClass'), true);
       expect(timeOut.notReadyYet.contains('null : TestClass2'), true);
@@ -666,7 +666,7 @@ void main() {
     );
 
     final instance = await getIt.getAsync<TestClass>();
-    expect(instance, const TypeMatcher<TestClass>());
+    expect(instance, isA<TestClass>());
   });
 
   test('register factory with one Param', () async {
@@ -765,7 +765,7 @@ void main() {
 
     expect(
       () => getIt.getAsync<TestClassParam>(param1: 'abc', param2: '3'),
-      throwsA(const TypeMatcher<TypeError>()),
+      throwsA(isA<TypeError>()),
     );
   });
 
@@ -781,7 +781,7 @@ void main() {
 
     expect(
       () => getIt.getAsync<TestClassParam>(),
-      throwsA(const TypeMatcher<TypeError>()),
+      throwsA(isA<TypeError>()),
     );
   });
 
@@ -795,7 +795,7 @@ void main() {
 
     expect(
       () => getIt.get<TestClass>(),
-      throwsA(const TypeMatcher<AssertionError>()),
+      throwsA(isA<AssertionError>()),
     );
   });
 
@@ -810,7 +810,7 @@ void main() {
     await Future.delayed(const Duration(microseconds: 1));
     expect(
       () => getIt.get<TestClass>(),
-      throwsA(const TypeMatcher<StateError>()),
+      throwsStateError,
     );
   });
 
@@ -823,7 +823,7 @@ void main() {
     );
 
     final instance = await getIt.getAsync<TestClass>();
-    expect(instance, const TypeMatcher<TestClass>());
+    expect(instance, isA<TestClass>());
   });
 
   test('asyncLazySingleton called with get after wait for ready', () async {
@@ -838,7 +838,7 @@ void main() {
     await getIt.isReady<TestClass>(timeout: const Duration(milliseconds: 20));
 
     final instance2 = getIt.get<TestClass>();
-    expect(instance2, const TypeMatcher<TestClass>());
+    expect(instance2, isA<TestClass>());
   });
 
   test('isReady called on asyncLazySingleton ', () async {
@@ -852,7 +852,7 @@ void main() {
     await getIt.isReady<TestClass>(timeout: const Duration(milliseconds: 20));
 
     final instance = getIt.get<TestClass>();
-    expect(instance, const TypeMatcher<TestClass>());
+    expect(instance, isA<TestClass>());
   });
 
   group("dependency", () {

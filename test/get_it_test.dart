@@ -180,7 +180,7 @@ void main() {
 
     expect(
       () => getIt.get<TestClassParam>(param1: 'abc', param2: '3'),
-      throwsA(const TypeMatcher<TypeError>()),
+      throwsA(isA<TypeError>()),
     );
   });
 
@@ -195,7 +195,7 @@ void main() {
 
     expect(
       () => getIt.get<TestClassParam>(param2: '3'),
-      throwsA(const TypeMatcher<TypeError>()),
+      throwsA(isA<TypeError>()),
     );
   });
 
@@ -251,7 +251,7 @@ void main() {
     await getIt.reset();
     expect(
       () => getIt.get<TestClass>(),
-      throwsA(const TypeMatcher<StateError>()),
+      throwsStateError,
     );
 
     expect(destructorCounter, 1);
@@ -266,7 +266,7 @@ void main() {
     await getIt.reset();
     expect(
       () => getIt.get<TestClass>(),
-      throwsA(const TypeMatcher<StateError>()),
+      throwsStateError,
     );
 
     expect(disposeCounter, 1);
@@ -343,7 +343,7 @@ void main() {
 
     expect(
       () => getIt.get<int>(),
-      throwsA(const TypeMatcher<StateError>()),
+      throwsStateError,
     );
 
     GetIt.I.reset();
@@ -442,7 +442,7 @@ void main() {
 
     expect(
       () => getIt(instanceName: 'not there'),
-      throwsA(const TypeMatcher<AssertionError>()),
+      throwsA(isA<AssertionError>()),
     );
     GetIt.I.reset();
   });
@@ -702,7 +702,7 @@ void main() {
 
     expect(
       () => getIt.get<TestClass>(),
-      throwsA(const TypeMatcher<StateError>()),
+      throwsStateError,
     );
   });
 
@@ -738,7 +738,7 @@ void main() {
 
     expect(
       () => getIt.get<TestClass>(),
-      throwsA(const TypeMatcher<StateError>()),
+      throwsStateError,
     );
   });
 
@@ -773,7 +773,7 @@ void main() {
 
     expect(
       () => getIt.get<TestClass>(),
-      throwsA(const TypeMatcher<StateError>()),
+      throwsStateError,
     );
   });
 
@@ -808,7 +808,7 @@ void main() {
 
     expect(
       () => getIt.get<TestClass>(),
-      throwsA(const TypeMatcher<StateError>()),
+      throwsStateError,
     );
   });
 
@@ -839,7 +839,7 @@ void main() {
 
     expect(
       () => getIt.get<TestClass>(),
-      throwsA(const TypeMatcher<StateError>()),
+      throwsStateError,
     );
   });
   test('testing reference counting', () async {
@@ -880,7 +880,7 @@ void main() {
 
     expect(
       () => getIt.get<TestClass>(),
-      throwsA(const TypeMatcher<StateError>()),
+      throwsStateError,
     );
   });
   test('testing reference counting - unregister', () async {
@@ -921,7 +921,7 @@ void main() {
 
     expect(
       () => getIt.get<TestClass>(),
-      throwsA(const TypeMatcher<StateError>()),
+      throwsStateError,
     );
   });
 
@@ -949,15 +949,15 @@ void main() {
 
     expect(
       () => getIt<TestClass>(instanceName: 'instanceName'),
-      throwsA(const TypeMatcher<StateError>()),
+      throwsStateError,
     );
     expect(
       getIt<TestClass>(instanceName: 'instanceName2'),
-      const TypeMatcher<TestClass>(),
+      isA<TestClass>(),
     );
     expect(
       getIt<TestClass2>(instanceName: 'instanceName'),
-      const TypeMatcher<TestClass2>(),
+      isA<TestClass2>(),
     );
   });
 
@@ -984,7 +984,7 @@ void main() {
 
     expect(
       () => getIt.get<TestClass>(),
-      throwsA(const TypeMatcher<StateError>()),
+      throwsStateError,
     );
   });
 
@@ -1011,7 +1011,7 @@ void main() {
 
     expect(
       () => getIt.get<TestClass>(),
-      throwsA(const TypeMatcher<StateError>()),
+      throwsStateError,
     );
   });
 
@@ -1040,7 +1040,7 @@ void main() {
 
     expect(
       () => getIt.get<TestClassDisposable>(),
-      throwsA(const TypeMatcher<StateError>()),
+      throwsStateError,
     );
   });
 
@@ -1061,7 +1061,7 @@ void main() {
 
     expect(
       () => getIt<TestClass>(instanceName: 'instanceName'),
-      throwsA(const TypeMatcher<StateError>()),
+      throwsStateError,
     );
   });
   test('change registration name with type and name', () async {
@@ -1083,11 +1083,11 @@ void main() {
 
     expect(
       () => getIt<TestClass>(instanceName: 'instanceName'),
-      throwsA(const TypeMatcher<StateError>()),
+      throwsStateError,
     );
     expect(
       getIt<TestClass>(instanceName: 'instanceName2'),
-      const TypeMatcher<TestClass>(),
+      isA<TestClass>(),
     );
   });
 
@@ -1108,7 +1108,7 @@ void main() {
           newInstanceName: 'instanceNameExisting',
         );
       },
-      throwsA(const TypeMatcher<StateError>()),
+      throwsStateError,
     );
   });
 
@@ -1131,11 +1131,11 @@ void main() {
 
     expect(
       () => getIt<TestClass>(instanceName: 'instanceName'),
-      throwsA(const TypeMatcher<StateError>()),
+      throwsStateError,
     );
     expect(
       getIt<TestClass>(instanceName: 'instanceName2'),
-      const TypeMatcher<TestClass>(),
+      isA<TestClass>(),
     );
   });
 
@@ -1196,7 +1196,7 @@ void main() {
 
     final Injector instance = GetIt.I<Injector>();
 
-    expect(instance, const TypeMatcher<Injector>());
+    expect(instance, isA<Injector>());
   });
 
   test('deregister in the same order of registering', () async {
@@ -1257,7 +1257,7 @@ void main() {
 
     expect(
       () => getIt<TestClassDisposableWithDependency>(),
-      throwsA(const TypeMatcher<StateError>()),
+      throwsStateError,
     );
 
     await getIt.unregister<TestClassDisposable>();
