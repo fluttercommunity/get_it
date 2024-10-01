@@ -1352,12 +1352,23 @@ class _GetItImplementation implements GetIt {
     );
     _pushScopeInProgress = true;
     _scopes.add(_Scope(name: scopeName, disposeFunc: dispose));
-    init?.call(this);
-    if (isFinal) {
-      _scopes.last.isFinal = true;
+    try {
+      init?.call(this);
+      if (isFinal) {
+        _scopes.last.isFinal = true;
+      }
+      onScopeChanged?.call(true);
+    } catch (e) {
+      final failedScope = _scopes.last;
+
+      /// prevend any new registrations in this scope
+      failedScope.isFinal = true;
+      failedScope.reset(dispose: true);
+      _scopes.removeLast();
+      rethrow;
+    } finally {
+      _pushScopeInProgress = false;
     }
-    onScopeChanged?.call(true);
-    _pushScopeInProgress = false;
   }
 
   bool _pushScopeInProgress = false;
@@ -1395,12 +1406,24 @@ class _GetItImplementation implements GetIt {
     );
     _pushScopeInProgress = true;
     _scopes.add(_Scope(name: scopeName, disposeFunc: dispose));
-    await init?.call(this);
-    if (isFinal) {
-      _scopes.last.isFinal = true;
+    try {
+      await init?.call(this);
+
+      if (isFinal) {
+        _scopes.last.isFinal = true;
+      }
+      onScopeChanged?.call(true);
+    } catch (e) {
+      final failedScope = _scopes.last;
+
+      /// prevend any new registrations in this scope
+      failedScope.isFinal = true;
+      await failedScope.reset(dispose: true);
+      _scopes.removeLast();
+      rethrow;
+    } finally {
+      _pushScopeInProgress = false;
     }
-    onScopeChanged?.call(true);
-    _pushScopeInProgress = false;
   }
 
   /// Disposes all factories/Singletons that have been registered in this scope
@@ -1756,9 +1779,6 @@ class _GetItImplementation implements GetIt {
         outerFutureGroup.close();
       });
 
-      /// outerFutureGroup.future returns a Future<List> and not a Future<T>
-      /// As we know that the actual factory function was added last to the FutureGroup
-      /// we just use that one
       serviceFactory.pendingResult =
           outerFutureGroup.future.then((completedFutures) {
         return serviceFactory.instance!;
