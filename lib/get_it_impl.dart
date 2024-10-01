@@ -38,7 +38,7 @@ enum _ServiceFactoryType {
   alwaysNew, // factory which means on every call of [get] a new instance is created
   constant, // normal singleton
   lazy, // lazy
-  cachedFactory, // cached factoryj
+  cachedFactory, // cached factory
 }
 
 /// If I use `Singleton` without specifier in the comments I mean normal and lazy
@@ -114,7 +114,7 @@ class _ServiceFactory<T extends Object, P1, P2> {
 
   final bool shouldSignalReady;
 
-  int _refenceCount = 0;
+  int _referenceCount = 0;
 
   _ServiceFactory(
     this._getItInstance,
@@ -251,7 +251,7 @@ class _ServiceFactory<T extends Object, P1, P2> {
   }
 
   /// returns an async instance depending on the type of the registration if [async==true] or
-  /// if [dependsOn.isnoEmpty].
+  /// if [dependsOn.isNotEmpty].
   Future<R> getObjectAsync<R>(dynamic param1, dynamic param2) async {
     assert(
       !(factoryType != _ServiceFactoryType.alwaysNew &&
@@ -512,7 +512,7 @@ class _GetItImplementation implements GetIt {
   bool allowReassignment = false;
 
   /// By default it's throws error when [allowReassignment]= false. and trying to register same type
-  /// If you really need, you can disable the Asserts / Errror by setting[skipDoubleRegistration]= true
+  /// If you really need, you can disable the Asserts / Error by setting[skipDoubleRegistration]= true
   @visibleForTesting
   @override
   bool skipDoubleRegistration = false;
@@ -943,9 +943,9 @@ class _GetItImplementation implements GetIt {
   /// [unregister] or [releaseInstance] calls will decrement the reference counter an won't unregister
   /// and dispose the registration as long as the reference counter is > 0.
   /// [T] type/interface that is used for the registration and the access via [get]
-  /// [factoryFunc] that is callled to create the instance if it is not already registered
+  /// [factoryFunc] that is called to create the instance if it is not already registered
   /// [instanceName] optional key to register more than one instance of one type
-  /// [dispose] disposing function that is autmatically called before the object is removed from get_it
+  /// [dispose] disposing function that is automatically called before the object is removed from get_it
   @override
   T registerSingletonIfAbsent<T extends Object>(
     T Function() factoryFunc, {
@@ -960,7 +960,7 @@ class _GetItImplementation implements GetIt {
               !existingFactory.isAsync,
           StateError(
               'registerSingletonIfAbsent can only be called for a type that is already registered as Singleton and not for factories or async/lazy Singletons'));
-      existingFactory._refenceCount++;
+      existingFactory._referenceCount++;
       return existingFactory.instance!;
     }
 
@@ -976,20 +976,20 @@ class _GetItImplementation implements GetIt {
     return instance;
   }
 
-  /// checks if a regiserter Singleton has an reference counter > 0
+  /// checks if a registered Singleton has an reference counter > 0
   /// if so it decrements the reference counter and if it reaches 0 it
   /// unregisters the Singleton
   /// if called on an object that's reference counter was never incremented
   /// it will immediately unregister and dispose the object
   @override
   void releaseInstance(Object instance) {
-    final registerdFactory = _findFactoryByInstance(instance);
-    if (registerdFactory._refenceCount < 1) {
-      assert(registerdFactory._refenceCount == 0,
+    final registeredFactory = _findFactoryByInstance(instance);
+    if (registeredFactory._referenceCount < 1) {
+      assert(registeredFactory._referenceCount == 0,
           'GetIt: releaseInstance was called on an object that was already released');
       unregister(instance: instance);
     } else {
-      registerdFactory._refenceCount--;
+      registeredFactory._referenceCount--;
     }
   }
 
@@ -1110,8 +1110,8 @@ class _GetItImplementation implements GetIt {
   /// Unregister an instance of an object or a factory/singleton by Type [T] or by name [instanceName]
   /// if you need to dispose any resources you can pass in a [disposingFunction] function
   /// that provides an instance of your class to be disposed
-  /// If you have provided an disposing functin when you registered the object that one will be called automatically
-  /// If you have enabled referece counting when registering, [unregister] will only unregister and dispose the object
+  /// If you have provided an disposing function when you registered the object that one will be called automatically
+  /// If you have enabled reference counting when registering, [unregister] will only unregister and dispose the object
   /// if referenceCount is 0
   ///
   @override
@@ -1132,8 +1132,8 @@ class _GetItImplementation implements GetIt {
       ),
     );
 
-    if (factoryToRemove._refenceCount > 0) {
-      factoryToRemove._refenceCount--;
+    if (factoryToRemove._referenceCount > 0) {
+      factoryToRemove._referenceCount--;
       return;
     }
     final typeRegistration = factoryToRemove.registeredIn;
@@ -1361,7 +1361,7 @@ class _GetItImplementation implements GetIt {
     } catch (e) {
       final failedScope = _scopes.last;
 
-      /// prevend any new registrations in this scope
+      /// prevent any new registrations in this scope
       failedScope.isFinal = true;
       failedScope.reset(dispose: true);
       _scopes.removeLast();
@@ -1416,7 +1416,7 @@ class _GetItImplementation implements GetIt {
     } catch (e) {
       final failedScope = _scopes.last;
 
-      /// prevend any new registrations in this scope
+      /// prevent any new registrations in this scope
       failedScope.isFinal = true;
       await failedScope.reset(dispose: true);
       _scopes.removeLast();
