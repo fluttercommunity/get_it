@@ -38,6 +38,27 @@ void main() {
     expect(getIt<DataStore>(), isA<MockDataStore>());
   });
 
+  test(' Ignores Double named registration error ', () async {
+    final getIt = GetIt.instance;
+    const instanceName = 'named';
+    getIt.reset();
+    getIt.allowReassignment = false;
+    getIt.skipDoubleRegistration = true;
+    getIt.registerSingleton<DataStore>(RemoteDataStore());
+    getIt.registerSingleton<DataStore>(
+      MockDataStore(),
+      instanceName: instanceName,
+    );
+    getIt.registerSingleton<DataStore>(MockDataStore());
+    getIt.registerSingleton<DataStore>(
+      RemoteDataStore(),
+      instanceName: instanceName,
+    );
+
+    expect(getIt<DataStore>(), isA<RemoteDataStore>());
+    expect(getIt<DataStore>(instanceName: instanceName), isA<MockDataStore>());
+  });
+
   test(' does not care about [skipDoubleRegistration] varibale   ', () async {
     final getIt = GetIt.instance;
     getIt.reset();
