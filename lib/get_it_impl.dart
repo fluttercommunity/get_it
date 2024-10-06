@@ -1586,7 +1586,9 @@ class _GetItImplementation implements GetIt {
         );
 
         /// skip double registration
-        if (skipDoubleRegistration && !allowReassignment) {
+        if (skipDoubleRegistration &&
+            !allowReassignment &&
+            existingTypeRegistration.namedFactories.containsKey(instanceName)) {
           return;
         }
       } else {
