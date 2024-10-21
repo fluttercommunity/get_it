@@ -1,3 +1,7 @@
+## [8.0.1]
+
+* Bugfixes and improvements for certain edge cases thanks to @KnightOfBlackLily and @kuhnroyal 
+
 ## [8.0.0]
 
 * official new release with all the changes
