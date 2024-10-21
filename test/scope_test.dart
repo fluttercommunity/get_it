@@ -783,4 +783,62 @@ void main() {
     );
     expect(getIt<TestClass>(instanceName: 'scope3'), isNotNull);
   });
+
+  group('should remove scope with error during push', () {
+    test(
+      'pushNewScope',
+      () {
+        final getIt = GetIt.instance;
+
+        expect(
+          () => getIt.pushNewScope(
+            scopeName: 'scope1',
+            init: (getIt) {
+              getIt.registerSingleton(TestClass());
+              throw Exception('Error during init');
+            },
+          ),
+          throwsException,
+        );
+
+        // The scope should not be on the stack and the registered instance
+        // should be removed.
+        expect(getIt.hasScope('scope1'), isFalse);
+        expect(getIt.isRegistered<TestClass>(), isFalse);
+
+        // It should be possible to push a new scope.
+        getIt.pushNewScope(scopeName: 'scope2');
+
+        expect(getIt.hasScope('scope2'), isTrue);
+      },
+    );
+
+    test(
+      'pushNewScopeAsync',
+      () async {
+        final getIt = GetIt.instance;
+
+        await expectLater(
+          () => getIt.pushNewScopeAsync(
+            scopeName: 'scope1',
+            init: (getIt) async {
+              getIt.registerSingleton(TestClass());
+              throw Exception('Error during init');
+            },
+          ),
+          throwsException,
+        );
+
+        // The scope should not be on the stack and the registered instance
+        // should be removed.
+        expect(getIt.hasScope('scope1'), isFalse);
+        expect(getIt.isRegistered<TestClass>(), isFalse);
+
+        // It should be possible to push a new scope.
+        await getIt.pushNewScopeAsync(scopeName: 'scope2');
+
+        expect(getIt.hasScope('scope2'), isTrue);
+      },
+    );
+  });
 }
