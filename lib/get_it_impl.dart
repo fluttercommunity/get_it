@@ -2,6 +2,7 @@
 
 part of 'get_it.dart';
 
+
 /// Two handy functions that help me to express my intention clearer and shorter to check for runtime
 /// errors
 // ignore: avoid_positional_boolean_parameters
@@ -117,7 +118,7 @@ class _ServiceFactory<T extends Object, P1, P2> {
   int _referenceCount = 0;
   
   /// to track the number of times a singleton is accessed
-  int accessCount = 0;
+  int _accessCount = 0;
 
   _ServiceFactory(
     this._getItInstance,
@@ -173,7 +174,7 @@ class _ServiceFactory<T extends Object, P1, P2> {
 
   /// returns an instance depending on the type of the registration if [async==false]
   T getObject(dynamic param1, dynamic param2) {
-    accessCount++;
+    if (_isDebugMode) _accessCount++;
     assert(
       !(factoryType != _ServiceFactoryType.alwaysNew &&
           (param1 != null || param2 != null)),
@@ -257,7 +258,7 @@ class _ServiceFactory<T extends Object, P1, P2> {
   /// returns an async instance depending on the type of the registration if [async==true] or
   /// if [dependsOn.isNotEmpty].
   Future<R> getObjectAsync<R>(dynamic param1, dynamic param2) async {
-    accessCount++;
+    if (_isDebugMode) _accessCount++;
     assert(
       !(factoryType != _ServiceFactoryType.alwaysNew &&
           (param1 != null || param2 != null)),
@@ -1167,6 +1168,81 @@ class _GetItImplementation implements GetIt {
     }
   }
 
+  @override
+  FutureOr unregisterFromScopes<T extends Object>({
+    Object? instance,
+    String? instanceName,
+    FutureOr Function(T)? disposingFunction,
+    bool fromAllScopes = false,
+  }) async {
+    if (fromAllScopes) {
+      for (final scope in _scopes.reversed) {
+        await _unregisterFromScope<T>(
+          scope: scope,
+          instance: instance,
+          instanceName: instanceName,
+          disposingFunction: disposingFunction,
+        );
+      }
+    } else {
+      await _unregisterFromScope<T>(
+        scope: _currentScope,
+        instance: instance,
+        instanceName: instanceName,
+        disposingFunction: disposingFunction,
+      );
+    }
+  }
+
+  Future<void> _unregisterFromScope<T extends Object>({
+    required _Scope scope,
+    Object? instance,
+    String? instanceName,
+    FutureOr Function(T)? disposingFunction,
+  }) async {
+    final typeRegistration = scope.typeRegistrations[T];
+    if (typeRegistration == null) return;
+
+    if (instance != null) {
+      final factoryToRemove = typeRegistration.factories.firstWhere(
+        (f) => identical(f.instance, instance),
+        orElse: () => throw StateError('Instance not found in this scope'),
+      );
+      await _disposeInstance(factoryToRemove, disposingFunction);
+      typeRegistration.factories.remove(factoryToRemove);
+    } else if (instanceName != null) {
+      final factoryToRemove = typeRegistration.namedFactories[instanceName];
+      if (factoryToRemove != null) {
+        await _disposeInstance(factoryToRemove, disposingFunction);
+        typeRegistration.namedFactories.remove(instanceName);
+      }
+    } else {
+      for (final factory in typeRegistration.factories) {
+        await _disposeInstance(factory, disposingFunction);
+      }
+      typeRegistration.factories.clear();
+      for (final factory in typeRegistration.namedFactories.values) {
+        await _disposeInstance(factory, disposingFunction);
+      }
+      typeRegistration.namedFactories.clear();
+    }
+
+    if (typeRegistration.isEmpty) {
+      scope.typeRegistrations.remove(T);
+    }
+  }
+
+  Future<void> _disposeInstance<T extends Object>(
+    _ServiceFactory factory,
+    FutureOr Function(T)? disposingFunction,
+  ) async {
+    if (disposingFunction != null) {
+      await disposingFunction(factory.instance! as T);
+    } else {
+      await factory.dispose();
+    }
+  }
+
   /// In some cases it can be necessary to change the name of a registered instance
   /// This avoids to unregister and reregister the instance which might cause trouble
   /// with disposing functions.
@@ -2063,34 +2139,22 @@ class _GetItImplementation implements GetIt {
   /// Get the number of times a singleton is accessed by an [instance], a type [T] or an [instanceName]
   @override
   int getAccessCount<T extends Object>({String? instanceName}) {
+    assert(_isDebugMode, 'getAccessCount is only available in debug mode');
     final factory = _findFactoryByNameAndType<T>(instanceName);
-    return factory.accessCount;
+    return factory._accessCount;
   }
-
-  /// Clear all instances of a specific type [T]
+  
   @override
-  Future<void> clearAllInstances<T extends Object>() async {
-    final typeRegistrations = _currentScope.typeRegistrations[T];
-    if (typeRegistrations != null) {
-      for (final factory in typeRegistrations.factories) {
-        await factory.dispose();
-      }
-      for (final factory in typeRegistrations.namedFactories.values) {
-        await factory.dispose();
-      }
-      typeRegistrations.factories.clear();
-      typeRegistrations.namedFactories.clear();
-    }
-  }
-
-  /// Set a default instance for a type [T]
-  @override
-  void setDefault<T extends Object>(T instance, {String? instanceName}) {
+  void replaceSingletonInstance<T extends Object>(T newInstance, {String? instanceName}) {
     final existingFactory = _findFirstFactoryByNameAndTypeOrNull<T>(instanceName);
     if (existingFactory != null) {
-      existingFactory._instance = instance;
+      if (existingFactory.factoryType == _ServiceFactoryType.constant) {
+        existingFactory._instance = newInstance;
+      } else {
+        throw StateError('Cannot replace instance: not a singleton');
+      }
     } else {
-      registerSingleton<T>(instance, instanceName: instanceName);
+      throw StateError('No singleton found to replace');
     }
   }
 }

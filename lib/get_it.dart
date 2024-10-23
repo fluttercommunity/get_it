@@ -587,6 +587,15 @@ abstract class GetIt {
     bool ignoreReferenceCount = false,
   });
 
+  /// Unregisters an instance of an object or a factory/singleton by Type [T] or by name [instanceName]
+  /// [fromAllScopes] if true, unregisters from all scopes, not just the current one
+  FutureOr unregisterFromScopes<T extends Object>({
+    Object? instance,
+    String? instanceName,
+    FutureOr Function(T)? disposingFunction,
+    bool fromAllScopes = false,
+  });
+
   /// returns a Future that completes if all asynchronously created Singletons and any
   /// Singleton that had [signalsReady==true] are ready.
   /// This can be used inside a FutureBuilder to change the UI as soon as all initialization
@@ -649,11 +658,10 @@ abstract class GetIt {
   void signalReady(Object? instance);
 
   /// Returns the number of times a singleton has been accessed.
+  /// Only available in debug mode.
   int getAccessCount<T extends Object>({String? instanceName});
 
-  /// Clears all instances of a specific type, including named instances.
-  Future<void> clearAllInstances<T extends Object>();
-
-  /// Sets a default instance for a type, replacing the existing one if present.
-  void setDefault<T extends Object>(T instance, {String? instanceName});
+  /// Replaces an existing singleton instance with a new instance.
+  /// Throws if the instance is not found or is not a singleton.
+  void replaceSingletonInstance<T extends Object>(T newInstance, {String? instanceName});
 }

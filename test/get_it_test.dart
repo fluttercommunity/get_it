@@ -1304,41 +1304,57 @@ void main() {
     expect(getIt.getAccessCount<TestClass>(), equals(3));
   });
 
-  test('Clear all instances of a type', () async {
+  test('Unregister from all scopes', () async {
     final getIt = GetIt.instance;
+    getIt.pushNewScope();
     getIt.registerSingleton<TestClass>(TestClass());
-    getIt.registerSingleton<TestClass>(TestClass(), instanceName: 'named');
+    getIt.pushNewScope();
+    getIt.registerSingleton<TestClass>(TestClass());
 
-    await getIt.clearAllInstances<TestClass>();
+    await getIt.unregisterFromScopes<TestClass>(fromAllScopes: true);
 
+    getIt.popScope(); // Back to first scope
     expect(getIt.isRegistered<TestClass>(), isFalse);
-    expect(getIt.isRegistered<TestClass>(instanceName: 'named'), isFalse);
+    getIt.popScope(); // Back to root scope
+    expect(getIt.isRegistered<TestClass>(), isFalse);
   });
 
-  test('Set default instance', () {
+  test('Replace singleton instance', () {
     final getIt = GetIt.instance;
-    final defaultInstance = TestClass();
-    getIt.setDefault<TestClass>(defaultInstance);
-
-    expect(getIt<TestClass>(), equals(defaultInstance));
+    final initialInstance = TestClass();
+    getIt.registerSingleton<TestClass>(initialInstance);
 
     final newInstance = TestClass();
-    getIt.setDefault<TestClass>(newInstance);
+    getIt.replaceSingletonInstance<TestClass>(newInstance);
 
     expect(getIt<TestClass>(), equals(newInstance));
   });
 
-  test('Set default instance with name', () {
+  test('Replace named singleton instance', () {
     final getIt = GetIt.instance;
-    final defaultInstance = TestClass();
-    getIt.setDefault<TestClass>(defaultInstance, instanceName: 'named');
-
-    expect(getIt<TestClass>(instanceName: 'named'), equals(defaultInstance));
+    final initialInstance = TestClass();
+    getIt.registerSingleton<TestClass>(initialInstance, instanceName: 'named');
 
     final newInstance = TestClass();
-    getIt.setDefault<TestClass>(newInstance, instanceName: 'named');
+    getIt.replaceSingletonInstance<TestClass>(newInstance, instanceName: 'named');
 
     expect(getIt<TestClass>(instanceName: 'named'), equals(newInstance));
+  });
+
+  test('Cannot replace non-singleton instance', () {
+    final getIt = GetIt.instance;
+    getIt.registerFactory<TestClass>(() => TestClass());
+
+    expect(
+      () => getIt.replaceSingletonInstance<TestClass>(TestClass()), throwsA(isA<StateError>()),
+    );
+  });
+
+  test('Cannot replace non-existent instance', () {
+    final getIt = GetIt.instance;
+    expect(
+      () => getIt.replaceSingletonInstance<TestClass>(TestClass()), throwsA(isA<StateError>()),
+    );
   });
 }
 
