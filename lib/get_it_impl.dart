@@ -115,6 +115,9 @@ class _ServiceFactory<T extends Object, P1, P2> {
   final bool shouldSignalReady;
 
   int _referenceCount = 0;
+  
+  /// to track the number of times a singleton is accessed
+  int accessCount = 0;
 
   _ServiceFactory(
     this._getItInstance,
@@ -170,6 +173,7 @@ class _ServiceFactory<T extends Object, P1, P2> {
 
   /// returns an instance depending on the type of the registration if [async==false]
   T getObject(dynamic param1, dynamic param2) {
+    accessCount++;
     assert(
       !(factoryType != _ServiceFactoryType.alwaysNew &&
           (param1 != null || param2 != null)),
@@ -253,6 +257,7 @@ class _ServiceFactory<T extends Object, P1, P2> {
   /// returns an async instance depending on the type of the registration if [async==true] or
   /// if [dependsOn.isNotEmpty].
   Future<R> getObjectAsync<R>(dynamic param1, dynamic param2) async {
+    accessCount++;
     assert(
       !(factoryType != _ServiceFactoryType.alwaysNew &&
           (param1 != null || param2 != null)),
@@ -2053,5 +2058,39 @@ class _GetItImplementation implements GetIt {
           'that have ben marked with "signalsReady" or that they depend on others'),
     );
     return factoryToCheck.isReady;
+  }
+
+  /// Get the number of times a singleton is accessed by an [instance], a type [T] or an [instanceName]
+  @override
+  int getAccessCount<T extends Object>({String? instanceName}) {
+    final factory = _findFactoryByNameAndType<T>(instanceName);
+    return factory.accessCount;
+  }
+
+  /// Clear all instances of a specific type [T]
+  @override
+  Future<void> clearAllInstances<T extends Object>() async {
+    final typeRegistrations = _currentScope.typeRegistrations[T];
+    if (typeRegistrations != null) {
+      for (final factory in typeRegistrations.factories) {
+        await factory.dispose();
+      }
+      for (final factory in typeRegistrations.namedFactories.values) {
+        await factory.dispose();
+      }
+      typeRegistrations.factories.clear();
+      typeRegistrations.namedFactories.clear();
+    }
+  }
+
+  /// Set a default instance for a type [T]
+  @override
+  void setDefault<T extends Object>(T instance, {String? instanceName}) {
+    final existingFactory = _findFirstFactoryByNameAndTypeOrNull<T>(instanceName);
+    if (existingFactory != null) {
+      existingFactory._instance = instance;
+    } else {
+      registerSingleton<T>(instance, instanceName: instanceName);
+    }
   }
 }

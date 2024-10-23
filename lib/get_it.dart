@@ -647,4 +647,13 @@ abstract class GetIt {
   /// Or use async registrations methods or let individual instances signal their ready
   /// state on their own.
   void signalReady(Object? instance);
+
+  /// Returns the number of times a singleton has been accessed.
+  int getAccessCount<T extends Object>({String? instanceName});
+
+  /// Clears all instances of a specific type, including named instances.
+  Future<void> clearAllInstances<T extends Object>();
+
+  /// Sets a default instance for a type, replacing the existing one if present.
+  void setDefault<T extends Object>(T instance, {String? instanceName});
 }

@@ -1292,6 +1292,54 @@ void main() {
       reason: "getIt.reset() did not dispose in reverse order",
     );
   });
+
+  test('Access count tracking', () {
+    final getIt = GetIt.instance;
+    getIt.registerSingleton<TestClass>(TestClass());
+
+    getIt<TestClass>();
+    getIt<TestClass>();
+    getIt<TestClass>();
+
+    expect(getIt.getAccessCount<TestClass>(), equals(3));
+  });
+
+  test('Clear all instances of a type', () async {
+    final getIt = GetIt.instance;
+    getIt.registerSingleton<TestClass>(TestClass());
+    getIt.registerSingleton<TestClass>(TestClass(), instanceName: 'named');
+
+    await getIt.clearAllInstances<TestClass>();
+
+    expect(getIt.isRegistered<TestClass>(), isFalse);
+    expect(getIt.isRegistered<TestClass>(instanceName: 'named'), isFalse);
+  });
+
+  test('Set default instance', () {
+    final getIt = GetIt.instance;
+    final defaultInstance = TestClass();
+    getIt.setDefault<TestClass>(defaultInstance);
+
+    expect(getIt<TestClass>(), equals(defaultInstance));
+
+    final newInstance = TestClass();
+    getIt.setDefault<TestClass>(newInstance);
+
+    expect(getIt<TestClass>(), equals(newInstance));
+  });
+
+  test('Set default instance with name', () {
+    final getIt = GetIt.instance;
+    final defaultInstance = TestClass();
+    getIt.setDefault<TestClass>(defaultInstance, instanceName: 'named');
+
+    expect(getIt<TestClass>(instanceName: 'named'), equals(defaultInstance));
+
+    final newInstance = TestClass();
+    getIt.setDefault<TestClass>(newInstance, instanceName: 'named');
+
+    expect(getIt<TestClass>(instanceName: 'named'), equals(newInstance));
+  });
 }
 
 class SingletonInjector {
