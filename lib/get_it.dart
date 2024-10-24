@@ -152,6 +152,9 @@ abstract class GetIt {
   /// If you really need to you can disable the asserts by setting[allowReassignment]= true
   bool allowReassignment = false;
 
+  /// Returns true if the app is running in debug mode
+  bool get isDebugMode;
+
   /// By default it's throws error when [allowReassignment]= false. and trying to register same type
   /// If you really need, you can disable the Asserts / Error by setting[skipDoubleRegistration]= true
   @visibleForTesting
@@ -580,19 +583,12 @@ abstract class GetIt {
   /// if referenceCount is 0
   /// [ignoreReferenceCount] if `true` it will ignore the reference count and unregister the object
   /// only use this if you know what you are doing
+  /// [fromAllScopes] if `true` it will unregister the instance from all scopes, not just the current one
   FutureOr unregister<T extends Object>({
     Object? instance,
     String? instanceName,
     FutureOr Function(T)? disposingFunction,
     bool ignoreReferenceCount = false,
-  });
-
-  /// Unregisters an instance of an object or a factory/singleton by Type [T] or by name [instanceName]
-  /// [fromAllScopes] if true, unregisters from all scopes, not just the current one
-  FutureOr unregisterFromScopes<T extends Object>({
-    Object? instance,
-    String? instanceName,
-    FutureOr Function(T)? disposingFunction,
     bool fromAllScopes = false,
   });
 

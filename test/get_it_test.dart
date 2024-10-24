@@ -1295,29 +1295,39 @@ void main() {
 
   test('Access count tracking (debug only)', () {
       final getIt = GetIt.instance;
-      getIt.registerSingleton<TestClass>(TestClass());
+      if (getIt.isDebugMode) {
+        getIt.registerSingleton<TestClass>(TestClass());
 
-      getIt<TestClass>();
-      getIt<TestClass>();
-      getIt<TestClass>();
+        getIt<TestClass>();
+        getIt<TestClass>();
+        getIt<TestClass>();
 
-      // This will only work in debug mode
-      expect(getIt.getAccessCount<TestClass>(), equals(3));
+        expect(getIt.getAccessCount<TestClass>(), equals(3));
+      } else {
+        expect(() => getIt.getAccessCount<TestClass>(), throwsStateError);
+      }
     },
-    skip: !assertionsEnabled(), // Skip this test in release mode
+    skip: !assertionsEnabled(),
   );
 
   test('Unregister from all scopes', () async {
-    final getIt = GetIt.instance;
-    getIt.pushNewScope();
-    getIt.registerSingleton<TestClass>(TestClass());
+    final getIt = GetIt.asNewInstance();
+
     getIt.pushNewScope();
     getIt.registerSingleton<TestClass>(TestClass());
 
-    await getIt.unregisterFromScopes<TestClass>(fromAllScopes: true);
+    getIt.pushNewScope();
+    getIt.registerSingleton<TestClass>(TestClass());
+
+    expect(getIt.isRegistered<TestClass>(), isTrue);
+
+    await getIt.unregister<TestClass>(fromAllScopes: true);
+
+    expect(getIt.isRegistered<TestClass>(), isFalse);
 
     getIt.popScope(); // Back to first scope
     expect(getIt.isRegistered<TestClass>(), isFalse);
+
     getIt.popScope(); // Back to root scope
     expect(getIt.isRegistered<TestClass>(), isFalse);
   });
@@ -1360,6 +1370,26 @@ void main() {
     expect(
       () => getIt.replaceSingletonInstance<TestClass>(TestClass()),
       throwsA(isA<StateError>()),
+    );
+  });
+
+  test('Replace lazy singleton instance', () {
+    final getIt = GetIt.instance;
+    getIt.registerLazySingleton<TestClass>(() => TestClass());
+
+    final newInstance = TestClass();
+    getIt.replaceSingletonInstance<TestClass>(newInstance);
+
+    expect(getIt<TestClass>(), equals(newInstance));
+  });
+
+  test('Cannot replace factory instance', () {
+    final getIt = GetIt.instance;
+    getIt.registerFactory<TestClass>(() => TestClass());
+
+    expect(
+      () => getIt.replaceSingletonInstance<TestClass>(TestClass()),
+      throwsStateError,
     );
   });
 }
