@@ -330,6 +330,7 @@ void main() {
     expect(isShadowed, false);
     expect(shadowingObject, shadowingInstance);
   });
+
   test('popscope', () async {
     final getIt = GetIt.instance;
     constructorCounter = 0;
@@ -362,61 +363,90 @@ void main() {
     );
   });
 
-  test('popscopeuntil inclusive=true', () async {
+  test('popScopesTill inclusive=true', () async {
     final getIt = GetIt.instance;
     constructorCounter = 0;
 
     getIt.registerSingleton<TestClass>(TestClass('Basescope'));
 
     getIt.pushNewScope(scopeName: 'Level1');
-
-    getIt.registerSingleton<TestClass>(TestClass('2. scope'));
+    getIt.registerSingleton<TestClass>(TestClass('1. scope'));
 
     getIt.pushNewScope(scopeName: 'Level2');
+    getIt.registerSingleton<TestClass>(TestClass('2. scope'));
 
+    getIt.pushNewScope(scopeName: 'Level3');
     getIt.registerSingleton<TestClass>(TestClass('3. scope'));
+    expect(getIt.get<TestClass>().id, '3. scope');
 
-    final instanceTestClassScope3 = getIt.get<TestClass>();
+    await getIt.popScopesTill('Level2');
 
-    expect(instanceTestClassScope3.id, '3. scope');
-
-    await getIt.popScopesTill('Level1');
-
-    final instanceTestClassScope1 = getIt.get<TestClass>();
-
-    expect(instanceTestClassScope1.id, 'Basescope');
+    expect(getIt.get<TestClass>().id, '1. scope');
     expect(
       () => getIt.get<TestClass2>(),
       throwsStateError,
     );
   });
-  test('popscopeuntil inclusive=false', () async {
+
+  test('popScopesTill inclusive=false', () async {
     final getIt = GetIt.instance;
     constructorCounter = 0;
 
     getIt.registerSingleton<TestClass>(TestClass('Basescope'));
 
     getIt.pushNewScope(scopeName: 'Level1');
-
-    getIt.registerSingleton<TestClass>(TestClass('2. scope'));
+    getIt.registerSingleton<TestClass>(TestClass('1. scope'));
 
     getIt.pushNewScope(scopeName: 'Level2');
+    getIt.registerSingleton<TestClass>(TestClass('2. scope'));
 
+    getIt.pushNewScope(scopeName: 'Level3');
     getIt.registerSingleton<TestClass>(TestClass('3. scope'));
+    expect(getIt.get<TestClass>().id, '3. scope');
 
-    final instanceTestClassScope3 = getIt.get<TestClass>();
+    await getIt.popScopesTill('Level2', inclusive: false);
 
-    expect(instanceTestClassScope3.id, '3. scope');
-
-    await getIt.popScopesTill('Level1', inclusive: false);
-
-    final instanceTestClassScope1 = getIt.get<TestClass>();
-
-    expect(instanceTestClassScope1.id, '2. scope');
+    expect(getIt.get<TestClass>().id, '2. scope');
     expect(
       () => getIt.get<TestClass2>(),
       throwsStateError,
     );
+  });
+
+  test('popScopesTill invalid scope', () async {
+    final getIt = GetIt.instance;
+
+    getIt.pushNewScope(scopeName: 'Level1');
+    getIt.pushNewScope(scopeName: 'Level2');
+    getIt.pushNewScope(scopeName: 'Level3');
+
+    expect(getIt.hasScope('Level1'), isTrue);
+    expect(getIt.hasScope('Level2'), isTrue);
+    expect(getIt.hasScope('Level3'), isTrue);
+
+    await getIt.popScopesTill('Level4');
+
+    expect(getIt.hasScope('Level1'), isTrue);
+    expect(getIt.hasScope('Level2'), isTrue);
+    expect(getIt.hasScope('Level3'), isTrue);
+  });
+
+  test('popScopesTill inclusive=false top scope', () async {
+    final getIt = GetIt.instance;
+
+    getIt.pushNewScope(scopeName: 'Level1');
+    getIt.pushNewScope(scopeName: 'Level2');
+    getIt.pushNewScope(scopeName: 'Level3');
+
+    expect(getIt.hasScope('Level1'), isTrue);
+    expect(getIt.hasScope('Level2'), isTrue);
+    expect(getIt.hasScope('Level3'), isTrue);
+
+    await getIt.popScopesTill('Level3', inclusive: false);
+
+    expect(getIt.hasScope('Level1'), isTrue);
+    expect(getIt.hasScope('Level2'), isTrue);
+    expect(getIt.hasScope('Level3'), isTrue);
   });
 
   test('popscope with destructors', () async {
@@ -446,6 +476,7 @@ void main() {
 
     expect(disposeCounter, 3);
   });
+
   test('popscope with destructors', () async {
     final getIt = GetIt.instance;
 

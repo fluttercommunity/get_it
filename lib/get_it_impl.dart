@@ -1474,18 +1474,21 @@ class _GetItImplementation implements GetIt {
     }
     String? poppedScopeName;
     _Scope nextScopeToPop = _currentScope;
-    do {
+    bool somethingWasPopped = false;
+
+    while (nextScopeToPop.name != _baseScopeName &&
+        hasScope(scopeName) &&
+        (nextScopeToPop.name != scopeName || inclusive)) {
       poppedScopeName = nextScopeToPop.name;
       await dropScope(poppedScopeName!);
+      somethingWasPopped = true;
       nextScopeToPop = _scopes.lastWhere((x) => x.isPopping == false);
-      if (nextScopeToPop.name == _baseScopeName) {
-        return true;
-      }
-    } while (hasScope(scopeName) && inclusive
-        ? (poppedScopeName != scopeName)
-        : (nextScopeToPop.name != scopeName));
-    onScopeChanged?.call(false);
-    return true;
+    }
+
+    if (somethingWasPopped) {
+      onScopeChanged?.call(false);
+    }
+    return somethingWasPopped;
   }
 
   /// Disposes all registered factories and singletons in the provided scope
