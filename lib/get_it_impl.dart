@@ -116,6 +116,9 @@ class _ServiceFactory<T extends Object, P1, P2> {
 
   int _referenceCount = 0;
 
+  /// to track the number of times a singleton is accessed
+  int _accessCount = 0;
+
   _ServiceFactory(
     this._getItInstance,
     this.factoryType, {
@@ -170,6 +173,10 @@ class _ServiceFactory<T extends Object, P1, P2> {
 
   /// returns an instance depending on the type of the registration if [async==false]
   T getObject(dynamic param1, dynamic param2) {
+    assert(() {
+      _accessCount++;
+      return true;
+    }());
     assert(
       !(factoryType != _ServiceFactoryType.alwaysNew &&
           (param1 != null || param2 != null)),
@@ -253,6 +260,10 @@ class _ServiceFactory<T extends Object, P1, P2> {
   /// returns an async instance depending on the type of the registration if [async==true] or
   /// if [dependsOn.isNotEmpty].
   Future<R> getObjectAsync<R>(dynamic param1, dynamic param2) async {
+    assert(() {
+      _accessCount++;
+      return true;
+    }());
     assert(
       !(factoryType != _ServiceFactoryType.alwaysNew &&
           (param1 != null || param2 != null)),
@@ -511,6 +522,9 @@ class _GetItImplementation implements GetIt {
   @override
   bool allowReassignment = false;
 
+  @override
+  bool get isDebugMode => _isDebugMode;
+
   /// By default it's throws error when [allowReassignment]= false. and trying to register same type
   /// If you really need, you can disable the Asserts / Error by setting[skipDoubleRegistration]= true
   @visibleForTesting
@@ -582,6 +596,11 @@ class _GetItImplementation implements GetIt {
     );
 
     return instanceFactory!;
+  }
+
+  _ServiceFactory? _findFactoryByInstanceOrNull(Object instance) {
+    return _allFactories
+        .firstWhereOrNull((x) => identical(x.instance, instance));
   }
 
   /// retrieves or creates an instance of a registered type [T] depending on the registration
@@ -1107,35 +1126,62 @@ class _GetItImplementation implements GetIt {
     }
   }
 
-  /// Unregister an instance of an object or a factory/singleton by Type [T] or by name [instanceName]
-  /// if you need to dispose any resources you can pass in a [disposingFunction] function
-  /// that provides an instance of your class to be disposed
-  /// If you have provided an disposing function when you registered the object that one will be called automatically
-  /// If you have enabled reference counting when registering, [unregister] will only unregister and dispose the object
-  /// if referenceCount is 0
-  ///
   @override
   FutureOr unregister<T extends Object>({
     Object? instance,
     String? instanceName,
     FutureOr Function(T)? disposingFunction,
     bool ignoreReferenceCount = false,
+    bool fromAllScopes = false,
+  }) async {
+    if (fromAllScopes) {
+      for (final scope in _scopes.reversed) {
+        await _unregisterFromScope<T>(
+          scope: scope,
+          instance: instance,
+          instanceName: instanceName,
+          disposingFunction: disposingFunction,
+          ignoreReferenceCount: ignoreReferenceCount,
+        );
+      }
+    } else {
+      await _unregisterFromScope<T>(
+        scope: _currentScope,
+        instance: instance,
+        instanceName: instanceName,
+        disposingFunction: disposingFunction,
+        ignoreReferenceCount: ignoreReferenceCount,
+      );
+    }
+  }
+
+  Future<void> _unregisterFromScope<T extends Object>({
+    required _Scope scope,
+    Object? instance,
+    String? instanceName,
+    FutureOr Function(T)? disposingFunction,
+    bool ignoreReferenceCount = false,
   }) async {
     final factoryToRemove = instance != null
-        ? _findFactoryByInstance(instance)
-        : _findFactoryByNameAndType<T>(instanceName);
+        ? _findFactoryByInstanceOrNull(instance)
+        : _findFirstFactoryByNameAndTypeOrNull<T>(instanceName);
 
-    throwIf(
-      factoryToRemove.objectsWaiting.isNotEmpty,
-      StateError(
-        'There are still other objects waiting for this instance so signal ready',
-      ),
-    );
+    if (factoryToRemove == null) {
+      // If the factory is not found in this scope, just return without throwing an error
+      return;
+    }
 
-    if (factoryToRemove._referenceCount > 0) {
+    if (factoryToRemove.objectsWaiting.isNotEmpty) {
+      throw StateError(
+        'There are still other objects waiting for this instance to signal ready',
+      );
+    }
+
+    if (!ignoreReferenceCount && factoryToRemove._referenceCount > 0) {
       factoryToRemove._referenceCount--;
       return;
     }
+
     final typeRegistration = factoryToRemove.registeredIn;
 
     if (factoryToRemove.isNamedRegistration) {
@@ -1143,8 +1189,9 @@ class _GetItImplementation implements GetIt {
     } else {
       typeRegistration.factories.remove(factoryToRemove);
     }
+
     if (typeRegistration.isEmpty) {
-      factoryToRemove.registrationScope.typeRegistrations.remove(T);
+      scope.typeRegistrations.remove(T);
     }
 
     if (factoryToRemove.instance != null) {
@@ -1282,17 +1329,17 @@ class _GetItImplementation implements GetIt {
   }
 
   _ServiceFactory _findFactoryByInstance(Object instance) {
-    final registeredFactory = _findFirstFactoryByInstanceOrNull(instance);
+    final registeredFactory = _findFactoryByInstanceOrNull(instance);
 
-    throwIf(
-      registeredFactory == null,
-      StateError(
-          'This instance of the type ${instance.runtimeType} is not available in GetIt '
-          'If you have registered it as LazySingleton, are you sure you have used '
-          'it at least once?'),
-    );
+    if (registeredFactory == null) {
+      throw StateError(
+        'This instance of the type ${instance.runtimeType} is not available in GetIt. '
+        'If you have registered it as LazySingleton, are you sure you have used '
+        'it at least once?',
+      );
+    }
 
-    return registeredFactory!;
+    return registeredFactory;
   }
 
   /// Clears all registered types. Handy when writing unit tests.
@@ -2056,5 +2103,28 @@ class _GetItImplementation implements GetIt {
           'that have ben marked with "signalsReady" or that they depend on others'),
     );
     return factoryToCheck.isReady;
+  }
+
+  /// Get the number of times a singleton is accessed by an [instance], a type [T] or an [instanceName]
+  @override
+  int getAccessCount<T extends Object>({String? instanceName}) {
+    if (!_isDebugMode) {
+      throw StateError('getAccessCount is only available in debug mode');
+    }
+
+    final factory = _findFactoryByNameAndType<T>(instanceName);
+    return factory._accessCount;
+  }
+
+  @override
+  void replaceSingletonInstance<T extends Object>(T newInstance,
+      {String? instanceName}) {
+    final existingFactory = _findFactoryByNameAndType<T>(instanceName);
+    if (existingFactory.factoryType == _ServiceFactoryType.constant ||
+        existingFactory.factoryType == _ServiceFactoryType.lazy) {
+      existingFactory._instance = newInstance;
+    } else {
+      throw StateError('Cannot replace instance: not a singleton or lazy singleton');
+    }
   }
 }
