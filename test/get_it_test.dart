@@ -1293,16 +1293,19 @@ void main() {
     );
   });
 
-  test('Access count tracking', () {
-    final getIt = GetIt.instance;
-    getIt.registerSingleton<TestClass>(TestClass());
+  test('Access count tracking (debug only)', () {
+      final getIt = GetIt.instance;
+      getIt.registerSingleton<TestClass>(TestClass());
 
-    getIt<TestClass>();
-    getIt<TestClass>();
-    getIt<TestClass>();
+      getIt<TestClass>();
+      getIt<TestClass>();
+      getIt<TestClass>();
 
-    expect(getIt.getAccessCount<TestClass>(), equals(3));
-  });
+      // This will only work in debug mode
+      expect(getIt.getAccessCount<TestClass>(), equals(3));
+    },
+    skip: !assertionsEnabled(), // Skip this test in release mode
+  );
 
   test('Unregister from all scopes', () async {
     final getIt = GetIt.instance;
@@ -1336,7 +1339,8 @@ void main() {
     getIt.registerSingleton<TestClass>(initialInstance, instanceName: 'named');
 
     final newInstance = TestClass();
-    getIt.replaceSingletonInstance<TestClass>(newInstance, instanceName: 'named');
+    getIt.replaceSingletonInstance<TestClass>(newInstance,
+        instanceName: 'named');
 
     expect(getIt<TestClass>(instanceName: 'named'), equals(newInstance));
   });
@@ -1346,14 +1350,16 @@ void main() {
     getIt.registerFactory<TestClass>(() => TestClass());
 
     expect(
-      () => getIt.replaceSingletonInstance<TestClass>(TestClass()), throwsA(isA<StateError>()),
+      () => getIt.replaceSingletonInstance<TestClass>(TestClass()),
+      throwsA(isA<StateError>()),
     );
   });
 
   test('Cannot replace non-existent instance', () {
     final getIt = GetIt.instance;
     expect(
-      () => getIt.replaceSingletonInstance<TestClass>(TestClass()), throwsA(isA<StateError>()),
+      () => getIt.replaceSingletonInstance<TestClass>(TestClass()),
+      throwsA(isA<StateError>()),
     );
   });
 }
@@ -1365,3 +1371,13 @@ class SingletonInjector {
 }
 
 class Injector {}
+
+// Helper function to check if assertions are enabled
+bool assertionsEnabled() {
+  var assertionsEnabled = false;
+  assert(() {
+    assertionsEnabled = true;
+    return true;
+  }());
+  return assertionsEnabled;
+}

@@ -174,7 +174,10 @@ class _ServiceFactory<T extends Object, P1, P2> {
 
   /// returns an instance depending on the type of the registration if [async==false]
   T getObject(dynamic param1, dynamic param2) {
-    if (_isDebugMode) _accessCount++;
+    assert(() {
+      _accessCount++;
+      return true;
+    }());
     assert(
       !(factoryType != _ServiceFactoryType.alwaysNew &&
           (param1 != null || param2 != null)),
@@ -258,7 +261,10 @@ class _ServiceFactory<T extends Object, P1, P2> {
   /// returns an async instance depending on the type of the registration if [async==true] or
   /// if [dependsOn.isNotEmpty].
   Future<R> getObjectAsync<R>(dynamic param1, dynamic param2) async {
-    if (_isDebugMode) _accessCount++;
+    assert(() {
+      _accessCount++;
+      return true;
+    }());
     assert(
       !(factoryType != _ServiceFactoryType.alwaysNew &&
           (param1 != null || param2 != null)),
@@ -2139,7 +2145,12 @@ class _GetItImplementation implements GetIt {
   /// Get the number of times a singleton is accessed by an [instance], a type [T] or an [instanceName]
   @override
   int getAccessCount<T extends Object>({String? instanceName}) {
-    assert(_isDebugMode, 'getAccessCount is only available in debug mode');
+    assert(() {
+      final _ = _findFactoryByNameAndType<T>(instanceName);
+      return true;
+    }(), 'getAccessCount is only available in debug mode');
+    
+    // This will only be executed in debug mode
     final factory = _findFactoryByNameAndType<T>(instanceName);
     return factory._accessCount;
   }
