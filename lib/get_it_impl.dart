@@ -202,8 +202,8 @@ class _ServiceFactory<T extends Object, P1, P2> {
               param2 == lastParam2) {
             return weakReferenceInstance!.target!;
           } else {
-            lastParam1 = param1 as P1;
-            lastParam2 = param2 as P2;
+            lastParam1 = param1 as P1?;
+            lastParam2 = param2 as P2?;
             T newInstance;
             if (creationFunctionParam != null) {
               newInstance = creationFunctionParam!(param1 as P1, param2 as P2);
