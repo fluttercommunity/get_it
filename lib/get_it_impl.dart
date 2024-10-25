@@ -171,7 +171,8 @@ class _ServiceFactory<T extends Object, P1, P2> {
   /// returns an instance depending on the type of the registration if [async==false]
   T getObject(dynamic param1, dynamic param2) {
     assert(
-      !(factoryType != _ServiceFactoryType.alwaysNew &&
+      !(![_ServiceFactoryType.alwaysNew, _ServiceFactoryType.cachedFactory]
+              .contains(factoryType) &&
           (param1 != null || param2 != null)),
       'You can only pass parameters to factories!',
     );
@@ -201,6 +202,8 @@ class _ServiceFactory<T extends Object, P1, P2> {
               param2 == lastParam2) {
             return weakReferenceInstance!.target!;
           } else {
+            lastParam1 = param1 as P1;
+            lastParam2 = param2 as P2;
             T newInstance;
             if (creationFunctionParam != null) {
               newInstance = creationFunctionParam!(param1 as P1, param2 as P2);
@@ -1546,6 +1549,8 @@ class _GetItImplementation implements GetIt {
     FactoryFuncAsync<T>? factoryFuncAsync,
     FactoryFuncParamAsync<T, P1, P2>? factoryFuncParamAsync,
     T? instance,
+    P1? param1,
+    P2? param2,
     required String? instanceName,
     required bool isAsync,
     Iterable<Type>? dependsOn,
