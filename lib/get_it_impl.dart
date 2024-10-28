@@ -1552,8 +1552,6 @@ class _GetItImplementation implements GetIt {
     FactoryFuncAsync<T>? factoryFuncAsync,
     FactoryFuncParamAsync<T, P1, P2>? factoryFuncParamAsync,
     T? instance,
-    P1? param1,
-    P2? param2,
     required String? instanceName,
     required bool isAsync,
     Iterable<Type>? dependsOn,
