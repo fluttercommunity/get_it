@@ -46,10 +46,6 @@ class TestClassParam extends TestBaseClass {
   TestClassParam({this.param1, this.param2}) {
     constructorCounter++;
   }
-
-  void dispose() {
-    disposeCounter++;
-  }
 }
 
 class TestClassDisposableWithDependency with Disposable {
@@ -268,7 +264,7 @@ void main() {
     final getIt = GetIt.instance;
     constructorCounter = 0;
     getIt.registerCachedFactoryParam<TestClassParam, String, int>(
-      (f,s) => TestClassParam(param1: f,param2:s),
+      (f, s) => TestClassParam(param1: f, param2: s),
     );
     final instance1 = getIt<TestClassParam>(param1: 'abc', param2: 1);
     final instance2 = getIt<TestClassParam>(param1: 'abc', param2: 1);
@@ -282,7 +278,7 @@ void main() {
     final getIt = GetIt.instance;
     constructorCounter = 0;
     getIt.registerCachedFactoryParam<TestClassParam, String, int>(
-      (f,s) => TestClassParam(param1: f,param2: s),
+      (f, s) => TestClassParam(param1: f, param2: s),
     );
     final instance1 = getIt<TestClassParam>(param1: 'abc', param2: 1);
     final instance2 = getIt<TestClassParam>(param1: 'abc', param2: 2);
