@@ -39,11 +39,13 @@ class TestClassDisposable extends TestBaseClass with Disposable {
 
 class TestClass2 {}
 
-class TestClassParam {
+class TestClassParam extends TestBaseClass {
   final String? param1;
   final int? param2;
 
-  TestClassParam({this.param1, this.param2});
+  TestClassParam({this.param1, this.param2}) {
+    constructorCounter++;
+  }
 }
 
 class TestClassDisposableWithDependency with Disposable {
@@ -214,6 +216,80 @@ void main() {
     expect(constructorCounter, 2);
 
     GetIt.I.reset();
+  });
+
+  test('register cached factory', () {
+    final getIt = GetIt.instance;
+    constructorCounter = 0;
+    getIt.registerCachedFactory<TestBaseClass>(() => TestClass());
+    final TestBaseClass instance1 = getIt<TestBaseClass>();
+    expect(instance1 is TestClass, true);
+    final instance2 = getIt.get<TestBaseClass>();
+    expect(getIt.isRegistered<TestBaseClass>(), true);
+    expect(instance1, instance2);
+    expect(constructorCounter, 1);
+  });
+
+  test('register cached factory with one param ', () {
+    final getIt = GetIt.instance;
+    constructorCounter = 0;
+    getIt.registerCachedFactoryParam<TestClassParam, String, void>(
+      (s, _) => TestClassParam(param1: s),
+    );
+    final instance1 = getIt<TestClassParam>(param1: 'abc');
+    final instance2 = getIt<TestClassParam>(param1: 'abc');
+    expect(instance1 is TestClassParam, true);
+    expect(instance1.param1, 'abc');
+    expect(instance1, instance2);
+    expect(constructorCounter, 1);
+  });
+
+  test('register cached factory with different params', () {
+    final getIt = GetIt.instance;
+    constructorCounter = 0;
+    getIt.registerCachedFactoryParam<TestClassParam, String, void>(
+      (s, _) => TestClassParam(param1: s),
+    );
+    final instance1 = getIt<TestClassParam>(param1: 'abc');
+    final instance2 = getIt<TestClassParam>(param1: '123');
+    expect(instance1 is TestClassParam, true);
+    expect(instance1.param1, 'abc');
+    expect(instance2.param1, '123');
+    expect(instance2 is TestClassParam, true);
+    expect(instance1, isNot(instance2));
+    expect(constructorCounter, 2);
+  });
+
+  test('register cached factory with two equal params', () {
+    final getIt = GetIt.instance;
+    constructorCounter = 0;
+    getIt.registerCachedFactoryParam<TestClassParam, String, int>(
+      (f, s) => TestClassParam(param1: f, param2: s),
+    );
+    final instance1 = getIt<TestClassParam>(param1: 'abc', param2: 1);
+    final instance2 = getIt<TestClassParam>(param1: 'abc', param2: 1);
+    expect(instance1 is TestClassParam, true);
+    expect(instance1.param1, 'abc');
+    expect(instance1, instance2);
+    expect(constructorCounter, 1);
+  });
+
+  test('register cached factory with one different param out of two', () {
+    final getIt = GetIt.instance;
+    constructorCounter = 0;
+    getIt.registerCachedFactoryParam<TestClassParam, String, int>(
+      (f, s) => TestClassParam(param1: f, param2: s),
+    );
+    final instance1 = getIt<TestClassParam>(param1: 'abc', param2: 1);
+    final instance2 = getIt<TestClassParam>(param1: 'abc', param2: 2);
+    expect(instance1 is TestClassParam, true);
+    expect(instance1.param1, 'abc');
+    expect(instance1.param2, 1);
+    expect(instance2.param1, 'abc');
+    expect(instance2.param2, 2);
+    expect(instance2 is TestClassParam, true);
+    expect(instance1, isNot(instance2));
+    expect(constructorCounter, 2);
   });
 
   test('register constant', () {
