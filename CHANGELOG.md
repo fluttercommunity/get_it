@@ -1,3 +1,7 @@
+## [8.0.2]
+
+* Fixes by @kuhnroyal and  @ArtAhmetajCR who spotted some flaws in my latest changes. Thanks a lot
+
 ## [8.0.1]
 
 * Bugfixes and improvements for certain edge cases thanks to @KnightOfBlackLily and @kuhnroyal 
