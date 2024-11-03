@@ -522,9 +522,6 @@ class _GetItImplementation implements GetIt {
   @override
   bool allowReassignment = false;
 
-  @override
-  bool get isDebugMode => _isDebugMode;
-
   /// By default it's throws error when [allowReassignment]= false. and trying to register same type
   /// If you really need, you can disable the Asserts / Error by setting[skipDoubleRegistration]= true
   @visibleForTesting
@@ -1127,51 +1124,53 @@ class _GetItImplementation implements GetIt {
   }
 
   @override
-  FutureOr unregister<T extends Object>({
-    Object? instance,
-    String? instanceName,
-    FutureOr Function(T)? disposingFunction,
-    bool ignoreReferenceCount = false,
-    bool fromAllScopes = false,
-  }) async {
-    if (fromAllScopes) {
-      for (final scope in _scopes.reversed) {
-        await _unregisterFromScope<T>(
-          scope: scope,
-          instance: instance,
-          instanceName: instanceName,
-          disposingFunction: disposingFunction,
-          ignoreReferenceCount: ignoreReferenceCount,
-        );
-      }
-    } else {
-      await _unregisterFromScope<T>(
-        scope: _currentScope,
-        instance: instance,
-        instanceName: instanceName,
-        disposingFunction: disposingFunction,
-        ignoreReferenceCount: ignoreReferenceCount,
-      );
-    }
-  }
-
-  Future<void> _unregisterFromScope<T extends Object>({
-    required _Scope scope,
-    Object? instance,
-    String? instanceName,
-    FutureOr Function(T)? disposingFunction,
-    bool ignoreReferenceCount = false,
-  }) async {
+FutureOr unregister<T extends Object>({
+  Object? instance,
+  String? instanceName,
+  FutureOr Function(T)? disposingFunction,
+  bool ignoreReferenceCount = false,
+  bool fromAllScopes = false,
+}) async {
+  bool found = false;
+  do {
     final factoryToRemove = instance != null
         ? _findFactoryByInstanceOrNull(instance)
         : _findFirstFactoryByNameAndTypeOrNull<T>(instanceName);
-
     if (factoryToRemove == null) {
-      // If the factory is not found in this scope, just return without throwing an error
-      return;
+      if (!fromAllScopes && !found) {
+        throw StateError('No registration found for type $T');
+      }
+      break;
     }
+    found = true;
+    final scope = _scopes.firstWhere(
+      (s) => s.allFactories.contains(factoryToRemove),
+      orElse: () => _currentScope,
+    );
+    await _unregisterFromScope<T>(
+      scope: scope,
+      instance: instance,
+      instanceName: instanceName,
+      disposingFunction: disposingFunction,
+      ignoreReferenceCount: ignoreReferenceCount,
+    );
+  } while (fromAllScopes);
+}
 
-    if (factoryToRemove.objectsWaiting.isNotEmpty) {
+Future<void> _unregisterFromScope<T extends Object>({
+  required _Scope scope,
+  Object? instance,
+  String? instanceName,
+  FutureOr Function(T)? disposingFunction,
+  bool ignoreReferenceCount = false,
+}) async {
+  final factoryToRemove = instance != null
+      ? _findFactoryByInstanceOrNull(instance)
+      : _findFirstFactoryByNameAndTypeOrNull<T>(instanceName);
+  if (factoryToRemove == null) {
+    return;
+  }
+  if (factoryToRemove.objectsWaiting.isNotEmpty) {
       throw StateError(
         'There are still other objects waiting for this instance to signal ready',
       );
@@ -1207,7 +1206,8 @@ class _GetItImplementation implements GetIt {
         }
       }
     }
-  }
+}
+
 
   /// In some cases it can be necessary to change the name of a registered instance
   /// This avoids to unregister and reregister the instance which might cause trouble
@@ -2105,12 +2105,32 @@ class _GetItImplementation implements GetIt {
   /// Get the number of times a singleton is accessed by an [instance], a type [T] or an [instanceName]
   @override
   int getAccessCount<T extends Object>({String? instanceName}) {
-    if (!_isDebugMode) {
+    bool isDebug = false;
+    assert(() {
+      isDebug = true;
+      return true;
+    }());
+    if (!isDebug) {
       throw StateError('getAccessCount is only available in debug mode');
     }
 
     final factory = _findFactoryByNameAndType<T>(instanceName);
     return factory._accessCount;
+  }
+
+  @override
+  void resetAccessCount<T extends Object>({String? instanceName}) {
+    bool isDebug = false;
+    assert(() {
+      isDebug = true;
+      return true;
+    }());
+    if (!isDebug) {
+      throw StateError('getAccessCount is only available in debug mode');
+    }
+
+    final factory = _findFactoryByNameAndType<T>(instanceName);
+    factory._accessCount = 0;
   }
 
   @override

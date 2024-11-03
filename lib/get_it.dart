@@ -152,9 +152,6 @@ abstract class GetIt {
   /// If you really need to you can disable the asserts by setting[allowReassignment]= true
   bool allowReassignment = false;
 
-  /// Returns true if the app is running in debug mode
-  bool get isDebugMode;
-
   /// By default it's throws error when [allowReassignment]= false. and trying to register same type
   /// If you really need, you can disable the Asserts / Error by setting[skipDoubleRegistration]= true
   @visibleForTesting
@@ -656,6 +653,10 @@ abstract class GetIt {
   /// Returns the number of times a singleton has been accessed.
   /// Only available in debug mode.
   int getAccessCount<T extends Object>({String? instanceName});
+
+  /// Reset the number of times a singleton has been accessed.
+  /// Only available in debug mode.
+  void resetAccessCount<T extends Object>({String? instanceName});
 
   /// Replaces an existing singleton instance with a new instance.
   /// Throws if the instance is not found or is not a singleton.

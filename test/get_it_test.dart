@@ -1295,19 +1295,28 @@ void main() {
 
   test('Access count tracking (debug only)', () {
       final getIt = GetIt.instance;
-      if (getIt.isDebugMode) {
-        getIt.registerSingleton<TestClass>(TestClass());
+      getIt.registerSingleton<TestClass>(TestClass());
+
+      getIt<TestClass>();
+      getIt<TestClass>();
+      getIt<TestClass>();
+
+      expect(getIt.getAccessCount<TestClass>(), equals(3));
+    }
+  );
+
+  test('Reset count tracking (debug only)', () {
+      final getIt = GetIt.instance;
+      getIt.registerSingleton<TestClass>(TestClass());
 
         getIt<TestClass>();
         getIt<TestClass>();
         getIt<TestClass>();
+        
+        getIt.resetAccessCount<TestClass>();
 
-        expect(getIt.getAccessCount<TestClass>(), equals(3));
-      } else {
-        expect(() => getIt.getAccessCount<TestClass>(), throwsStateError);
-      }
-    },
-    skip: !assertionsEnabled(),
+        expect(getIt.getAccessCount<TestClass>(), equals(0));
+    }
   );
 
   test('Unregister from all scopes', () async {
@@ -1401,13 +1410,3 @@ class SingletonInjector {
 }
 
 class Injector {}
-
-// Helper function to check if assertions are enabled
-bool assertionsEnabled() {
-  var assertionsEnabled = false;
-  assert(() {
-    assertionsEnabled = true;
-    return true;
-  }());
-  return assertionsEnabled;
-}
