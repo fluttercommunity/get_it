@@ -1123,54 +1123,63 @@ class _GetItImplementation implements GetIt {
     }
   }
 
+  /// Unregister an instance of an object or a factory/singleton by Type [T] or by name [instanceName]
+  /// if you need to dispose any resources you can pass in a [disposingFunction] function
+  /// that provides an instance of your class to be disposed
+  /// If you have provided an disposing function when you registered the object that one will be called automatically
+  /// If you have enabled reference counting when registering, [unregister] will only unregister and dispose the object
+  /// if referenceCount is 0
+  /// [ignoreReferenceCount] if `true` it will ignore the reference count and unregister the object
+  /// only use this if you know what you are doing
+  /// [fromAllScopes] if `true` it will unregister the instance from all scopes, not just the current one
   @override
-FutureOr unregister<T extends Object>({
-  Object? instance,
-  String? instanceName,
-  FutureOr Function(T)? disposingFunction,
-  bool ignoreReferenceCount = false,
-  bool fromAllScopes = false,
-}) async {
-  bool found = false;
-  do {
+  FutureOr unregister<T extends Object>({
+    Object? instance,
+    String? instanceName,
+    FutureOr Function(T)? disposingFunction,
+    bool ignoreReferenceCount = false,
+    bool fromAllScopes = false,
+  }) async {
+    bool found = false;
+    do {
+      final factoryToRemove = instance != null
+          ? _findFactoryByInstanceOrNull(instance)
+          : _findFirstFactoryByNameAndTypeOrNull<T>(instanceName);
+      if (factoryToRemove == null) {
+        if (!fromAllScopes && !found) {
+          throw StateError('No registration found for type $T');
+        }
+        break;
+      }
+      found = true;
+      final scope = _scopes.firstWhere(
+        (s) => s.allFactories.contains(factoryToRemove),
+        orElse: () => _currentScope,
+      );
+      await _unregisterFromScope<T>(
+        scope: scope,
+        instance: instance,
+        instanceName: instanceName,
+        disposingFunction: disposingFunction,
+        ignoreReferenceCount: ignoreReferenceCount,
+      );
+    } while (fromAllScopes);
+  }
+
+  Future<void> _unregisterFromScope<T extends Object>({
+    required _Scope scope,
+    Object? instance,
+    String? instanceName,
+    FutureOr Function(T)? disposingFunction,
+    bool ignoreReferenceCount = false,
+  }) async {
     final factoryToRemove = instance != null
         ? _findFactoryByInstanceOrNull(instance)
         : _findFirstFactoryByNameAndTypeOrNull<T>(instanceName);
     if (factoryToRemove == null) {
-      if (!fromAllScopes && !found) {
-        throw StateError('No registration found for type $T');
-      }
-      break;
+      return;
     }
-    found = true;
-    final scope = _scopes.firstWhere(
-      (s) => s.allFactories.contains(factoryToRemove),
-      orElse: () => _currentScope,
-    );
-    await _unregisterFromScope<T>(
-      scope: scope,
-      instance: instance,
-      instanceName: instanceName,
-      disposingFunction: disposingFunction,
-      ignoreReferenceCount: ignoreReferenceCount,
-    );
-  } while (fromAllScopes);
-}
-
-Future<void> _unregisterFromScope<T extends Object>({
-  required _Scope scope,
-  Object? instance,
-  String? instanceName,
-  FutureOr Function(T)? disposingFunction,
-  bool ignoreReferenceCount = false,
-}) async {
-  final factoryToRemove = instance != null
-      ? _findFactoryByInstanceOrNull(instance)
-      : _findFirstFactoryByNameAndTypeOrNull<T>(instanceName);
-  if (factoryToRemove == null) {
-    return;
-  }
-  if (factoryToRemove.objectsWaiting.isNotEmpty) {
+    if (factoryToRemove.objectsWaiting.isNotEmpty) {
       throw StateError(
         'There are still other objects waiting for this instance to signal ready',
       );
@@ -1206,8 +1215,7 @@ Future<void> _unregisterFromScope<T extends Object>({
         }
       }
     }
-}
-
+  }
 
   /// In some cases it can be necessary to change the name of a registered instance
   /// This avoids to unregister and reregister the instance which might cause trouble
@@ -2141,7 +2149,8 @@ Future<void> _unregisterFromScope<T extends Object>({
         existingFactory.factoryType == _ServiceFactoryType.lazy) {
       existingFactory._instance = newInstance;
     } else {
-      throw StateError('Cannot replace instance: not a singleton or lazy singleton');
+      throw StateError(
+          'Cannot replace instance: not a singleton or lazy singleton');
     }
   }
 }
