@@ -349,40 +349,34 @@ void main() {
   });
 
   test('ready automatic signalling for async Singletons', () async {
-    try {
-      final getIt = GetIt.instance;
-      await getIt.reset();
+    final getIt = GetIt.instance;
+    await getIt.reset();
 
-      getIt.registerSingletonAsync<TestClass>(
-        () async => TestClass(internalCompletion: false).init(),
-      );
-      getIt.registerSingletonAsync<TestClass2>(
-        () async {
-          final instance =
-              TestClass2(internalCompletion: false, initMsDelay: 50);
-          await instance.init();
-          return instance;
-        },
-      );
-      getIt.registerSingletonAsync<TestClass>(
-        () async => TestClass2(internalCompletion: false).init(),
-        instanceName: 'Second Instance',
-      );
+    getIt.registerSingletonAsync<TestClass>(
+      () async => TestClass(internalCompletion: false).init(),
+    );
+    getIt.registerSingletonAsync<TestClass2>(
+      () async {
+        final instance = TestClass2(internalCompletion: false, initMsDelay: 50);
+        await instance.init();
+        return instance;
+      },
+    );
+    getIt.registerSingletonAsync<TestClass>(
+      () async => TestClass2(internalCompletion: false).init(),
+      instanceName: 'Second Instance',
+    );
 
-      expect(getIt.isReadySync<TestClass>(), false);
-      expect(getIt.isReadySync<TestClass2>(), false);
-      expect(
-          getIt.isReadySync<TestClass>(instanceName: 'Second Instance'), false);
+    expect(getIt.isReadySync<TestClass>(), false);
+    expect(getIt.isReadySync<TestClass2>(), false);
+    expect(
+        getIt.isReadySync<TestClass>(instanceName: 'Second Instance'), false);
 
-      await getIt.allReady();
+    await getIt.allReady();
 
-      expect(getIt.isReadySync<TestClass>(), true);
-      expect(getIt.isReadySync<TestClass2>(), true);
-      expect(
-          getIt.isReadySync<TestClass>(instanceName: 'Second Instance'), true);
-    } on Exception catch (e) {
-      print(e);
-    }
+    expect(getIt.isReadySync<TestClass>(), true);
+    expect(getIt.isReadySync<TestClass2>(), true);
+    expect(getIt.isReadySync<TestClass>(instanceName: 'Second Instance'), true);
   });
 
   test('isReady propagates Error', () async {
