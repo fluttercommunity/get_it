@@ -6,7 +6,7 @@ void main() {
     final getIt = GetIt.instance;
     getIt.allowReassignment = false;
     getIt.skipDoubleRegistration = false;
-    getIt.reset();
+    await getIt.reset();
     getIt.registerSingleton<DataStore>(MockDataStore());
 
     expect(
@@ -17,7 +17,7 @@ void main() {
 
   test(' replaces dependency safely ', () async {
     final getIt = GetIt.instance;
-    getIt.reset();
+    await getIt.reset();
     getIt.allowReassignment = true;
     getIt.skipDoubleRegistration = false;
     getIt.registerSingleton<DataStore>(MockDataStore());
@@ -28,7 +28,7 @@ void main() {
 
   test(' Ignores Double registration error ', () async {
     final getIt = GetIt.instance;
-    getIt.reset();
+    await getIt.reset();
     getIt.allowReassignment = false;
     getIt.skipDoubleRegistration = true;
     getIt.registerSingleton<DataStore>(MockDataStore());
@@ -41,7 +41,7 @@ void main() {
   test(' Ignores Double named registration error ', () async {
     final getIt = GetIt.instance;
     const instanceName = 'named';
-    getIt.reset();
+    await getIt.reset();
     getIt.allowReassignment = false;
     getIt.skipDoubleRegistration = true;
     getIt.registerSingleton<DataStore>(RemoteDataStore());
@@ -61,7 +61,7 @@ void main() {
 
   test(' does not care about [skipDoubleRegistration] varibale   ', () async {
     final getIt = GetIt.instance;
-    getIt.reset();
+    await getIt.reset();
     getIt.allowReassignment = true;
     getIt.skipDoubleRegistration = true;
     getIt.registerSingleton<DataStore>(MockDataStore());

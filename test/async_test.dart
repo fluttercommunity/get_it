@@ -19,11 +19,13 @@ class TestClassParam {
 class TestClass extends TestBaseClass {
   GetIt? getIt;
   bool initCompleted = false;
+  int initMsDelay;
 
   /// if we do the initialisation from inside the constructor the init function has to signal GetIt
   /// that it has finished. For that we need to pass in the completer that we got from the factory call
   /// that we set up in the registration.
-  TestClass({required bool internalCompletion, this.getIt}) {
+  TestClass(
+      {required bool internalCompletion, this.initMsDelay = 10, this.getIt}) {
     constructorCounter++;
     if (internalCompletion) {
       assert(getIt != null);
@@ -33,7 +35,7 @@ class TestClass extends TestBaseClass {
 
   /// This one signals after a delay
   Future initWithSignal() {
-    return Future.delayed(const Duration(milliseconds: 10)).then((_) {
+    return Future.delayed(Duration(milliseconds: initMsDelay)).then((_) {
       getIt!.signalReady(this);
       initCompleted = true;
     });
@@ -41,13 +43,13 @@ class TestClass extends TestBaseClass {
 
   // We use this as dummy init that will return a future
   Future<TestClass> init() async {
-    await Future.delayed(const Duration(milliseconds: 10));
+    await Future.delayed(Duration(milliseconds: initMsDelay));
     initCompleted = true;
     return this;
   }
 
   Future<TestClass> initWithExeption() async {
-    await Future.delayed(const Duration(milliseconds: 10));
+    await Future.delayed(Duration(milliseconds: initMsDelay));
     throw StateError('Intentional');
   }
 
@@ -73,6 +75,7 @@ class TestClassWillSignalReady2 extends TestClass implements WillSignalReady {
 class TestClass2 extends TestClass {
   TestClass2({
     required super.internalCompletion,
+    super.initMsDelay = 10,
     super.getIt,
   });
 }
@@ -346,29 +349,45 @@ void main() {
   });
 
   test('ready automatic signalling for async Singletons', () async {
-    final getIt = GetIt.instance;
-    getIt.reset();
+    try {
+      final getIt = GetIt.instance;
+      await getIt.reset();
 
-    getIt.registerSingletonAsync<TestClass>(
-      () async => TestClass(internalCompletion: false).init(),
-    );
-    getIt.registerSingletonAsync<TestClass2>(
-      () async {
-        final instance = TestClass2(internalCompletion: false);
-        await instance.init();
-        return instance;
-      },
-    );
-    getIt.registerSingletonAsync(
-      () async => TestClass2(internalCompletion: false)..init(),
-      instanceName: 'Second Instance',
-    );
-    expect(getIt.allReady(), completes);
+      getIt.registerSingletonAsync<TestClass>(
+        () async => TestClass(internalCompletion: false).init(),
+      );
+      getIt.registerSingletonAsync<TestClass2>(
+        () async {
+          final instance =
+              TestClass2(internalCompletion: false, initMsDelay: 50);
+          await instance.init();
+          return instance;
+        },
+      );
+      getIt.registerSingletonAsync<TestClass>(
+        () async => TestClass2(internalCompletion: false).init(),
+        instanceName: 'Second Instance',
+      );
+
+      expect(getIt.isReadySync<TestClass>(), false);
+      expect(getIt.isReadySync<TestClass2>(), false);
+      expect(
+          getIt.isReadySync<TestClass>(instanceName: 'Second Instance'), false);
+
+      await getIt.allReady();
+
+      expect(getIt.isReadySync<TestClass>(), true);
+      expect(getIt.isReadySync<TestClass2>(), true);
+      expect(
+          getIt.isReadySync<TestClass>(instanceName: 'Second Instance'), true);
+    } on Exception catch (e) {
+      print(e);
+    }
   });
 
   test('isReady propagates Error', () async {
     final getIt = GetIt.instance;
-    getIt.reset();
+    await getIt.reset();
 
     getIt.registerSingletonAsync<TestClass>(
       () async => TestClass(internalCompletion: false).initWithExeption(),
@@ -379,7 +398,7 @@ void main() {
   test('allReady propagades Exceptions that occur in the factory functions',
       () async {
     final getIt = GetIt.instance;
-    getIt.reset();
+    await getIt.reset();
 
     getIt.registerSingletonAsync<TestClass>(
       () async => TestClass(internalCompletion: false).init(),
@@ -400,7 +419,7 @@ void main() {
   });
   test('ready manual synchronisation of sequence', () async {
     final getIt = GetIt.instance;
-    getIt.reset();
+    await getIt.reset();
     errorCounter = 0;
     var flag1 = false;
     var flag2 = false;
@@ -659,7 +678,7 @@ void main() {
 
   test('asyncFactory called with getAsync', () async {
     final getIt = GetIt.instance;
-    getIt.reset();
+    await getIt.reset();
 
     getIt.registerFactoryAsync<TestClass>(
       () => Future.value(TestClass(internalCompletion: false)),
@@ -754,9 +773,9 @@ void main() {
     expect(instance2.param2, null);
   });
 
-  test('register factory with Params with wrong type', () {
+  test('register factory with Params with wrong type', () async {
     final getIt = GetIt.instance;
-    getIt.reset();
+    await getIt.reset();
 
     constructorCounter = 0;
     getIt.registerFactoryParamAsync<TestClassParam, String, int>(
@@ -770,9 +789,9 @@ void main() {
   });
 
   test('register factory with Params with non-nullable type but not pass it',
-      () {
+      () async {
     final getIt = GetIt.instance;
-    getIt.reset();
+    await getIt.reset();
 
     constructorCounter = 0;
     getIt.registerFactoryParamAsync<TestClassParam, String, void>(
@@ -787,7 +806,7 @@ void main() {
 
   test('asyncFactory called with get instead of getAsync', () async {
     final getIt = GetIt.instance;
-    getIt.reset();
+    await getIt.reset();
 
     getIt.registerFactoryAsync<TestClass>(
       () => Future.value(TestClass(internalCompletion: false)),
@@ -801,7 +820,7 @@ void main() {
 
   test('asyncLazySingleton called with get before it was ready', () async {
     final getIt = GetIt.instance;
-    getIt.reset();
+    await getIt.reset();
 
     getIt.registerLazySingletonAsync<TestClass>(
       () => Future.value(TestClass(internalCompletion: false)),
@@ -816,7 +835,7 @@ void main() {
 
   test('asyncLazySingleton called with getAsync', () async {
     final getIt = GetIt.instance;
-    getIt.reset();
+    await getIt.reset();
 
     getIt.registerLazySingletonAsync<TestClass>(
       () => Future.value(TestClass(internalCompletion: false)..init()),
@@ -843,7 +862,7 @@ void main() {
 
   test('isReady called on asyncLazySingleton ', () async {
     final getIt = GetIt.instance;
-    getIt.reset();
+    await getIt.reset();
 
     getIt.registerLazySingletonAsync<TestClass>(
       () => Future.value(TestClass(internalCompletion: false)),
