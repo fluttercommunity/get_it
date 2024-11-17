@@ -580,11 +580,13 @@ abstract class GetIt {
   /// if referenceCount is 0
   /// [ignoreReferenceCount] if `true` it will ignore the reference count and unregister the object
   /// only use this if you know what you are doing
+  /// [fromAllScopes] if `true` it will unregister the instance from all scopes, not just the current one
   FutureOr unregister<T extends Object>({
     Object? instance,
     String? instanceName,
     FutureOr Function(T)? disposingFunction,
     bool ignoreReferenceCount = false,
+    bool fromAllScopes = false,
   });
 
   /// returns a Future that completes if all asynchronously created Singletons and any
@@ -647,4 +649,16 @@ abstract class GetIt {
   /// Or use async registrations methods or let individual instances signal their ready
   /// state on their own.
   void signalReady(Object? instance);
+
+  /// Returns the number of times a singleton has been accessed.
+  /// Only available in debug mode.
+  int getAccessCount<T extends Object>({String? instanceName});
+
+  /// Reset the number of times a singleton has been accessed.
+  /// Only available in debug mode.
+  void resetAccessCount<T extends Object>({String? instanceName});
+
+  /// Replaces an existing singleton instance with a new instance.
+  /// Throws if the instance is not found or is not a singleton.
+  void replaceSingletonInstance<T extends Object>(T newInstance, {String? instanceName});
 }

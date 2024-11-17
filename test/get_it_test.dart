@@ -1368,6 +1368,115 @@ void main() {
       reason: "getIt.reset() did not dispose in reverse order",
     );
   });
+
+  test('Access count tracking (debug only)', () {
+      final getIt = GetIt.instance;
+      getIt.registerSingleton<TestClass>(TestClass());
+
+      getIt<TestClass>();
+      getIt<TestClass>();
+      getIt<TestClass>();
+
+      expect(getIt.getAccessCount<TestClass>(), equals(3));
+    }
+  );
+
+  test('Reset count tracking (debug only)', () {
+      final getIt = GetIt.instance;
+      getIt.registerSingleton<TestClass>(TestClass());
+
+        getIt<TestClass>();
+        getIt<TestClass>();
+        getIt<TestClass>();
+        
+        getIt.resetAccessCount<TestClass>();
+
+        expect(getIt.getAccessCount<TestClass>(), equals(0));
+    }
+  );
+
+  test('Unregister from all scopes', () async {
+    final getIt = GetIt.asNewInstance();
+
+    getIt.pushNewScope();
+    getIt.registerSingleton<TestClass>(TestClass());
+
+    getIt.pushNewScope();
+    getIt.registerSingleton<TestClass>(TestClass());
+
+    expect(getIt.isRegistered<TestClass>(), isTrue);
+
+    await getIt.unregister<TestClass>(fromAllScopes: true);
+
+    expect(getIt.isRegistered<TestClass>(), isFalse);
+
+    getIt.popScope(); // Back to first scope
+    expect(getIt.isRegistered<TestClass>(), isFalse);
+
+    getIt.popScope(); // Back to root scope
+    expect(getIt.isRegistered<TestClass>(), isFalse);
+  });
+
+  test('Replace singleton instance', () {
+    final getIt = GetIt.instance;
+    final initialInstance = TestClass();
+    getIt.registerSingleton<TestClass>(initialInstance);
+
+    final newInstance = TestClass();
+    getIt.replaceSingletonInstance<TestClass>(newInstance);
+
+    expect(getIt<TestClass>(), equals(newInstance));
+  });
+
+  test('Replace named singleton instance', () {
+    final getIt = GetIt.instance;
+    final initialInstance = TestClass();
+    getIt.registerSingleton<TestClass>(initialInstance, instanceName: 'named');
+
+    final newInstance = TestClass();
+    getIt.replaceSingletonInstance<TestClass>(newInstance,
+        instanceName: 'named');
+
+    expect(getIt<TestClass>(instanceName: 'named'), equals(newInstance));
+  });
+
+  test('Cannot replace non-singleton instance', () {
+    final getIt = GetIt.instance;
+    getIt.registerFactory<TestClass>(() => TestClass());
+
+    expect(
+      () => getIt.replaceSingletonInstance<TestClass>(TestClass()),
+      throwsA(isA<StateError>()),
+    );
+  });
+
+  test('Cannot replace non-existent instance', () {
+    final getIt = GetIt.instance;
+    expect(
+      () => getIt.replaceSingletonInstance<TestClass>(TestClass()),
+      throwsA(isA<StateError>()),
+    );
+  });
+
+  test('Replace lazy singleton instance', () {
+    final getIt = GetIt.instance;
+    getIt.registerLazySingleton<TestClass>(() => TestClass());
+
+    final newInstance = TestClass();
+    getIt.replaceSingletonInstance<TestClass>(newInstance);
+
+    expect(getIt<TestClass>(), equals(newInstance));
+  });
+
+  test('Cannot replace factory instance', () {
+    final getIt = GetIt.instance;
+    getIt.registerFactory<TestClass>(() => TestClass());
+
+    expect(
+      () => getIt.replaceSingletonInstance<TestClass>(TestClass()),
+      throwsStateError,
+    );
+  });
 }
 
 class SingletonInjector {
