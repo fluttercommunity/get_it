@@ -601,11 +601,6 @@ class _GetItImplementation implements GetIt {
     return instanceFactory!;
   }
 
-  _ServiceFactory? _findFactoryByInstanceOrNull(Object instance) {
-    return _allFactories
-        .firstWhereOrNull((x) => identical(x.instance, instance));
-  }
-
   /// retrieves or creates an instance of a registered type [T] depending on the registration
   /// function used for this type or based on a name.
   /// for factories you can pass up to 2 parameters [param1,param2] they have to match the types
@@ -1146,80 +1141,61 @@ class _GetItImplementation implements GetIt {
     bool ignoreReferenceCount = false,
     bool fromAllScopes = false,
   }) async {
-    bool found = false;
+    int scopesToCheck = _scopes.length;
+    bool removedAtLeastOne = false;
+    _ServiceFactory? factoryToRemove;
     do {
-      final factoryToRemove = instance != null
-          ? _findFactoryByInstanceOrNull(instance)
+      factoryToRemove = instance != null
+          ? _findFirstFactoryByInstanceOrNull(instance)
           : _findFirstFactoryByNameAndTypeOrNull<T>(instanceName);
-      if (factoryToRemove == null) {
-        if (!fromAllScopes && !found) {
-          throw StateError('No registration found for type $T');
-        }
-        break;
-      }
-      found = true;
-      final scope = _scopes.firstWhere(
-        (s) => s.allFactories.contains(factoryToRemove),
-        orElse: () => _currentScope,
-      );
-      await _unregisterFromScope<T>(
-        scope: scope,
-        instance: instance,
-        instanceName: instanceName,
-        disposingFunction: disposingFunction,
-        ignoreReferenceCount: ignoreReferenceCount,
-      );
-    } while (fromAllScopes);
-  }
 
-  Future<void> _unregisterFromScope<T extends Object>({
-    required _Scope scope,
-    Object? instance,
-    String? instanceName,
-    FutureOr Function(T)? disposingFunction,
-    bool ignoreReferenceCount = false,
-  }) async {
-    final factoryToRemove = instance != null
-        ? _findFactoryByInstanceOrNull(instance)
-        : _findFirstFactoryByNameAndTypeOrNull<T>(instanceName);
-    if (factoryToRemove == null) {
-      return;
-    }
-    if (factoryToRemove.objectsWaiting.isNotEmpty) {
+      if (factoryToRemove != null) {
+        throwIf(
+          factoryToRemove.objectsWaiting.isNotEmpty,
+          StateError(
+            'There are still other objects waiting for this instance so signal ready',
+          ),
+        );
+
+        if (factoryToRemove._referenceCount > 0) {
+          factoryToRemove._referenceCount--;
+          return;
+        }
+
+        final typeRegistration = factoryToRemove.registeredIn;
+
+        if (factoryToRemove.isNamedRegistration) {
+          typeRegistration.namedFactories.remove(factoryToRemove.instanceName);
+        } else {
+          typeRegistration.factories.remove(factoryToRemove);
+        }
+        removedAtLeastOne = true;
+
+        if (typeRegistration.isEmpty) {
+          factoryToRemove.registrationScope.typeRegistrations.remove(T);
+        }
+
+        if (factoryToRemove.instance != null) {
+          if (disposingFunction != null) {
+            final dispose =
+                disposingFunction.call(factoryToRemove.instance! as T);
+            if (dispose is Future) {
+              await dispose;
+            }
+          } else {
+            final dispose = factoryToRemove.dispose();
+            if (dispose is Future) {
+              await dispose;
+            }
+          }
+        }
+      }
+      scopesToCheck--;
+    } while (factoryToRemove != null && fromAllScopes && scopesToCheck > 0);
+    if (!removedAtLeastOne) {
       throw StateError(
-        'There are still other objects waiting for this instance to signal ready',
+        'The object you are trying to unregister is not registered',
       );
-    }
-
-    if (!ignoreReferenceCount && factoryToRemove._referenceCount > 0) {
-      factoryToRemove._referenceCount--;
-      return;
-    }
-
-    final typeRegistration = factoryToRemove.registeredIn;
-
-    if (factoryToRemove.isNamedRegistration) {
-      typeRegistration.namedFactories.remove(factoryToRemove.instanceName);
-    } else {
-      typeRegistration.factories.remove(factoryToRemove);
-    }
-
-    if (typeRegistration.isEmpty) {
-      scope.typeRegistrations.remove(T);
-    }
-
-    if (factoryToRemove.instance != null) {
-      if (disposingFunction != null) {
-        final dispose = disposingFunction.call(factoryToRemove.instance! as T);
-        if (dispose is Future) {
-          await dispose;
-        }
-      } else {
-        final dispose = factoryToRemove.dispose();
-        if (dispose is Future) {
-          await dispose;
-        }
-      }
     }
   }
 
@@ -1343,7 +1319,7 @@ class _GetItImplementation implements GetIt {
   }
 
   _ServiceFactory _findFactoryByInstance(Object instance) {
-    final registeredFactory = _findFactoryByInstanceOrNull(instance);
+    final registeredFactory = _findFirstFactoryByInstanceOrNull(instance);
 
     if (registeredFactory == null) {
       throw StateError(

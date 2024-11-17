@@ -1370,38 +1370,36 @@ void main() {
   });
 
   test('Access count tracking (debug only)', () {
-      final getIt = GetIt.instance;
-      getIt.registerSingleton<TestClass>(TestClass());
+    final getIt = GetIt.instance;
+    getIt.registerSingleton<TestClass>(TestClass());
 
-      getIt<TestClass>();
-      getIt<TestClass>();
-      getIt<TestClass>();
+    getIt<TestClass>();
+    getIt<TestClass>();
+    getIt<TestClass>();
 
-      expect(getIt.getAccessCount<TestClass>(), equals(3));
-    }
-  );
+    expect(getIt.getAccessCount<TestClass>(), equals(3));
+  });
 
   test('Reset count tracking (debug only)', () {
-      final getIt = GetIt.instance;
-      getIt.registerSingleton<TestClass>(TestClass());
+    final getIt = GetIt.instance;
+    getIt.registerSingleton<TestClass>(TestClass());
 
-        getIt<TestClass>();
-        getIt<TestClass>();
-        getIt<TestClass>();
-        
-        getIt.resetAccessCount<TestClass>();
+    getIt<TestClass>();
+    getIt<TestClass>();
+    getIt<TestClass>();
 
-        expect(getIt.getAccessCount<TestClass>(), equals(0));
-    }
-  );
+    getIt.resetAccessCount<TestClass>();
+
+    expect(getIt.getAccessCount<TestClass>(), equals(0));
+  });
 
   test('Unregister from all scopes', () async {
     final getIt = GetIt.asNewInstance();
 
-    getIt.pushNewScope();
+    getIt.pushNewScope(scopeName: 'level1');
     getIt.registerSingleton<TestClass>(TestClass());
 
-    getIt.pushNewScope();
+    getIt.pushNewScope(scopeName: 'level2');
     getIt.registerSingleton<TestClass>(TestClass());
 
     expect(getIt.isRegistered<TestClass>(), isTrue);
