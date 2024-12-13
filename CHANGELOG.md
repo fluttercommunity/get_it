@@ -1,3 +1,7 @@
+## [8.0.3]
+
+* fixing linter warning thanks to @PatrickChrestin
+
 ## [8.0.2]
 
 * Fixes by @kuhnroyal and  @ArtAhmetajCR who spotted some flaws in my latest changes. Thanks a lot
