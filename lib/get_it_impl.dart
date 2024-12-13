@@ -361,8 +361,6 @@ class _ServiceFactory<T extends Object, P1, P2> {
             });
             return pendingResult! as Future<R>;
           }
-        default:
-          throw StateError('Impossible factoryType');
       }
     } catch (e, s) {
       _debugOutput('Error while creating $T}');
