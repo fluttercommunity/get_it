@@ -1368,6 +1368,23 @@ void main() {
       reason: "getIt.reset() did not dispose in reverse order",
     );
   });
+
+  test('isRegistered queryable by type param', () {
+    final getIt = GetIt.instance;
+
+    getIt.registerSingleton<TestClass2>(TestClass2());
+
+    final bool byGenerics = getIt.isRegistered<TestClass>();
+    final bool byParam = getIt.isRegistered(type: TestClass);
+
+    final bool byGenerics2 = getIt.isRegistered<TestClass2>();
+    final bool byParam2 = getIt.isRegistered(type: TestClass2);
+
+    expect(byParam, byGenerics);
+    expect(byParam, false);
+    expect(byParam2, byGenerics2);
+    expect(byParam2, true);
+  });
 }
 
 class SingletonInjector {
