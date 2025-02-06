@@ -518,7 +518,7 @@ void main() {
 
     expect(
       () => getIt(instanceName: 'not there'),
-      throwsA(isA<AssertionError>()),
+      throwsA(isA<StateError>()),
     );
     GetIt.I.reset();
   });
@@ -1253,7 +1253,7 @@ void main() {
         final TestClass2 instance1 =
             getIt.get(type: TestClass, instanceName: 'instanceName');
       },
-      throwsA(isA<AssertionError>()),
+      throwsA(isA<TypeError>()),
     );
   });
 

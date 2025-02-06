@@ -17,7 +17,7 @@ part 'get_it_impl.dart';
 /// (you don't really have to implement much ;-) )
 abstract class WillSignalReady {}
 
-/// If an object implements the [ShadowChangeHandler] if will get notified if
+/// If an object implements the [ShadowChangeHandlers] it will get notified if
 /// an Object with the same registration type and name is registered on a
 /// higher scope which will shadow it.
 /// It also will get notified if the shadowing object is removed from GetIt
@@ -520,6 +520,7 @@ abstract class GetIt {
     Future<void> Function(GetIt getIt)? init,
     String? scopeName,
     ScopeDisposeFunc? dispose,
+    bool isFinal,
   });
 
   /// Disposes all factories/Singletons that have been registered in this scope

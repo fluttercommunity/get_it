@@ -37,14 +37,20 @@ void _debugOutput(Object message) {
 enum _ServiceFactoryType {
   alwaysNew, // factory which means on every call of [get] a new instance is created
   constant, // normal singleton
-  lazy, // lazy
+  lazy, // lazy singleton
   cachedFactory, // cached factory
 }
 
-/// If I use `Singleton` without specifier in the comments I mean normal and lazy
+/// A single entry describing how to build (and possibly cache) an object.
+///
+/// - If `factoryType == alwaysNew` or `cachedFactory`, it represents a "factory" (create every time)
+/// - If `factoryType == constant`, it represents a "singleton"
+/// - If `factoryType == lazy`, it is a "lazy singleton"
+///
+/// The crucial difference in this modified version is that each `_ServiceFactory` is associated
+/// with a **string key** (derived from `T.toString()`) rather than a raw `Type`.
 class _ServiceFactory<T extends Object, P1, P2> {
   final _ServiceFactoryType factoryType;
-
   final _GetItImplementation _getItInstance;
   final _TypeRegistration registeredIn;
   final _Scope registrationScope;
@@ -90,8 +96,8 @@ class _ServiceFactory<T extends Object, P1, P2> {
     }
   }
 
-  /// the type that was used when registering, used for runtime checks
-  late final Type registrationType;
+  /// For debug / sanity checks. Contains `T.toString()`.
+  late final String registrationTypeString;
 
   /// to enable Singletons to signal that they are ready (their initialization is finished)
   late Completer _readyCompleter;
@@ -101,13 +107,13 @@ class _ServiceFactory<T extends Object, P1, P2> {
 
   /// If other objects are waiting for this one
   /// they are stored here
-  final List<Type> objectsWaiting = [];
+  final List<String> objectsWaiting = [];
 
   bool get isReady => _readyCompleter.isCompleted;
 
   bool get isNamedRegistration => instanceName != null;
 
-  String get debugName => '$instanceName : $registrationType';
+  String get debugName => '$instanceName : $registrationTypeString';
 
   bool get canBeWaitedFor =>
       shouldSignalReady || pendingResult != null || isAsync;
@@ -138,18 +144,18 @@ class _ServiceFactory<T extends Object, P1, P2> {
                 instance is Disposable),
             ' You are trying to register type ${instance.runtimeType} '
             'that implements "Disposable" but you also provide a disposing function') {
-    registrationType = T;
     param1Type = P1;
     param2Type = P2;
+    registrationTypeString = T.toString();
     _readyCompleter = Completer();
   }
 
   FutureOr dispose() {
     /// check if we are shadowing an existing Object
     final factoryThatWouldbeShadowed =
-        _getItInstance._findFirstFactoryByNameAndTypeOrNull(
+        _getItInstance._findFirstFactoryByNameAndStringKeyOrNull(
       instanceName,
-      type: T,
+      registrationTypeString,
       lookInScopeBelow: true,
     );
 
@@ -231,12 +237,9 @@ class _ServiceFactory<T extends Object, P1, P2> {
 
             /// check if we are shadowing an existing Object
             final factoryThatWouldbeShadowed =
-                _getItInstance._findFirstFactoryByNameAndTypeOrNull(
-              instanceName,
-              type: T,
-              lookInScopeBelow: true,
-            );
-
+                _getItInstance._findFirstFactoryByNameAndStringKeyOrNull(
+                    instanceName, registrationTypeString,
+                    lookInScopeBelow: true);
             final objectThatWouldbeShadowed =
                 factoryThatWouldbeShadowed?.instance;
             if (objectThatWouldbeShadowed != null &&
@@ -247,7 +250,7 @@ class _ServiceFactory<T extends Object, P1, P2> {
           return instance!;
       }
     } catch (e, s) {
-      _debugOutput('Error while creating $T');
+      _debugOutput('Error while creating $registrationTypeString');
       _debugOutput('Stack trace:\n $s');
       rethrow;
     }
@@ -294,7 +297,7 @@ class _ServiceFactory<T extends Object, P1, P2> {
               param2 == lastParam2) {
             return Future<R>.value(weakReferenceInstance!.target! as R);
           } else {
-            if (creationFunctionParam != null) {
+            if (asyncCreationFunctionParam != null) {
               lastParam1 = param1 as P1?;
               lastParam2 = param2 as P2?;
               return asyncCreationFunctionParam!(param1 as P1, param2 as P2)
@@ -345,9 +348,9 @@ class _ServiceFactory<T extends Object, P1, P2> {
 
               /// check if we are shadowing an existing Object
               final factoryThatWouldbeShadowed =
-                  _getItInstance._findFirstFactoryByNameAndTypeOrNull(
+                  _getItInstance._findFirstFactoryByNameAndStringKeyOrNull(
                 instanceName,
-                type: T,
+                registrationTypeString,
                 lookInScopeBelow: true,
               );
 
@@ -363,46 +366,51 @@ class _ServiceFactory<T extends Object, P1, P2> {
           }
       }
     } catch (e, s) {
-      _debugOutput('Error while creating $T}');
+      _debugOutput('Error while creating $registrationTypeString');
       _debugOutput('Stack trace:\n $s');
       rethrow;
     }
   }
 }
 
-class _TypeRegistration<T extends Object> {
-  final namedFactories =
-      // ignore: prefer_collection_literals
-      LinkedHashMap<String, _ServiceFactory<T, dynamic, dynamic>>();
-  final factories = <_ServiceFactory<T, dynamic, dynamic>>[];
+/// A registration group for a single `String key`.
+/// Since multiple named factories can exist in one scope for the same base key,
+/// we track them in `namedFactories`. There can also be a single "unnamed" factory
+/// stored in `factories`.
+class _TypeRegistration {
+  final namedFactories = <String, _ServiceFactory>{};
+  final factories = <_ServiceFactory>[];
+
+  bool get isEmpty => factories.isEmpty && namedFactories.isEmpty;
 
   void dispose() {
-    for (final factory in factories.reversed) {
-      factory.dispose();
+    for (final f in factories.reversed) {
+      f.dispose();
     }
     factories.clear();
-    for (final factory in namedFactories.values.toList().reversed) {
-      factory.dispose();
+    for (final f in namedFactories.values.toList().reversed) {
+      f.dispose();
     }
     namedFactories.clear();
   }
 
-  bool get isEmpty => factories.isEmpty && namedFactories.isEmpty;
-
-  _ServiceFactory<T, dynamic, dynamic>? getFactory(String? name) {
+  _ServiceFactory? getFactory(String? name) {
     return name != null ? namedFactories[name] : factories.firstOrNull;
   }
 }
 
+/// Represents one "layer" (scope) in the service locator.
+/// Each scope can hide registrations from a scope below it if a new registration
+/// for the same (string) key is added.
 class _Scope {
   final String? name;
   final ScopeDisposeFunc? disposeFunc;
   bool isFinal = false;
   bool isPopping = false;
+
+  /// keyed by `T.toString()`.
   // ignore: prefer_collection_literals
-  final typeRegistrations =
-      // ignore: prefer_collection_literals
-      LinkedHashMap<Type, _TypeRegistration>();
+  final typeRegistrations = LinkedHashMap<String, _TypeRegistration>();
 
   _Scope({this.name, this.disposeFunc});
 
@@ -417,51 +425,46 @@ class _Scope {
 
   List<_ServiceFactory> get allFactories =>
       typeRegistrations.values.fold<List<_ServiceFactory>>(
-          [],
-          (sum, x) =>
-              sum..addAll([...x.factories, ...x.namedFactories.values]));
+        [],
+        (sum, x) => sum..addAll([...x.factories, ...x.namedFactories.values]),
+      );
 
   Future<void> dispose() async {
     await disposeFunc?.call();
   }
 
+  /// Return all instances of a requested generic "key" from this scope
   Iterable<T> getAll<T extends Object>({
     dynamic param1,
     dynamic param2,
   }) {
-    final _TypeRegistration<T>? typeRegistration =
-        typeRegistrations[T] as _TypeRegistration<T>?;
+    final regKey = T.toString();
+    final _TypeRegistration? typeRegistration = typeRegistrations[regKey];
+    if (typeRegistration == null) return [];
 
-    if (typeRegistration == null) {
-      return [];
-    }
-
-    final factories = [
+    final fs = [
       ...typeRegistration.factories,
       ...typeRegistration.namedFactories.values
     ];
     final instances = <T>[];
-    for (final instanceFactory in factories) {
-      final T instance;
-      if (instanceFactory.isAsync || instanceFactory.pendingResult != null) {
+    for (final f in fs) {
+      if (f.isAsync || f.pendingResult != null) {
         /// We use an assert here instead of an `if..throw` for performance reasons
         assert(
-          instanceFactory.factoryType == _ServiceFactoryType.constant ||
-              instanceFactory.factoryType == _ServiceFactoryType.lazy,
-          "You can't use getAll with an async Factory of $T.",
+          f.factoryType == _ServiceFactoryType.constant ||
+              f.factoryType == _ServiceFactoryType.lazy,
+          "You can't use getAll with an async Factory of $regKey.",
         );
         throwIfNot(
-          instanceFactory.isReady,
+          f.isReady,
           StateError(
-            'You tried to access an instance of $T that is not ready yet',
+            'You tried to access an instance of $regKey that is not ready yet',
           ),
         );
-        instance = instanceFactory.instance!;
+        instances.add(f.instance! as T);
       } else {
-        instance = instanceFactory.getObject(param1, param2);
+        instances.add(f.getObject(param1, param2) as T);
       }
-
-      instances.add(instance);
     }
     return instances;
   }
@@ -470,24 +473,21 @@ class _Scope {
     dynamic param1,
     dynamic param2,
   }) async {
-    final _TypeRegistration<T>? typeRegistration =
-        typeRegistrations[T] as _TypeRegistration<T>?;
+    final regKey = T.toString();
+    final _TypeRegistration? typeRegistration = typeRegistrations[regKey];
+    if (typeRegistration == null) return [];
 
-    if (typeRegistration == null) {
-      return [];
-    }
-
-    final factories = [
+    final fs = [
       ...typeRegistration.factories,
       ...typeRegistration.namedFactories.values
     ];
     final instances = <T>[];
-    for (final instanceFactory in factories) {
+    for (final f in fs) {
       final T instance;
-      if (instanceFactory.isAsync || instanceFactory.pendingResult != null) {
-        instance = await instanceFactory.getObjectAsync(param1, param2);
+      if (f.isAsync || f.pendingResult != null) {
+        instance = await f.getObjectAsync<T>(param1, param2);
       } else {
-        instance = instanceFactory.getObject(param1, param2);
+        instance = f.getObject(param1, param2) as T;
       }
       instances.add(instance);
     }
@@ -495,6 +495,7 @@ class _Scope {
   }
 }
 
+/// The core implementation
 class _GetItImplementation implements GetIt {
   static const _baseScopeName = 'baseScope';
   final _scopes = [_Scope(name: _baseScopeName)];
@@ -520,71 +521,55 @@ class _GetItImplementation implements GetIt {
   @visibleForTesting
   @override
   bool skipDoubleRegistration = false;
+
+  @override
+  bool allowRegisterMultipleImplementationsOfoneType = false;
+
   @override
   void enableRegisteringMultipleInstancesOfOneType() {
     allowRegisterMultipleImplementationsOfoneType = true;
   }
 
-  @override
-  bool allowRegisterMultipleImplementationsOfoneType = false;
-
-  /// Is used by several other functions to retrieve the correct [_ServiceFactory]
+  /// Tries to find a factory in any scope from top to bottom for the given
+  /// `[typeKey]` (i.e. `T.toString()`) plus an optional `[instanceName]`.
   _ServiceFactory<T, dynamic, dynamic>?
-      _findFirstFactoryByNameAndTypeOrNull<T extends Object>(
-    String? instanceName, {
-    Type? type,
+      _findFirstFactoryByNameAndStringKeyOrNull<T extends Object>(
+    String? instanceName,
+    String typeKey, {
     bool lookInScopeBelow = false,
   }) {
-    /// We use an assert here instead of an `if..throw` because it gets called on every call
-    /// of [get]
-    /// `(const Object() is! T)` tests if [T] is a real type and not Object or dynamic
-    assert(
-      type != null || const Object() is! T,
-      'GetIt: The compiler could not infer the type. You have to provide a type '
-      'and optionally a name. Did you accidentally do `var sl=GetIt.instance();` '
-      'instead of var sl=GetIt.instance;',
-    );
-
-    _ServiceFactory<T, dynamic, dynamic>? instanceFactory;
-
     int scopeLevel = _scopes.length - (lookInScopeBelow ? 2 : 1);
 
-    final lookUpType = type ?? T;
-    while (instanceFactory == null && scopeLevel >= 0) {
-      final _TypeRegistration? typeRegistration =
-          _scopes[scopeLevel].typeRegistrations[lookUpType];
-
-      final foundFactory = typeRegistration?.getFactory(instanceName);
-      assert(
-          foundFactory is _ServiceFactory<T, dynamic, dynamic>?,
-          'It looks like you have passed your lookup type via the `type` but '
-          'but the receiving variable is not a compatible type.');
-
-      instanceFactory = foundFactory as _ServiceFactory<T, dynamic, dynamic>?;
+    while (scopeLevel >= 0) {
+      final scope = _scopes[scopeLevel];
+      final typeRegistration = scope.typeRegistrations[typeKey];
+      if (typeRegistration != null) {
+        final foundFactory = typeRegistration.getFactory(instanceName);
+        if (foundFactory != null) {
+          return foundFactory as _ServiceFactory<T, dynamic, dynamic>?;
+        }
+      }
       scopeLevel--;
     }
-
-    return instanceFactory;
+    return null;
   }
 
-  /// Is used by several other functions to retrieve the correct [_ServiceFactory]
-  _ServiceFactory _findFactoryByNameAndType<T extends Object>(
-    String? instanceName, [
-    Type? type,
-  ]) {
-    final instanceFactory =
-        _findFirstFactoryByNameAndTypeOrNull<T>(instanceName, type: type);
-
+  /// Same as above but must succeed or throw
+  _ServiceFactory _findFactoryByNameAndStringKey<T extends Object>(
+      String? instanceName, String typeKey) {
+    final instanceFactory = _findFirstFactoryByNameAndStringKeyOrNull<T>(
+      instanceName,
+      typeKey,
+    );
     throwIfNot(
       instanceFactory != null,
-      // ignore: missing_whitespace_between_adjacent_strings
       StateError(
-          'GetIt: Object/factory with ${instanceName != null ? 'with name $instanceName and ' : ''}'
-          'type $T is not registered inside GetIt. '
-          '\n(Did you accidentally do GetIt sl=GetIt.instance(); instead of GetIt sl=GetIt.instance;'
-          '\nDid you forget to register it?)'),
+        'GetIt: Object/factory with '
+        '${instanceName != null ? 'name $instanceName and ' : ''}type $typeKey '
+        'is not registered inside GetIt.\n'
+        '(Did you forget to register it?)',
+      ),
     );
-
     return instanceFactory!;
   }
 
@@ -599,34 +584,29 @@ class _GetItImplementation implements GetIt {
     dynamic param2,
     Type? type,
   }) {
-    final instanceFactory = _findFactoryByNameAndType<T>(instanceName, type);
-
+    final typeKey = (type ?? T).toString();
+    final instanceFactory = _findFactoryByNameAndStringKey<T>(
+      instanceName,
+      typeKey,
+    );
     final Object instance;
     if (instanceFactory.isAsync || instanceFactory.pendingResult != null) {
       /// We use an assert here instead of an `if..throw` for performance reasons
       assert(
         instanceFactory.factoryType == _ServiceFactoryType.constant ||
             instanceFactory.factoryType == _ServiceFactoryType.lazy,
-        "You can't use get with an async Factory of ${instanceName ?? T.toString()}.",
+        "You can't use get with an async Factory of $typeKey.",
       );
       throwIfNot(
         instanceFactory.isReady,
         StateError(
-          'You tried to access an instance of ${instanceName ?? T.toString()} that is not ready yet',
+          'You tried to access an instance of $typeKey that is not ready yet',
         ),
       );
       instance = instanceFactory.instance!;
     } else {
       instance = instanceFactory.getObject(param1, param2);
     }
-
-    assert(
-      instance is T,
-      'Object with name $instanceName has a different type '
-      '(${instanceFactory.registrationType}) than the one that is inferred '
-      '($T) where you call it',
-    );
-
     return instance as T;
   }
 
@@ -636,35 +616,23 @@ class _GetItImplementation implements GetIt {
     dynamic param2,
     bool fromAllScopes = false,
   }) {
-    final Iterable<T> instances;
     if (!fromAllScopes) {
-      instances = _currentScope.getAll<T>(
-        param1: param1,
-        param2: param2,
-      );
+      return _currentScope.getAll<T>(param1: param1, param2: param2);
     } else {
-      instances = [
-        for (final scope in _scopes)
-          ...scope.getAll<T>(
-            param1: param1,
-            param2: param2,
-          )
-      ];
+      final result = <T>[];
+      for (final scope in _scopes) {
+        result.addAll(scope.getAll<T>(param1: param1, param2: param2));
+      }
+      throwIf(
+        result.isEmpty,
+        StateError(
+          'GetIt: No Objects/factories of type $T found.',
+        ),
+      );
+      return result;
     }
-
-    throwIf(
-      instances.isEmpty,
-      StateError('GetIt: No Objects/factories with '
-          'type $T are not registered inside GetIt. '
-          '\n(Did you accidentally do GetIt sl=GetIt.instance(); instead of GetIt sl=GetIt.instance;'
-          '\nDid you forget to register it?)'),
-    );
-
-    return instances;
   }
 
-  /// Callable class so that you can write `GetIt.instance<MyType>` instead of
-  /// `GetIt.instance.get<MyType>`
   @override
   T call<T extends Object>({
     String? instanceName,
@@ -680,10 +648,6 @@ class _GetItImplementation implements GetIt {
     );
   }
 
-  /// Returns a Future of an instance that is created by an async factory or a Singleton that is
-  /// not ready with its initialization.
-  /// for async factories you can pass up to 2 parameters [param1,param2] they have to match
-  /// the types given at registration with [registerFactoryParamAsync()]
   @override
   Future<T> getAsync<T extends Object>({
     String? instanceName,
@@ -691,8 +655,12 @@ class _GetItImplementation implements GetIt {
     dynamic param2,
     Type? type,
   }) {
-    final factoryToGet = _findFactoryByNameAndType<T>(instanceName, type);
-    return factoryToGet.getObjectAsync<T>(param1, param2);
+    final typeKey = (type ?? T).toString();
+    final instanceFactory = _findFactoryByNameAndStringKey<T>(
+      instanceName,
+      typeKey,
+    );
+    return instanceFactory.getObjectAsync<T>(param1, param2);
   }
 
   @override
@@ -701,39 +669,69 @@ class _GetItImplementation implements GetIt {
     dynamic param2,
     bool fromAllScopes = false,
   }) async {
-    final Iterable<T> instances;
     if (!fromAllScopes) {
-      instances = await _currentScope.getAllAsync<T>(
-        param1: param1,
-        param2: param2,
-      );
+      return _currentScope.getAllAsync<T>(param1: param1, param2: param2);
     } else {
-      instances = [
-        for (final scope in _scopes)
-          ...await scope.getAllAsync<T>(
-            param1: param1,
-            param2: param2,
-          )
-      ];
+      final result = <T>[];
+      for (final scope in _scopes) {
+        result
+            .addAll(await scope.getAllAsync<T>(param1: param1, param2: param2));
+      }
+      throwIf(
+        result.isEmpty,
+        StateError(
+          'GetIt: No Objects/factories of type $T found.',
+        ),
+      );
+      return result;
     }
-
-    throwIf(
-      instances.isEmpty,
-      StateError('GetIt: No Objects/factories with '
-          'type $T are not registered inside GetIt. '
-          '\n(Did you accidentally do GetIt sl=GetIt.instance(); instead of GetIt sl=GetIt.instance;'
-          '\nDid you forget to register it?)'),
-    );
-
-    return instances;
   }
 
-  /// registers a type so that a new instance will be created on each call of [get] on that type
-  /// [T] type to register
-  /// [factoryFunc] factory function for this type
-  /// [instanceName] if you provide a value here your factory gets registered with that
-  /// name instead of a type. This should only be necessary if you need to register more
-  /// than one instance of one type.
+  @override
+  bool isRegistered<T extends Object>(
+      {Object? instance, String? instanceName}) {
+    if (instance != null) {
+      return _findFirstFactoryByInstanceOrNull(instance) != null;
+    } else {
+      final typeKey = T.toString();
+      return _findFirstFactoryByNameAndStringKeyOrNull<T>(
+              instanceName, typeKey) !=
+          null;
+    }
+  }
+
+  @override
+  void changeTypeInstanceName<T extends Object>({
+    String? instanceName,
+    required String newInstanceName,
+    T? instance,
+  }) {
+    assert(
+      instance != null || instanceName != null,
+      'You must provide either an instance or an instanceName.',
+    );
+
+    final factoryToRename = (instance != null)
+        ? _findFactoryByInstance(instance)
+        : _findFactoryByNameAndStringKey<T>(instanceName, T.toString());
+
+    throwIfNot(
+      factoryToRename.isNamedRegistration,
+      StateError('This instance is not registered with a name'),
+    );
+    final reg = factoryToRename.registeredIn;
+    throwIf(
+      reg.namedFactories.containsKey(newInstanceName),
+      StateError(
+        'There is already an instance of type ${factoryToRename.registrationTypeString} '
+        'registered with the name $newInstanceName',
+      ),
+    );
+    reg.namedFactories[newInstanceName] = factoryToRename;
+    reg.namedFactories.remove(factoryToRename.instanceName);
+    factoryToRename.instanceName = newInstanceName;
+  }
+
   @override
   void registerFactory<T extends Object>(
     FactoryFunc<T> factoryFunc, {
@@ -779,8 +777,10 @@ class _GetItImplementation implements GetIt {
   }
 
   @override
-  void registerCachedFactoryAsync<T extends Object>(FactoryFunc<T> factoryFunc,
-      {String? instanceName}) {
+  void registerCachedFactoryAsync<T extends Object>(
+    FactoryFunc<T> factoryFunc, {
+    String? instanceName,
+  }) {
     _register<T, void, void>(
       type: _ServiceFactoryType.cachedFactory,
       instanceName: instanceName,
@@ -806,25 +806,6 @@ class _GetItImplementation implements GetIt {
     );
   }
 
-  /// registers a type so that a new instance will be created on each call of [get] on that
-  /// type based on up to two parameters provided to [get()]
-  /// [T] type to register
-  /// [P1] type of param1
-  /// [P2] type of param2
-  /// if you use only one parameter pass void here
-  /// [factoryFunc] factory function for this type that accepts two parameters
-  /// [instanceName] if you provide a value here your factory gets registered with that
-  /// name instead of a type. This should only be necessary if you need to register more
-  /// than one instance of one type.
-  ///
-  /// example:
-  ///    getIt.registerFactoryParam<TestClassParam,String,int>((s,i)
-  ///        => TestClassParam(param1:s, param2: i));
-  ///
-  /// if you only use one parameter:
-  ///
-  ///    getIt.registerFactoryParam<TestClassParam,String,void>((s,_)
-  ///        => TestClassParam(param1:s);
   @override
   void registerFactoryParam<T extends Object, P1, P2>(
     FactoryFuncParam<T, P1, P2> factoryFunc, {
@@ -839,8 +820,6 @@ class _GetItImplementation implements GetIt {
     );
   }
 
-  /// We use a separate function for the async registration instead of just a new parameter
-  /// so make the intention explicit
   @override
   void registerFactoryAsync<T extends Object>(
     FactoryFuncAsync<T> factoryFunc, {
@@ -855,26 +834,6 @@ class _GetItImplementation implements GetIt {
     );
   }
 
-  /// registers a type so that a new instance will be created on each call of [getAsync]
-  /// on that type based on up to two parameters provided to [getAsync()]
-  /// the creation function is executed asynchronously and has to be accessed with [getAsync]
-  /// [T] type to register
-  /// [P1] type of param1
-  /// [P2] type of param2
-  /// if you use only one parameter pass void here
-  /// [factoryFunc] factory function for this type that accepts two parameters
-  /// [instanceName] if you provide a value here your factory gets registered with that
-  /// name instead of a type. This should only be necessary if you need to register more
-  /// than one instance of one type.
-  ///
-  /// example:
-  ///    getIt.registerFactoryParam<TestClassParam,String,int>((s,i) async
-  ///        => TestClassParam(param1:s, param2: i));
-  ///
-  /// if you only use one parameter:
-  ///
-  ///    getIt.registerFactoryParam<TestClassParam,String,void>((s,_) async
-  ///        => TestClassParam(param1:s);
   @override
   void registerFactoryParamAsync<T extends Object, P1, P2>(
     FactoryFuncParamAsync<T, P1?, P2?> factoryFunc, {
@@ -889,15 +848,6 @@ class _GetItImplementation implements GetIt {
     );
   }
 
-  /// registers a type as Singleton by passing a factory function that will be called
-  /// on the first call of [get] on that type
-  /// [T] type to register
-  /// [factoryFunc] factory function for this type
-  /// [instanceName] if you provide a value here your factory gets registered with that
-  /// name instead of a type. This should only be necessary if you need to register more
-  /// than one instance of one type.
-  /// [registerLazySingleton] does not influence [allReady] however you can wait
-  /// for and be dependent on a LazySingleton.
   @override
   void registerLazySingleton<T extends Object>(
     FactoryFunc<T> factoryFunc, {
@@ -916,14 +866,6 @@ class _GetItImplementation implements GetIt {
     );
   }
 
-  /// registers a type as Singleton by passing an [instance] of that type
-  ///  that will be returned on each call of [get] on that type
-  /// [T] type to register
-  /// If [signalsReady] is set to `true` it means that the future you can get from `allReady()`
-  /// cannot complete until this registration was signalled ready by calling
-  /// [signalsReady(instance)] [instanceName] if you provide a value here your instance gets
-  /// registered with that name instead of a type. This should only be necessary if you need
-  /// to register more than one instance of one type.
   @override
   T registerSingleton<T extends Object>(
     T instance, {
@@ -936,79 +878,55 @@ class _GetItImplementation implements GetIt {
       instanceName: instanceName,
       instance: instance,
       isAsync: false,
-      shouldSignalReady: signalsReady ?? <T>[] is List<WillSignalReady>,
+      shouldSignalReady: signalsReady ?? false,
       disposeFunc: dispose,
     );
     return instance;
   }
 
-  /// Only registers a type new as Singleton if it is not already registered. Otherwise it returns
-  /// the existing instance and increments an internal reference counter to ensure that matching
-  /// [unregister] or [releaseInstance] calls will decrement the reference counter an won't unregister
-  /// and dispose the registration as long as the reference counter is > 0.
-  /// [T] type/interface that is used for the registration and the access via [get]
-  /// [factoryFunc] that is called to create the instance if it is not already registered
-  /// [instanceName] optional key to register more than one instance of one type
-  /// [dispose] disposing function that is automatically called before the object is removed from get_it
   @override
   T registerSingletonIfAbsent<T extends Object>(
     T Function() factoryFunc, {
     String? instanceName,
     DisposingFunc<T>? dispose,
   }) {
-    final existingFactory =
-        _findFirstFactoryByNameAndTypeOrNull<T>(instanceName);
+    final existingFactory = _findFirstFactoryByNameAndStringKeyOrNull<T>(
+      instanceName,
+      T.toString(),
+    );
     if (existingFactory != null) {
       throwIfNot(
-          existingFactory.factoryType == _ServiceFactoryType.constant &&
-              !existingFactory.isAsync,
-          StateError(
-              'registerSingletonIfAbsent can only be called for a type that is already registered as Singleton and not for factories or async/lazy Singletons'));
+        existingFactory.factoryType == _ServiceFactoryType.constant &&
+            !existingFactory.isAsync,
+        StateError(
+            'registerSingletonIfAbsent can only be called for an existing normal Singleton'),
+      );
       existingFactory._referenceCount++;
       return existingFactory.instance!;
     }
 
-    final instance = factoryFunc();
+    final inst = factoryFunc();
     _register<T, void, void>(
       type: _ServiceFactoryType.constant,
-      instance: instance,
+      instance: inst,
       instanceName: instanceName,
       isAsync: false,
       shouldSignalReady: false,
       disposeFunc: dispose,
     );
-    return instance;
+    return inst;
   }
 
-  /// checks if a registered Singleton has an reference counter > 0
-  /// if so it decrements the reference counter and if it reaches 0 it
-  /// unregisters the Singleton
-  /// if called on an object that's reference counter was never incremented
-  /// it will immediately unregister and dispose the object
   @override
   void releaseInstance(Object instance) {
-    final registeredFactory = _findFactoryByInstance(instance);
-    if (registeredFactory._referenceCount < 1) {
-      assert(registeredFactory._referenceCount == 0,
-          'GetIt: releaseInstance was called on an object that was already released');
+    final factoryReg = _findFactoryByInstance(instance);
+    if (factoryReg._referenceCount < 1) {
       unregister(instance: instance);
     } else {
-      registeredFactory._referenceCount--;
+      factoryReg._referenceCount--;
     }
   }
 
-  /// registers a type as Singleton by passing an factory function of that type
-  /// that will be called on each call of [get] on that type
-  /// [T] type to register
-  /// [instanceName] if you provide a value here your instance gets registered with that
-  /// name instead of a type. This should only be necessary if you need to register more
-  /// than one instance of one type.
-  /// [dependsOn] if this instance depends on other registered Singletons before it can be initialized
-  /// you can either orchestrate this manually using [isReady()] or pass a list of the types that the
-  /// instance depends on here. [factoryFunc] won't get executed till these types are ready.
-  /// [func] is called
-  /// If [signalsReady] is set to `true` it means that the future you can get from `allReady()`
-  /// cannot complete until this instance was signalled ready by calling [signalsReady(instance)].
   @override
   void registerSingletonWithDependencies<T extends Object>(
     FactoryFunc<T> factoryFunc, {
@@ -1023,28 +941,11 @@ class _GetItImplementation implements GetIt {
       isAsync: false,
       factoryFunc: factoryFunc,
       dependsOn: dependsOn,
-      shouldSignalReady: signalsReady ?? <T>[] is List<WillSignalReady>,
+      shouldSignalReady: signalsReady ?? false,
       disposeFunc: dispose,
     );
   }
 
-  /// registers a type as Singleton by passing an asynchronous factory function which has to
-  /// return the instance that will be returned on each call of [get] on that type.
-  /// Therefore you have to ensure that the instance is ready before you use [get] on it or use
-  /// [getAsync()] to wait for the completion.
-  /// You can wait/check if the instance is ready by using [isReady()] and [isReadySync()].
-  /// [factoryFunc] is executed immediately if there are no dependencies to other Singletons
-  /// (see below). As soon as it returns, this instance is marked as ready unless you don't set
-  /// [signalsReady==true] [instanceName] if you provide a value here your instance gets
-  /// registered with that name instead of a type. This should only be necessary if you need
-  /// to register more than one instance of one type.
-  /// [dependsOn] if this instance depends on other registered Singletons before it can be
-  /// initialized you can either orchestrate this manually using [isReady()] or pass a list of
-  /// the types that the instance depends on here. [factoryFunc] won't get executed till this
-  /// types are ready. If [signalsReady] is set to `true` it means that the future you can get
-  /// from `allReady()` cannot complete until this instance was signalled ready by calling
-  /// [signalsReady(instance)]. In that case no automatic ready signal is made after
-  /// completion of [factoryFunc]
   @override
   void registerSingletonAsync<T extends Object>(
     FactoryFuncAsync<T> factoryFunc, {
@@ -1059,26 +960,11 @@ class _GetItImplementation implements GetIt {
       isAsync: true,
       factoryFuncAsync: factoryFunc,
       dependsOn: dependsOn,
-      shouldSignalReady: signalsReady ?? <T>[] is List<WillSignalReady>,
+      shouldSignalReady: signalsReady ?? false,
       disposeFunc: dispose,
     );
   }
 
-  /// registers a type as Singleton by passing an async factory function that will be called
-  /// on the first call of [getAsync] on that type
-  /// This is a rather esoteric requirement so you should seldom have the need to use it.
-  /// This factory function [providerFunc] isn't called immediately but wait till the first call by
-  /// [getAsync()] or [isReady()] is made
-  /// To control if an async Singleton has completed its [providerFunc] gets a `Completer` passed
-  /// as parameter that has to be completed to signal that this instance is ready.
-  /// Therefore you have to ensure that the instance is ready before you use [get] on it or
-  /// use [getAsync()] to wait for the completion.
-  /// You can wait/check if the instance is ready by using [isReady()] and [isReadySync()].
-  /// [instanceName] if you provide a value here your instance gets registered with that
-  /// name instead of a type. This should only be necessary if you need to register more
-  /// than one instance of one type.
-  /// [registerLazySingletonAsync] does not influence [allReady] however you can wait
-  /// for and be dependent on a LazySingleton.
   @override
   void registerLazySingletonAsync<T extends Object>(
     FactoryFuncAsync<T> factoryFunc, {
@@ -1097,27 +983,6 @@ class _GetItImplementation implements GetIt {
     );
   }
 
-  /// Tests if an [instance] of an object or aType [T] or a name [instanceName]
-  /// is registered inside GetIt
-  @override
-  bool isRegistered<T extends Object>({
-    Object? instance,
-    String? instanceName,
-  }) {
-    if (instance != null) {
-      return _findFirstFactoryByInstanceOrNull(instance) != null;
-    } else {
-      return _findFirstFactoryByNameAndTypeOrNull<T>(instanceName) != null;
-    }
-  }
-
-  /// Unregister an instance of an object or a factory/singleton by Type [T] or by name [instanceName]
-  /// if you need to dispose any resources you can pass in a [disposingFunction] function
-  /// that provides an instance of your class to be disposed
-  /// If you have provided an disposing function when you registered the object that one will be called automatically
-  /// If you have enabled reference counting when registering, [unregister] will only unregister and dispose the object
-  /// if referenceCount is 0
-  ///
   @override
   FutureOr unregister<T extends Object>({
     Object? instance,
@@ -1127,28 +992,27 @@ class _GetItImplementation implements GetIt {
   }) async {
     final factoryToRemove = instance != null
         ? _findFactoryByInstance(instance)
-        : _findFactoryByNameAndType<T>(instanceName);
+        : _findFactoryByNameAndStringKey<T>(instanceName, T.toString());
 
     throwIf(
       factoryToRemove.objectsWaiting.isNotEmpty,
       StateError(
-        'There are still other objects waiting for this instance so signal ready',
-      ),
+          'There are still other objects waiting for this instance to signal ready'),
     );
 
-    if (factoryToRemove._referenceCount > 0) {
+    if (factoryToRemove._referenceCount > 0 && !ignoreReferenceCount) {
       factoryToRemove._referenceCount--;
       return;
     }
     final typeRegistration = factoryToRemove.registeredIn;
-
     if (factoryToRemove.isNamedRegistration) {
       typeRegistration.namedFactories.remove(factoryToRemove.instanceName);
     } else {
       typeRegistration.factories.remove(factoryToRemove);
     }
     if (typeRegistration.isEmpty) {
-      factoryToRemove.registrationScope.typeRegistrations.remove(T);
+      factoryToRemove.registrationScope.typeRegistrations
+          .remove(factoryToRemove.registrationTypeString);
     }
 
     if (factoryToRemove.instance != null) {
@@ -1166,153 +1030,38 @@ class _GetItImplementation implements GetIt {
     }
   }
 
-  /// In some cases it can be necessary to change the name of a registered instance
-  /// This avoids to unregister and reregister the instance which might cause trouble
-  /// with disposing functions.
-  /// IMPORTANT: This will only change the the first instance that is found while
-  /// searching the scopes.
-  /// If the new name is already in use in the current scope it will throw a
-  /// StateError
-  /// [instanceName] the current name of the instance
-  /// [newInstanceName] the new name of the instance
-  /// [instance] the instance itself that can be used instead of
-  /// providing the type and the name. If [instance] is null the type and the name
-  /// have to be provided
-  @override
-  void changeTypeInstanceName<T extends Object>({
-    String? instanceName,
-    required String newInstanceName,
-    T? instance,
-  }) {
-    assert(instance != null || instanceName != null,
-        'You have to provide either an instance or an instanceName');
-
-    final factoryToRename = instance != null
-        ? _findFactoryByInstance(instance)
-        : _findFactoryByNameAndType<T>(instanceName);
-
-    if (instance != null) {
-      instanceName = factoryToRename.instanceName;
-    }
-
-    throwIfNot(
-      factoryToRename.isNamedRegistration,
-      StateError(
-        'This instance $instance is not registered with a name',
-      ),
-    );
-
-    final typeRegistration = factoryToRename.registeredIn;
+  _ServiceFactory _findFactoryByInstance(Object instance) {
+    final reg = _findFirstFactoryByInstanceOrNull(instance);
     throwIf(
-      typeRegistration.namedFactories.containsKey(newInstanceName),
+      reg == null,
       StateError(
-        'There is already an instance of type ${factoryToRename.registrationType} registered with the name $newInstanceName',
+        'This instance of type ${instance.runtimeType} is not in GetIt.\n'
+        'If it is a LazySingleton, did you use it at least once?',
       ),
     );
-
-    typeRegistration.namedFactories[newInstanceName] = factoryToRename;
-    typeRegistration.namedFactories.remove(instanceName);
-    factoryToRename.instanceName = newInstanceName;
+    return reg!;
   }
-
-  /// Clears the instance of a lazy singleton,
-  /// being able to call the factory function on the next call
-  /// of [get] on that type again.
-  /// you select the lazy Singleton you want to reset by either providing
-  /// an [instance], its registered type [T] or its registration name.
-  /// if you need to dispose some resources before the reset, you can
-  /// provide a [disposingFunction]
-  @override
-  FutureOr resetLazySingleton<T extends Object>({
-    T? instance,
-    String? instanceName,
-    FutureOr Function(T)? disposingFunction,
-  }) async {
-    _ServiceFactory instanceFactory;
-
-    if (instance != null) {
-      instanceFactory = _findFactoryByInstance(instance);
-    } else {
-      instanceFactory = _findFactoryByNameAndType<T>(instanceName);
-    }
-    throwIfNot(
-      instanceFactory.factoryType == _ServiceFactoryType.lazy,
-      StateError(
-        'There is no type ${instance.runtimeType} registered as LazySingleton in GetIt',
-      ),
-    );
-
-    dynamic disposeReturn;
-    if (instanceFactory.instance != null) {
-      if (disposingFunction != null) {
-        disposeReturn = disposingFunction.call(instanceFactory.instance! as T);
-      } else {
-        disposeReturn = instanceFactory.dispose();
-      }
-    }
-
-    instanceFactory.resetInstance();
-    instanceFactory.pendingResult = null;
-    instanceFactory._readyCompleter = Completer();
-    if (disposeReturn is Future) {
-      await disposeReturn;
-    }
-  }
-
-  @override
-  bool checkLazySingletonInstanceExists<T extends Object>({
-    String? instanceName,
-  }) {
-    final instanceFactory = _findFactoryByNameAndType<T>(instanceName);
-    throwIfNot(
-      instanceFactory.factoryType == _ServiceFactoryType.lazy,
-      StateError(
-        'There is no type $T  with name $instanceName registered as LazySingleton in GetIt',
-      ),
-    );
-
-    return instanceFactory.instance != null;
-  }
-
-  List<_ServiceFactory> get _allFactories =>
-      _scopes.fold<List<_ServiceFactory>>(
-        [],
-        (sum, x) => sum..addAll(x.allFactories),
-      );
 
   _ServiceFactory? _findFirstFactoryByInstanceOrNull(Object instance) {
     return _allFactories
         .firstWhereOrNull((x) => identical(x.instance, instance));
   }
 
-  _ServiceFactory _findFactoryByInstance(Object instance) {
-    final registeredFactory = _findFirstFactoryByInstanceOrNull(instance);
+  List<_ServiceFactory> get _allFactories => _scopes
+      .fold<List<_ServiceFactory>>([], (sum, s) => sum..addAll(s.allFactories));
 
-    throwIf(
-      registeredFactory == null,
-      StateError(
-          'This instance of the type ${instance.runtimeType} is not available in GetIt '
-          'If you have registered it as LazySingleton, are you sure you have used '
-          'it at least once?'),
-    );
-
-    return registeredFactory!;
-  }
-
-  /// Clears all registered types. Handy when writing unit tests.
   @override
   Future<void> reset({bool dispose = true}) async {
     if (dispose) {
-      for (int level = _scopes.length - 1; level >= 0; level--) {
-        await _scopes[level].dispose();
-        await _scopes[level].reset(dispose: dispose);
+      for (int i = _scopes.length - 1; i >= 0; i--) {
+        await _scopes[i].dispose();
+        await _scopes[i].reset(dispose: dispose);
       }
     }
     _scopes.removeRange(1, _scopes.length);
     await resetScope(dispose: dispose);
   }
 
-  /// Clears all registered types of the current scope in the reverse order in which they were registered.
   @override
   Future<void> resetScope({bool dispose = true}) async {
     if (dispose) {
@@ -1321,19 +1070,8 @@ class _GetItImplementation implements GetIt {
     await _currentScope.reset(dispose: dispose);
   }
 
-  /// Creates a new registration scope. If you register types after creating
-  /// a new scope they will hide any previous registration of the same type.
-  /// Scopes allow you to manage different live times of your Objects.
-  /// [scopeName] if you name a scope you can pop all scopes above the named one
-  /// by using the name.
-  /// [dispose] function that will be called when you pop this scope. The scope
-  /// is still valid while it is executed
-  /// [init] optional function to register Objects immediately after the new scope is
-  /// pushed. This ensures that [onScopeChanged] will be called after their registration
-  /// if [isFinal] is set to true, you can't register any new objects in this scope after
-  /// this call. In Other words you have to register the objects for this scope inside
-  /// [init] if you set [isFinal] to true. This is useful if you want to ensure that
-  /// no new objects are registered in this scope by accident which could lead to race conditions
+  bool _pushScopeInProgress = false;
+
   @override
   void pushNewScope({
     void Function(GetIt getIt)? init,
@@ -1342,17 +1080,16 @@ class _GetItImplementation implements GetIt {
     bool isFinal = false,
   }) {
     throwIf(
-        _pushScopeInProgress,
-        StateError('you can not push a new scope '
-            'inside the init function of another scope'));
-    assert(
-      scopeName != _baseScopeName,
-      'This name is reserved for the real base scope.',
+      _pushScopeInProgress,
+      StateError(
+          'Cannot push a new scope inside the init function of another scope.'),
     );
+    assert(scopeName != _baseScopeName,
+        'The name "$_baseScopeName" is reserved for the base scope.');
     assert(
       scopeName == null ||
           _scopes.firstWhereOrNull((x) => x.name == scopeName) == null,
-      'You already have used the scope name $scopeName',
+      'You already have a scope named $scopeName',
     );
     _pushScopeInProgress = true;
     _scopes.add(_Scope(name: scopeName, disposeFunc: dispose));
@@ -1364,8 +1101,6 @@ class _GetItImplementation implements GetIt {
       onScopeChanged?.call(true);
     } catch (e) {
       final failedScope = _scopes.last;
-
-      /// prevent any new registrations in this scope
       failedScope.isFinal = true;
       failedScope.reset(dispose: true);
       _scopes.removeLast();
@@ -1375,19 +1110,6 @@ class _GetItImplementation implements GetIt {
     }
   }
 
-  bool _pushScopeInProgress = false;
-
-  /// Creates a new registration scope. If you register types after creating
-  /// a new scope they will hide any previous registration of the same type.
-  /// Scopes allow you to manage different live times of your Objects.
-  /// [scopeName] if you name a scope you can pop all scopes above the named one
-  /// by using the name.
-  /// [dispose] function that will be called when you pop this scope. The scope
-  /// is still valid while it is executed
-  /// [init] optional asynchronous function to register Objects immediately after the new scope is
-  /// pushed. This ensures that [onScopeChanged] will be called after their registration
-  /// if [isFinal] is set to true, you can't register any new objects in this scope after
-  /// this call. In Other words you have to register the objects for this scope inside
   @override
   Future<void> pushNewScopeAsync({
     Future<void> Function(GetIt getIt)? init,
@@ -1396,31 +1118,27 @@ class _GetItImplementation implements GetIt {
     bool isFinal = false,
   }) async {
     throwIf(
-        _pushScopeInProgress,
-        StateError('you can not push a new scope '
-            'inside the init function of another scope'));
-    assert(
-      scopeName != _baseScopeName,
-      'This name is reserved for the real base scope.',
+      _pushScopeInProgress,
+      StateError(
+          'Cannot push a new scope inside the init function of another scope.'),
     );
+    assert(scopeName != _baseScopeName,
+        'The name "$_baseScopeName" is reserved for the base scope.');
     assert(
       scopeName == null ||
           _scopes.firstWhereOrNull((x) => x.name == scopeName) == null,
-      'You already have used the scope name $scopeName',
+      'You already have a scope named $scopeName',
     );
     _pushScopeInProgress = true;
     _scopes.add(_Scope(name: scopeName, disposeFunc: dispose));
     try {
       await init?.call(this);
-
       if (isFinal) {
         _scopes.last.isFinal = true;
       }
       onScopeChanged?.call(true);
     } catch (e) {
       final failedScope = _scopes.last;
-
-      /// prevent any new registrations in this scope
       failedScope.isFinal = true;
       await failedScope.reset(dispose: true);
       _scopes.removeLast();
@@ -1430,30 +1148,18 @@ class _GetItImplementation implements GetIt {
     }
   }
 
-  /// Disposes all factories/Singletons that have been registered in this scope
-  /// (in the reverse order in which they were registered)
-  /// and pops (destroys) the scope so that the previous scope gets active again.
-  /// if you provided dispose functions on registration, they will be called.
-  /// if you passed a dispose function when you pushed this scope it will be
-  /// called before the scope is popped.
-  /// As dispose functions can be async, you should await this function.
   @override
   Future<void> popScope() async {
-    if (_currentScope.isPopping) {
-      return;
-    }
+    if (_currentScope.isPopping) return;
     throwIf(
-        _pushScopeInProgress,
-        StateError('you can not pop a scope '
-            'inside the init function of another scope'));
+      _pushScopeInProgress,
+      StateError(
+          'Cannot pop a scope inside the init function of another scope.'),
+    );
     throwIfNot(
       _scopes.length > 1,
-      StateError(
-        "GetIt: You are already on the base scope. you can't pop this one",
-      ),
+      StateError("You are already on the base scope. You can't pop that."),
     );
-    // make sure that nothing new can be registered in this scope
-    // while the scopes async dispose functions are running
     final scopeToPop = _currentScope;
     scopeToPop.isFinal = true;
     scopeToPop.isPopping = true;
@@ -1463,73 +1169,51 @@ class _GetItImplementation implements GetIt {
     onScopeChanged?.call(false);
   }
 
-  /// if you have a lot of scopes with names you can pop (see [popScope]) all scopes above
-  /// the scope with [scopeName] including that scope
-  /// Scopes are popped in order from the top
-  /// As dispose functions can be async, you should await this function.
   @override
-  Future<bool> popScopesTill(String scopeName, {bool inclusive = true}) async {
+  Future<bool> popScopesTill(String name, {bool inclusive = true}) async {
     assert(
-      scopeName != _baseScopeName || !inclusive,
+      name != _baseScopeName || !inclusive,
       "You can't pop the base scope",
     );
-    if (!hasScope(scopeName)) {
-      return false;
-    }
-    String? poppedScopeName;
-    _Scope nextScopeToPop = _currentScope;
-    bool somethingWasPopped = false;
+    if (!hasScope(name)) return false;
+
+    var somethingPopped = false;
+    var nextScopeToPop = _currentScope;
 
     while (nextScopeToPop.name != _baseScopeName &&
-        hasScope(scopeName) &&
-        (nextScopeToPop.name != scopeName || inclusive)) {
-      poppedScopeName = nextScopeToPop.name;
-      await dropScope(poppedScopeName!);
-      somethingWasPopped = true;
-      nextScopeToPop = _scopes.lastWhere((x) => x.isPopping == false);
+        hasScope(name) &&
+        (nextScopeToPop.name != name || inclusive)) {
+      final poppedName = nextScopeToPop.name;
+      await dropScope(poppedName!);
+      somethingPopped = true;
+      nextScopeToPop = _scopes.lastWhere((x) => !x.isPopping);
     }
 
-    if (somethingWasPopped) {
+    if (somethingPopped) {
       onScopeChanged?.call(false);
     }
-    return somethingWasPopped;
+    return somethingPopped;
   }
 
-  /// Disposes all registered factories and singletons in the provided scope
-  /// (in the reverse order in which they were registered),
-  /// then drops (destroys) the scope. If the dropped scope was the last one,
-  /// the previous scope becomes active again.
-  /// if you provided dispose functions on registration, they will be called.
-  /// if you passed a dispose function when you pushed this scope it will be
-  /// called before the scope is dropped.
-  /// As dispose functions can be async, you should await this function.
   @override
   Future<void> dropScope(String scopeName) async {
     throwIf(
-        _pushScopeInProgress,
-        StateError('you can not drop a scope '
-            'inside the init function of another scope'));
+      _pushScopeInProgress,
+      StateError(
+          'Cannot drop a scope inside the init function of another scope.'),
+    );
     if (currentScopeName == scopeName) {
       return popScope();
     }
-
     throwIfNot(
       _scopes.length > 1,
-      StateError(
-        "GetIt: You are already on the base scope. you can't drop this one",
-      ),
+      StateError("You are already on the base scope. You can't drop that."),
     );
     final scope = _scopes.lastWhere(
       (s) => s.name == scopeName,
       orElse: () => throw ArgumentError("Scope $scopeName not found"),
     );
-    if (scope.isPopping) {
-      /// due to some race conditions it is possible that a scope is already
-      /// popping when we try to drop it.
-      return;
-    }
-    // make sure that nothing new can be registered in this scope
-    // while the scopes async dispose functions are running
+    if (scope.isPopping) return;
     scope.isFinal = true;
     scope.isPopping = true;
     await scope.dispose();
@@ -1537,10 +1221,9 @@ class _GetItImplementation implements GetIt {
     _scopes.remove(scope);
   }
 
-  /// Tests if the scope by name [scopeName] is registered in GetIt
   @override
   bool hasScope(String scopeName) {
-    return _scopes.any((x) => x.name == scopeName);
+    return _scopes.any((s) => s.name == scopeName);
   }
 
   @override
@@ -1560,54 +1243,40 @@ class _GetItImplementation implements GetIt {
     DisposingFunc<T>? disposeFunc,
     bool useWeakReference = false,
   }) {
-    throwIfNot(
-      const Object() is! T,
-      'GetIt: You have to provide type. Did you accidentally do `var sl=GetIt.instance();` '
-      'instead of var sl=GetIt.instance;',
-    );
+    final regKey = T.toString();
 
     _Scope registrationScope;
     int i = _scopes.length;
-    // find the first not final scope
     do {
       i--;
       registrationScope = _scopes[i];
     } while (registrationScope.isFinal && i >= 0);
-    assert(
-      i >= 0,
-      'The baseScope should always be open. If you see this error please file an issue at',
-    );
+    assert(i >= 0, 'The baseScope should always be open.');
 
-    final existingTypeRegistration = registrationScope.typeRegistrations[T];
-    // if we already have a registration for this type we have to check if its a valid re-registration
-    if (existingTypeRegistration != null) {
+    final existingReg = registrationScope.typeRegistrations[regKey];
+    if (existingReg != null) {
       if (instanceName != null) {
         throwIf(
-          existingTypeRegistration.namedFactories.containsKey(instanceName) &&
+          existingReg.namedFactories.containsKey(instanceName) &&
               !allowReassignment &&
               !skipDoubleRegistration,
           ArgumentError(
-            'Object/factory with name $instanceName and '
-            'type $T is already registered inside GetIt. ',
+            'Object/factory with name $instanceName and type $regKey is already registered.',
           ),
         );
-
-        /// skip double registration
         if (skipDoubleRegistration &&
             !allowReassignment &&
-            existingTypeRegistration.namedFactories.containsKey(instanceName)) {
+            existingReg.namedFactories.containsKey(instanceName)) {
           return;
         }
       } else {
-        if (existingTypeRegistration.factories.isNotEmpty) {
+        if (existingReg.factories.isNotEmpty) {
           throwIfNot(
             allowReassignment ||
                 allowRegisterMultipleImplementationsOfoneType ||
                 skipDoubleRegistration,
-            ArgumentError('Type $T is already registered inside GetIt. '),
+            ArgumentError('Type $regKey is already registered.'),
           );
-
-          /// skip double registration
           if (skipDoubleRegistration && !allowReassignment) {
             return;
           }
@@ -1616,49 +1285,63 @@ class _GetItImplementation implements GetIt {
     }
 
     if (instance != null) {
-      /// check if we are shadowing an existing Object
-      final factoryThatWouldbeShadowed =
-          _findFirstFactoryByNameAndTypeOrNull(instanceName, type: T);
-
-      final objectThatWouldbeShadowed = factoryThatWouldbeShadowed?.instance;
-      if (objectThatWouldbeShadowed != null &&
-          objectThatWouldbeShadowed is ShadowChangeHandlers) {
-        objectThatWouldbeShadowed.onGetShadowed(instance);
+      final shadowCheck =
+          _findFirstFactoryByNameAndStringKeyOrNull(instanceName, regKey);
+      final objThatWouldBeShadowed = shadowCheck?.instance;
+      if (objThatWouldBeShadowed != null &&
+          objThatWouldBeShadowed is ShadowChangeHandlers) {
+        objThatWouldBeShadowed.onGetShadowed(instance);
       }
     }
 
-    final typeRegistration = registrationScope.typeRegistrations
-        .putIfAbsent(T, () => _TypeRegistration<T>());
+    final newReg = registrationScope.typeRegistrations
+        .putIfAbsent(regKey, () => _TypeRegistration());
 
-    final serviceFactory = _ServiceFactory<T, P1, P2>(this, type,
-        registeredIn: typeRegistration,
-        registrationScope: registrationScope,
-        creationFunction: factoryFunc,
-        creationFunctionParam: factoryFuncParam,
-        asyncCreationFunctionParam: factoryFuncParamAsync,
-        asyncCreationFunction: factoryFuncAsync,
-        instance: instance,
-        isAsync: isAsync,
-        instanceName: instanceName,
-        shouldSignalReady: shouldSignalReady,
-        disposeFunction: disposeFunc,
-        useWeakReference: useWeakReference);
+    // Check if the type or instance is WillSignalReady:
+    bool detectWillSignalReady() {
+      if (instance != null) {
+        return instance is WillSignalReady;
+      } else {
+        return <T>[] is List<WillSignalReady>;
+      }
+    }
+
+    // Combine with the user’s explicitly passed 'shouldSignalReady'
+    // We want to ensure that if either is 'true', the final is 'true'.
+    final finalShouldSignalReady = shouldSignalReady || detectWillSignalReady();
+
+    final serviceFactory = _ServiceFactory<T, P1, P2>(
+      this,
+      type,
+      registeredIn: newReg,
+      registrationScope: registrationScope,
+      creationFunction: factoryFunc,
+      creationFunctionParam: factoryFuncParam,
+      asyncCreationFunctionParam: factoryFuncParamAsync,
+      asyncCreationFunction: factoryFuncAsync,
+      instance: instance,
+      isAsync: isAsync,
+      instanceName: instanceName,
+      shouldSignalReady: finalShouldSignalReady,
+      disposeFunction: disposeFunc,
+      useWeakReference: useWeakReference,
+    );
 
     if (instanceName != null) {
-      typeRegistration.namedFactories[instanceName] = serviceFactory;
+      newReg.namedFactories[instanceName] = serviceFactory;
     } else {
       if (allowRegisterMultipleImplementationsOfoneType) {
-        typeRegistration.factories.add(serviceFactory);
+        newReg.factories.add(serviceFactory);
       } else {
-        if (typeRegistration.factories.isNotEmpty) {
-          typeRegistration.factories[0] = serviceFactory;
+        if (newReg.factories.isNotEmpty) {
+          newReg.factories[0] = serviceFactory;
         } else {
-          typeRegistration.factories.add(serviceFactory);
+          newReg.factories.add(serviceFactory);
         }
       }
     }
 
-    // simple Singletons get are already created, nothing else has to be done
+    // If it's a normal "constant" singleton with no dependencies, or an immediate one, we are done.
     if (type == _ServiceFactoryType.constant &&
         !shouldSignalReady &&
         !isAsync &&
@@ -1666,88 +1349,61 @@ class _GetItImplementation implements GetIt {
       return;
     }
 
-    // if it's an async or a dependent Singleton we start its creation function here after we check if
-    // it is dependent on other registered Singletons.
+    // If it's an async or a dependent singleton, set up its creation here:
     if ((isAsync || (dependsOn?.isNotEmpty ?? false)) &&
         type == _ServiceFactoryType.constant) {
-      /// Any client awaiting the completion of this Singleton
-      /// Has to wait for the completion of the Singleton itself as well
-      /// as for the completion of all the Singletons this one depends on
-      /// For this we use [outerFutureGroup]
-      /// A `FutureGroup` completes only if it's closed and all contained
-      /// Futures have completed
-      final outerFutureGroup = FutureGroup();
+      final outerGroup = FutureGroup();
+
       Future dependentFuture;
-
       if (dependsOn?.isNotEmpty ?? false) {
-        /// To wait for the completion of all Singletons this one is depending on
-        /// before we start to create itself we use [dependentFutureGroup]
-        final dependentFutureGroup = FutureGroup();
-
-        for (final dependency in dependsOn!) {
-          late final _ServiceFactory<Object, dynamic, dynamic>?
-              dependentFactory;
-          if (dependency is InitDependency) {
-            dependentFactory = _findFirstFactoryByNameAndTypeOrNull(
-              dependency.instanceName,
-              type: dependency.type,
+        final dependentGroup = FutureGroup();
+        for (final dep in dependsOn!) {
+          // handle "InitDependency"
+          late final _ServiceFactory<Object, dynamic, dynamic>? depFactory;
+          if (dep is InitDependency) {
+            depFactory = _findFirstFactoryByNameAndStringKeyOrNull(
+              dep.instanceName,
+              dep.type.toString(),
             );
           } else {
-            dependentFactory =
-                _findFirstFactoryByNameAndTypeOrNull(null, type: dependency);
+            depFactory = _findFirstFactoryByNameAndStringKeyOrNull(
+              null,
+              dep.toString(),
+            );
           }
-          throwIf(
-            dependentFactory == null,
-            ArgumentError(
-              'Dependent Type $dependency is not registered in GetIt',
-            ),
-          );
+
+          throwIf(depFactory == null,
+              ArgumentError('Dependent Type $dep is not registered.'));
           throwIfNot(
-            dependentFactory!.canBeWaitedFor,
+            depFactory!.canBeWaitedFor,
             ArgumentError(
-              'Dependent Type $dependency is not an async Singleton',
-            ),
+                'Dependent Type $dep is not an async Singleton or signalsReady.'),
           );
-          dependentFactory.objectsWaiting.add(serviceFactory.registrationType);
-          dependentFutureGroup.add(dependentFactory._readyCompleter.future);
+          depFactory.objectsWaiting.add(serviceFactory.registrationTypeString);
+          dependentGroup.add(depFactory._readyCompleter.future);
         }
-        dependentFutureGroup.close();
-
-        dependentFuture = dependentFutureGroup.future;
+        dependentGroup.close();
+        dependentFuture = dependentGroup.future;
       } else {
-        /// if we have no dependencies we still create a dummy Future so that
-        /// we can use the same code path further down
-        dependentFuture = Future.sync(() {}); // directly execute then
+        dependentFuture = Future.sync(() {});
       }
-      outerFutureGroup.add(dependentFuture);
 
-      /// if someone uses getAsync on an async Singleton that has not be started to get created
-      /// because its dependent on other objects this doesn't work because [pendingResult] is
-      /// not set in that case. Therefore we have to set [outerFutureGroup] as [pendingResult]
+      outerGroup.add(dependentFuture);
       dependentFuture.then((_) {
         Future isReadyFuture;
         if (!isAsync) {
-          /// SingletonWithDependencies
+          // SingletonWithDependencies
           serviceFactory._instance = factoryFunc!();
-
-          /// check if we are shadowing an existing Object
-          final factoryThatWouldbeShadowed =
-              _findFirstFactoryByNameAndTypeOrNull(
+          final shadowCheck = _findFirstFactoryByNameAndStringKeyOrNull(
             instanceName,
-            type: T,
+            regKey,
             lookInScopeBelow: true,
           );
-
-          final objectThatWouldbeShadowed =
-              factoryThatWouldbeShadowed?.instance;
-          if (objectThatWouldbeShadowed != null &&
-              objectThatWouldbeShadowed is ShadowChangeHandlers) {
-            objectThatWouldbeShadowed.onGetShadowed(serviceFactory.instance!);
+          final objShadowed = shadowCheck?.instance;
+          if (objShadowed != null && objShadowed is ShadowChangeHandlers) {
+            objShadowed.onGetShadowed(serviceFactory.instance!);
           }
-
           if (!serviceFactory.shouldSignalReady) {
-            /// As this isn't an async function we declare it as ready here
-            /// if wasn't marked that it will signalReady
             isReadyFuture = Future<T>.value(serviceFactory.instance!);
             serviceFactory._readyCompleter.complete(serviceFactory.instance!);
             serviceFactory.objectsWaiting.clear();
@@ -1755,236 +1411,113 @@ class _GetItImplementation implements GetIt {
             isReadyFuture = serviceFactory._readyCompleter.future;
           }
         } else {
-          /// Async Singleton with dependencies
+          // Async Singleton with dependencies
           final asyncResult = factoryFuncAsync!();
-
-          isReadyFuture = asyncResult.then((instance) {
-            serviceFactory._instance = instance;
-
-            /// check if we are shadowing an existing Object
-            final factoryThatWouldbeShadowed =
-                _findFirstFactoryByNameAndTypeOrNull(
+          isReadyFuture = asyncResult.then((inst) {
+            serviceFactory._instance = inst;
+            final shadowCheck = _findFirstFactoryByNameAndStringKeyOrNull(
               instanceName,
-              type: T,
+              regKey,
               lookInScopeBelow: true,
             );
-
-            final objectThatWouldbeShadowed =
-                factoryThatWouldbeShadowed?.instance;
-            if (objectThatWouldbeShadowed != null &&
-                objectThatWouldbeShadowed is ShadowChangeHandlers) {
-              objectThatWouldbeShadowed.onGetShadowed(instance);
+            final objShadowed = shadowCheck?.instance;
+            if (objShadowed != null && objShadowed is ShadowChangeHandlers) {
+              objShadowed.onGetShadowed(inst);
             }
-
             if (!serviceFactory.shouldSignalReady && !serviceFactory.isReady) {
               serviceFactory._readyCompleter.complete();
               serviceFactory.objectsWaiting.clear();
             }
-
-            return instance;
+            return inst;
           });
         }
-        outerFutureGroup.add(isReadyFuture);
-        outerFutureGroup.close();
+        outerGroup.add(isReadyFuture);
+        outerGroup.close();
       });
 
       serviceFactory.pendingResult =
-          outerFutureGroup.future.then((completedFutures) {
-        return serviceFactory.instance!;
-      });
+          outerGroup.future.then((_) => serviceFactory.instance!);
     }
   }
 
-  /// Used to manually signal the ready state of a Singleton.
-  /// If you want to use this mechanism you have to pass [signalsReady==true] when registering
-  /// the Singleton.
-  /// If [instance] has a value GetIt will search for the responsible Singleton
-  /// and completes all futures that might be waited for by [isReady]
-  /// If all waiting singletons have signalled ready the future you can get
-  /// from [allReady] is automatically completed
-  ///
-  /// Typically this is used in this way inside the registered objects init
-  /// method `GetIt.instance.signalReady(this);`
-  ///
-  /// if [instance] is `null` and no factory/singleton is waiting to be signalled this
-  /// will complete the future you got from [allReady], so it can be used to globally
-  /// giving a ready Signal
-  ///
-  /// Both ways are mutually exclusive, meaning either only use the global `signalReady()` and
-  /// don't register a singleton to signal ready or use any async registrations
-  ///
-  /// Or use async registrations methods or let individual instances signal their ready
-  /// state on their own.
   @override
-  void signalReady(Object? instance) {
-    _ServiceFactory registeredInstance;
-    if (instance != null) {
-      registeredInstance = _findFactoryByInstance(instance);
-
-      throwIfNot(
-        registeredInstance.shouldSignalReady,
-        ArgumentError.value(
-            instance,
-            'This instance of type ${instance.runtimeType} is not supposed to be '
-            'signalled.\nDid you forget to set signalsReady==true when registering it?'),
-      );
-
-      throwIf(
-        registeredInstance.isReady,
-        StateError(
-          'This instance of type ${instance.runtimeType} was already signalled',
-        ),
-      );
-
-      registeredInstance._readyCompleter.complete();
-      registeredInstance.objectsWaiting.clear();
-    } else {
-      /// Manual signalReady without an instance
-
-      /// In case that there are still factories that are marked to wait for a signal
-      /// but aren't signalled we throw an error with details which objects are concerned
-      final notReady = _allFactories
-          .where(
-            (x) =>
-                (x.shouldSignalReady) && (!x.isReady) ||
-                (x.pendingResult != null) && (!x.isReady),
-          )
-          .map<String>((x) => '${x.registrationType}/${x.instanceName}')
-          .toList();
-      throwIf(
-        notReady.isNotEmpty,
-        StateError(
-            "You can't signal ready manually if you have registered instances that should "
-            "signal ready or are async.\n"
-            // this lint is stupid because it doesn't recognize newlines
-            // ignore: missing_whitespace_between_adjacent_strings
-            'Did you forget to pass an object instance?'
-            'This registered types/names: $notReady should signal ready but are not ready'),
-      );
-
-      _globalReadyCompleter.complete();
-    }
-  }
-
-  /// returns a Future that completes if all asynchronously created Singletons and any
-  /// Singleton that had [signalsReady==true] are ready.
-  /// This can be used inside a FutureBuilder to change the UI as soon as all initialization
-  /// is done. If you pass a [timeout], a [WaitingTimeOutException] will be thrown if not all
-  /// Singletons were ready in the given time. The Exception contains details on which
-  /// Singletons are not ready yet.
-  @override
-  Future<void> allReady({
-    Duration? timeout,
-    bool ignorePendingAsyncCreation = false,
-  }) {
+  Future<void> allReady(
+      {Duration? timeout, bool ignorePendingAsyncCreation = false}) {
     final futures = FutureGroup();
-    _allFactories
-        .where(
-      (x) =>
-          (x.isAsync && !ignorePendingAsyncCreation ||
-              (!x.isAsync &&
-                  x.pendingResult != null) || // Singletons with dependencies
-              x.shouldSignalReady) &&
-          !x.isReady &&
-          x.factoryType == _ServiceFactoryType.constant,
-    )
-        .forEach((f) {
-      if (f.pendingResult != null) {
-        futures.add(f.pendingResult!);
-        if (f.shouldSignalReady) {
-          futures.add(
-            f._readyCompleter.future,
-          ); // asyncSingleton with signalReady = true
+    for (final f in _allFactories) {
+      if ((f.isAsync && !ignorePendingAsyncCreation) ||
+          (!f.isAsync && f.pendingResult != null) ||
+          f.shouldSignalReady) {
+        if (!f.isReady && f.factoryType == _ServiceFactoryType.constant) {
+          if (f.pendingResult != null) {
+            // an async or dependent constant
+            futures.add(f.pendingResult!);
+            if (f.shouldSignalReady) {
+              futures.add(f._readyCompleter.future);
+            }
+          } else {
+            // non-async singletons that have signalReady
+            futures.add(f._readyCompleter.future);
+          }
+        } else if (!f.isReady && f.factoryType == _ServiceFactoryType.lazy) {
+          // lazy with signal ready => do nothing if not accessed
         }
-      } else {
-        futures.add(
-          f._readyCompleter.future,
-        ); // non async singletons that have signalReady == true and not dependencies
       }
-    });
-    futures.close();
-    if (timeout != null) {
-      return futures.future
-          .timeout(timeout, onTimeout: () async => throw _createTimeoutError());
-    } else {
-      return futures.future;
     }
+    futures.close();
+    final waitFuture = (timeout != null)
+        ? futures.future
+            .timeout(timeout, onTimeout: () => throw _createTimeoutError())
+        : futures.future;
+    return waitFuture;
   }
 
-  /// Returns if all async Singletons are ready without waiting
-  /// if [allReady] should not wait for the completion of async Singletons set
-  /// [ignorePendingAsyncCreation==true]
   @override
   bool allReadySync([bool ignorePendingAsyncCreation = false]) {
-    final notReadyTypes = _allFactories
-        .where(
-      (x) =>
-          (x.isAsync && !ignorePendingAsyncCreation ||
-                  (!x.isAsync &&
-                      x.pendingResult !=
-                          null) || // Singletons with dependencies
-                  x.shouldSignalReady) &&
-              !x.isReady &&
-              x.factoryType == _ServiceFactoryType.constant ||
-          x.factoryType == _ServiceFactoryType.lazy,
-    )
-        .map<String>((x) {
-      if (x.isNamedRegistration) {
-        return 'Object ${x.instanceName} has not completed';
-      } else {
-        return 'Registered object of Type ${x.registrationType} has not completed';
-      }
-    }).toList();
+    final notReady = _allFactories
+        .where((f) {
+          final isCandidate = (f.isAsync && !ignorePendingAsyncCreation) ||
+              (!f.isAsync && f.pendingResult != null) ||
+              f.shouldSignalReady;
+          return isCandidate && !f.isReady;
+        })
+        .where((f) =>
+            f.factoryType == _ServiceFactoryType.constant ||
+            f.factoryType == _ServiceFactoryType.lazy)
+        .toList();
 
-    /// In debug mode we print the List of not ready types/named instances
-    if (notReadyTypes.isNotEmpty) {
+    if (notReady.isNotEmpty) {
       _debugOutput('Not yet ready objects:');
-      _debugOutput(notReadyTypes);
+      for (final nr in notReady) {
+        _debugOutput(nr.debugName);
+      }
     }
-    return notReadyTypes.isEmpty;
+    return notReady.isEmpty;
   }
 
   WaitingTimeOutException _createTimeoutError() {
-    final allFactories = _allFactories;
+    final allF = _allFactories;
     final waitedBy = Map.fromEntries(
-      allFactories
-          .where(
-            (x) =>
-                (x.shouldSignalReady || x.pendingResult != null) &&
-                !x.isReady &&
-                x.objectsWaiting.isNotEmpty,
-          )
-          .map<MapEntry<String, List<String>>>(
-            (isWaitedFor) => MapEntry(
-              isWaitedFor.debugName,
-              isWaitedFor.objectsWaiting
-                  .map((waitedByType) => waitedByType.toString())
-                  .toList(),
-            ),
-          ),
+      allF
+          .where((f) =>
+              (f.shouldSignalReady || f.pendingResult != null) &&
+              !f.isReady &&
+              f.objectsWaiting.isNotEmpty)
+          .map((fw) => MapEntry(fw.debugName, fw.objectsWaiting.toList())),
     );
-    final notReady = allFactories
-        .where(
-          (x) => (x.shouldSignalReady || x.pendingResult != null) && !x.isReady,
-        )
-        .map((f) => f.debugName)
+    final notReady = allF
+        .where((x) =>
+            (x.shouldSignalReady || x.pendingResult != null) && !x.isReady)
+        .map((x) => x.debugName)
         .toList();
-    final areReady = allFactories
-        .where(
-          (x) => (x.shouldSignalReady || x.pendingResult != null) && x.isReady,
-        )
-        .map((f) => f.debugName)
+    final areReady = allF
+        .where((x) =>
+            (x.shouldSignalReady || x.pendingResult != null) && x.isReady)
+        .map((x) => x.debugName)
         .toList();
-
     return WaitingTimeOutException(waitedBy, notReady, areReady);
   }
 
-  /// Returns a Future that completes if the instance of a Singleton, defined by Type [T] or
-  /// by name [instanceName] or by passing an existing [instance], is ready
-  /// If you pass a [timeout], a [WaitingTimeOutException] will be thrown if the instance
-  /// is not ready in the given time. The Exception contains details on which Singletons are
-  /// not ready at that time.
-  /// [callee] optional parameter which makes debugging easier. Pass `this` in here.
   @override
   Future<void> isReady<T extends Object>({
     Object? instance,
@@ -1992,73 +1525,124 @@ class _GetItImplementation implements GetIt {
     Duration? timeout,
     Object? callee,
   }) {
-    _ServiceFactory factoryToCheck;
-    if (instance != null) {
-      factoryToCheck = _findFactoryByInstance(instance);
-    } else {
-      factoryToCheck = _findFactoryByNameAndType<T>(instanceName);
-    }
-    // throwIfNot(
-    //   factoryToCheck.canBeWaitedFor &&
-    //       factoryToCheck.factoryType != _ServiceFactoryType.alwaysNew,
-    //   ArgumentError(
-    //       'You only can use this function on Singletons that are async, that are marked as '
-    //       'dependent or that are marked with "signalsReady==true"'),
-    // );
+    final factoryToCheck = (instance != null)
+        ? _findFactoryByInstance(instance)
+        : _findFactoryByNameAndStringKey<T>(instanceName, T.toString());
     if (!factoryToCheck.isReady) {
-      factoryToCheck.objectsWaiting.add(callee.runtimeType);
+      factoryToCheck.objectsWaiting.add(callee.runtimeType.toString());
     }
     if (factoryToCheck.isAsync &&
         factoryToCheck.factoryType == _ServiceFactoryType.lazy &&
         factoryToCheck.instance == null) {
-      if (timeout != null) {
-        return factoryToCheck.getObjectAsync(null, null).timeout(
-          timeout,
-          onTimeout: () {
-            throw _createTimeoutError();
-          },
-        );
-      } else {
-        return factoryToCheck.getObjectAsync(null, null);
-      }
+      final f = factoryToCheck.getObjectAsync(null, null);
+      return (timeout != null)
+          ? f.timeout(timeout, onTimeout: () => throw _createTimeoutError())
+          : f;
     }
     if (factoryToCheck.pendingResult != null) {
-      if (timeout != null) {
-        return factoryToCheck.pendingResult!.timeout(
-          timeout,
-          onTimeout: () {
-            throw _createTimeoutError();
-          },
-        );
-      } else {
-        return factoryToCheck.pendingResult!;
-      }
+      return (timeout != null)
+          ? factoryToCheck.pendingResult!.timeout(
+              timeout,
+              onTimeout: () => throw _createTimeoutError(),
+            )
+          : factoryToCheck.pendingResult!;
     }
-    if (timeout != null) {
-      return factoryToCheck._readyCompleter.future
-          .timeout(timeout, onTimeout: () => throw _createTimeoutError());
-    } else {
-      return factoryToCheck._readyCompleter.future;
-    }
+    final fut = factoryToCheck._readyCompleter.future;
+    return (timeout != null)
+        ? fut.timeout(timeout, onTimeout: () => throw _createTimeoutError())
+        : fut;
   }
 
-  /// Checks if an async Singleton defined by an [instance], a type [T] or an [instanceName]
-  /// is ready without waiting.
   @override
   bool isReadySync<T extends Object>({Object? instance, String? instanceName}) {
-    _ServiceFactory factoryToCheck;
-    if (instance != null) {
-      factoryToCheck = _findFactoryByInstance(instance);
-    } else {
-      factoryToCheck = _findFactoryByNameAndType<T>(instanceName);
-    }
+    final factoryToCheck = (instance != null)
+        ? _findFactoryByInstance(instance)
+        : _findFactoryByNameAndStringKey<T>(instanceName, T.toString());
     throwIfNot(
       factoryToCheck.canBeWaitedFor &&
           factoryToCheck.factoryType != _ServiceFactoryType.alwaysNew,
       ArgumentError(
-          'You only can use this function on async Singletons or Singletons '
-          'that have ben marked with "signalsReady" or that they depend on others'),
+        'You can only use this function on Singletons that are async or that signalReady or have dependencies.',
+      ),
     );
     return factoryToCheck.isReady;
+  }
+
+  @override
+  void signalReady(Object? instance) {
+    if (instance != null) {
+      final reg = _findFactoryByInstance(instance);
+      throwIfNot(
+        reg.shouldSignalReady,
+        ArgumentError.value(instance,
+            'This instance of type ${instance.runtimeType} is not marked signalsReady==true.'),
+      );
+      throwIf(
+        reg.isReady,
+        StateError(
+            'This instance of type ${instance.runtimeType} was already signalled.'),
+      );
+      reg._readyCompleter.complete();
+      reg.objectsWaiting.clear();
+    } else {
+      final notReady = _allFactories
+          .where((f) =>
+              (f.shouldSignalReady || f.pendingResult != null) && !f.isReady)
+          .map((f) => '${f.registrationTypeString}/${f.instanceName}')
+          .toList();
+      throwIf(
+        notReady.isNotEmpty,
+        StateError(
+          "You can't signal ready globally if you have Singletons that must call signalReady themselves.\n"
+          'Not ready yet: $notReady',
+        ),
+      );
+      _globalReadyCompleter.complete();
+    }
+  }
+
+  @override
+  FutureOr resetLazySingleton<T extends Object>({
+    T? instance,
+    String? instanceName,
+    FutureOr Function(T)? disposingFunction,
+  }) async {
+    final f = (instance != null)
+        ? _findFactoryByInstance(instance)
+        : _findFactoryByNameAndStringKey<T>(instanceName, T.toString());
+
+    throwIfNot(
+      f.factoryType == _ServiceFactoryType.lazy,
+      StateError(
+          'No type $T (name:$instanceName) registered as LazySingleton.'),
+    );
+
+    dynamic disposeReturn;
+    if (f.instance != null) {
+      if (disposingFunction != null) {
+        disposeReturn = disposingFunction.call(f.instance! as T);
+      } else {
+        disposeReturn = f.dispose();
+      }
+    }
+    f.resetInstance();
+    f.pendingResult = null;
+    f._readyCompleter = Completer();
+    if (disposeReturn is Future) {
+      await disposeReturn;
+    }
+  }
+
+  @override
+  bool checkLazySingletonInstanceExists<T extends Object>(
+      {String? instanceName}) {
+    final f = _findFactoryByNameAndStringKey<T>(instanceName, T.toString());
+    throwIfNot(
+      f.factoryType == _ServiceFactoryType.lazy,
+      StateError(
+        'There is no type $T (name:$instanceName) registered as LazySingleton',
+      ),
+    );
+    return f.instance != null;
   }
 }

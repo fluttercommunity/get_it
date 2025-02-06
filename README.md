@@ -14,7 +14,42 @@ Typical usage:
 - Accessing service objects like REST API clients or databases so that they easily can be mocked.
 - Accessing View/AppModels/Managers/BLoCs from Flutter Views
 
+## Generic Type Support
+get_it supports distinct registrations for different generic type parameters. This means you can register, for example, two instantiations of the same base class but with different type arguments, and retrieve each uniquely by its full generic signature:
 
+```dart
+// Example generic class
+class GenericOne<T> {
+  final T value;
+  GenericOne(this.value);
+
+  @override
+  String toString() => 'GenericOne<$T>($value)';
+}
+
+// Somewhere in your setup:
+final getIt = GetIt.instance;
+
+void setup() {
+  // Register a factory for GenericOne<int>
+  getIt.registerFactory<GenericOne<int>>(
+      () => GenericOne<int>(42),
+  );
+
+  // Register a factory for GenericOne<String>
+  getIt.registerFactory<GenericOne<String>>(
+      () => GenericOne<String>('Hello'),
+  );
+}
+
+// Now you can retrieve each distinct instantiation:
+final intInstance = getIt<GenericOne<int>>();
+final stringInstance = getIt<GenericOne<String>>();
+
+print(intInstance.value);    // 42
+print(stringInstance.value); // Hello
+```
+The ability to key registrations by `T.toString()` ensures `GenericOne<int>` and `GenericOne<String>` remain separate. You can also use two-parameter generics like `GenericTwo<A, B>`, with no collisions across different type-parameter combos.
 
 ## Why GetIt
 
@@ -155,7 +190,7 @@ You have to pass a factory function `func` that returns an instance of an implem
 
 There are certain circumstances where you might wish to register multiple implementations of the same interface and then get a list of all of the relevant implementations later on. For instance, you might have a modular design where each module registers an interface defining a page and then all of these get injected into your navigation bar in your main layout without your layout needing to know about each module.
 
-> [!NOTE]  
+> [!NOTE]
 > To avoid this being a breaking change and to prevent you from erroneously re-registering a type without expecting this behaviour, to enable this you need to call:
 >
 >```dart
