@@ -231,7 +231,7 @@ abstract class GetIt {
     String? instanceName,
   });
 
-  /// Like registerFactory but holds a week reference to the last created instance
+  /// Like registerFactory but holds a weak reference to the last created instance
   /// if the instance wasn't garbage collected yet it will return this instance instead of creating a new one
   void registerCachedFactory<T extends Object>(
     FactoryFunc<T> factoryFunc, {
@@ -262,7 +262,7 @@ abstract class GetIt {
     String? instanceName,
   });
 
-  /// Like registerFactoryParam but holds a week reference to the last created instance
+  /// Like registerFactoryParam but holds a weak reference to the last created instance
   /// if the instance wasn't garbage collected yet, and if the passed parameter haven't changed,
   /// it will return this instance instead of creating a new one
   void registerCachedFactoryParam<T extends Object, P1, P2>(
@@ -282,7 +282,7 @@ abstract class GetIt {
     String? instanceName,
   });
 
-  /// Like registerFactoryAsync but holds a week reference to the last created instance
+  /// Like registerFactoryAsync but holds a weak reference to the last created instance
   /// if the instance wasn't garbage collected yet it will return this instance instead of creating a new one
   void registerCachedFactoryAsync<T extends Object>(
     FactoryFunc<T> factoryFunc, {
@@ -314,7 +314,7 @@ abstract class GetIt {
     String? instanceName,
   });
 
-  /// Like registerFactoryParamAsync but holds a week reference to the last created instance
+  /// Like registerFactoryParamAsync but holds a weak reference to the last created instance
   /// if the instance wasn't garbage collected yet, and if the passed parameter haven't changed,
   /// it will return this instance instead of creating a new one
   void registerCachedFactoryParamAsync<T extends Object, P1, P2>(
