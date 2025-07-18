@@ -1115,11 +1115,14 @@ class _GetItImplementation implements GetIt {
   bool isRegistered<T extends Object>({
     Object? instance,
     String? instanceName,
+    Type? type,
   }) {
     if (instance != null) {
       return _findFirstFactoryByInstanceOrNull(instance) != null;
     } else {
-      return _findFirstFactoryByNameAndTypeOrNull<T>(instanceName) != null;
+      return _findFirstFactoryByNameAndTypeOrNull<T>(instanceName,
+              type: type) !=
+          null;
     }
   }
 

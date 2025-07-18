@@ -441,9 +441,13 @@ abstract class GetIt {
     bool useWeakReference = false,
   });
 
-  /// Tests if an [instance] of an object or aType [T] or a name [instanceName]
+  /// Tests if an [instance] of an object or a Type ([T] or [type]) or a name [instanceName]
   /// is registered inside GetIt
-  bool isRegistered<T extends Object>({Object? instance, String? instanceName});
+  bool isRegistered<T extends Object>({
+    Object? instance,
+    String? instanceName,
+    Type? type,
+  });
 
   /// In some cases it can be necessary to change the name of a registered instance
   /// This avoids to unregister and reregister the instance which might cause trouble
