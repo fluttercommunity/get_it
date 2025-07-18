@@ -40,10 +40,7 @@ typedef FactoryFunc<T> = T Function();
 
 /// For Factories that expect up to two parameters if you need only one use `void` for the one
 /// you don't use
-typedef FactoryFuncParam<T, P1, P2> = T Function(
-  P1 param1,
-  P2 param2,
-);
+typedef FactoryFuncParam<T, P1, P2> = T Function(P1 param1, P2 param2);
 
 /// Signature of the factory function used by async factories
 typedef FactoryFuncAsync<T> = Future<T> Function();
@@ -57,10 +54,8 @@ typedef ScopeDisposeFunc = FutureOr Function();
 
 /// For async Factories that expect up to two parameters if you need only one use `void` for the one
 /// you don't use
-typedef FactoryFuncParamAsync<T, P1, P2> = Future<T> Function(
-  P1 param1,
-  P2 param2,
-);
+typedef FactoryFuncParamAsync<T, P1, P2> =
+    Future<T> Function(P1 param1, P2 param2);
 
 /// Data structure used to identify a dependency by type and instanceName
 class InitDependency implements Type {
@@ -87,11 +82,7 @@ class WaitingTimeOutException implements Exception {
   /// Lists with Types that are already ready.
   final List<String> areReady;
 
-  WaitingTimeOutException(
-    this.areWaitedBy,
-    this.notReadyYet,
-    this.areReady,
-  );
+  WaitingTimeOutException(this.areWaitedBy, this.notReadyYet, this.areReady);
 
   // todo : assert(areWaitedBy != null && notReadyYet != null && areReady != null);
 
@@ -615,10 +606,7 @@ abstract class GetIt {
 
   /// Checks if an async Singleton defined by an [instance], a type [T] or an [instanceName]
   /// is ready without waiting
-  bool isReadySync<T extends Object>({
-    Object? instance,
-    String? instanceName,
-  });
+  bool isReadySync<T extends Object>({Object? instance, String? instanceName});
 
   /// Returns if all async Singletons are ready without waiting
   /// if [allReady] should not wait for the completion of async Singletons set

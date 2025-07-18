@@ -113,19 +113,18 @@ void main() {
     Object? shadowingObject;
 
     getIt.registerSingleton<TestClassShadowChangHandler>(
-      TestClassShadowChangHandler(
-        (shadowState, shadow) {
-          isShadowed = shadowState;
-          shadowingObject = shadow;
-        },
-        'Basescope',
-      ),
+      TestClassShadowChangHandler((shadowState, shadow) {
+        isShadowed = shadowState;
+        shadowingObject = shadow;
+      }, 'Basescope'),
     );
 
     getIt.pushNewScope();
 
-    final testClassShadowChangHandlerInstance =
-        TestClassShadowChangHandler((shadowState, shadow) {}, 'Scope 2');
+    final testClassShadowChangHandlerInstance = TestClassShadowChangHandler(
+      (shadowState, shadow) {},
+      'Scope 2',
+    );
     getIt.registerSingleton<TestClassShadowChangHandler>(
       testClassShadowChangHandlerInstance,
     );
@@ -147,19 +146,18 @@ void main() {
     Object? shadowingObject;
 
     getIt.registerSingleton<TestClassShadowChangHandler>(
-      TestClassShadowChangHandler(
-        (shadowState, shadow) {
-          isShadowed = shadowState;
-          shadowingObject = shadow;
-        },
-        'Basescope',
-      ),
+      TestClassShadowChangHandler((shadowState, shadow) {
+        isShadowed = shadowState;
+        shadowingObject = shadow;
+      }, 'Basescope'),
     );
 
     getIt.pushNewScope();
 
-    final testClassShadowChangHandlerInstance =
-        TestClassShadowChangHandler((shadowState, shadow) {}, 'Scope 2');
+    final testClassShadowChangHandlerInstance = TestClassShadowChangHandler(
+      (shadowState, shadow) {},
+      'Scope 2',
+    );
     getIt.registerSingleton<TestClassShadowChangHandler>(
       testClassShadowChangHandlerInstance,
     );
@@ -174,162 +172,158 @@ void main() {
     expect(shadowingObject, testClassShadowChangHandlerInstance);
   });
   test(
-      'register lazySingleton in two scopes with ShadowChangeHandlers and scopeChangedHandler',
-      () async {
-    final getIt = GetIt.instance;
+    'register lazySingleton in two scopes with ShadowChangeHandlers and scopeChangedHandler',
+    () async {
+      final getIt = GetIt.instance;
 
-    int scopeChanged = 0;
-    bool isShadowed = false;
-    Object? shadowingObject;
+      int scopeChanged = 0;
+      bool isShadowed = false;
+      Object? shadowingObject;
 
-    getIt.onScopeChanged = (pushed) => scopeChanged++;
+      getIt.onScopeChanged = (pushed) => scopeChanged++;
 
-    getIt.registerLazySingleton<TestBaseClass>(
-      () => TestClassShadowChangHandler(
-        (shadowState, shadow) {
+      getIt.registerLazySingleton<TestBaseClass>(
+        () => TestClassShadowChangHandler((shadowState, shadow) {
           isShadowed = shadowState;
           shadowingObject = shadow;
-        },
-        'Basescope',
-      ),
-    );
+        }, 'Basescope'),
+      );
 
-    getIt.pushNewScope();
+      getIt.pushNewScope();
 
-    var testClassShadowChangHandlerInstance =
-        TestClassShadowChangHandler((shadowState, shadow) {}, 'Scope 2');
-    getIt.registerSingleton<TestBaseClass>(
-      testClassShadowChangHandlerInstance,
-    );
+      var testClassShadowChangHandlerInstance = TestClassShadowChangHandler(
+        (shadowState, shadow) {},
+        'Scope 2',
+      );
+      getIt.registerSingleton<TestBaseClass>(
+        testClassShadowChangHandlerInstance,
+      );
 
-    /// As we haven't used the singleton in the lower scope
-    /// it never created an instance that could be shadowed
-    expect(isShadowed, false);
-    expect(shadowingObject, null);
-    await getIt.popScope();
+      /// As we haven't used the singleton in the lower scope
+      /// it never created an instance that could be shadowed
+      expect(isShadowed, false);
+      expect(shadowingObject, null);
+      await getIt.popScope();
 
-    final lazyInstance = getIt<TestBaseClass>();
+      final lazyInstance = getIt<TestBaseClass>();
 
-    getIt.pushNewScope();
-    testClassShadowChangHandlerInstance =
-        TestClassShadowChangHandler((shadowState, shadow) {}, 'Scope 2');
+      getIt.pushNewScope();
+      testClassShadowChangHandlerInstance = TestClassShadowChangHandler(
+        (shadowState, shadow) {},
+        'Scope 2',
+      );
 
-    getIt.registerSingleton<TestBaseClass>(
-      testClassShadowChangHandlerInstance,
-    );
+      getIt.registerSingleton<TestBaseClass>(
+        testClassShadowChangHandlerInstance,
+      );
 
-    expect(isShadowed, true);
-    expect(shadowingObject, testClassShadowChangHandlerInstance);
-    shadowingObject = null;
+      expect(isShadowed, true);
+      expect(shadowingObject, testClassShadowChangHandlerInstance);
+      shadowingObject = null;
 
-    await getIt.popScope();
+      await getIt.popScope();
 
-    expect(isShadowed, false);
-    expect(shadowingObject, testClassShadowChangHandlerInstance);
-    expect(scopeChanged, 4);
-  });
-
-  test('register AsyncSingleton in two scopes with ShadowChangeHandlers',
-      () async {
-    final getIt = GetIt.instance;
-
-    bool isShadowed = false;
-    Object? shadowingObject;
-
-    getIt.registerSingleton<TestBaseClass>(
-      TestClassShadowChangHandler(
-        (shadowState, shadow) {
-          isShadowed = shadowState;
-          shadowingObject = shadow;
-        },
-        'Basescope',
-      ),
-    );
-
-    getIt.pushNewScope();
-
-    TestBaseClass? shadowingInstance;
-    getIt.registerSingletonAsync<TestBaseClass>(
-      () async {
-        await Future.delayed(const Duration(milliseconds: 100));
-        final newInstance =
-            TestClassShadowChangHandler((shadowState, shadow) {}, '2, Scope');
-        shadowingInstance = newInstance;
-        return newInstance;
-      },
-    );
-
-    /// The instance is not created yet because the async init function hasn't completed
-    expect(isShadowed, false);
-    expect(shadowingObject, null);
-
-    /// wait for the singleton so be created
-
-    final asyncInstance = await getIt.getAsync<TestBaseClass>();
-
-    expect(isShadowed, true);
-    expect(shadowingObject, shadowingInstance);
-    shadowingObject = null;
-
-    await getIt.popScope();
-
-    expect(isShadowed, false);
-    expect(shadowingObject, shadowingInstance);
-  });
+      expect(isShadowed, false);
+      expect(shadowingObject, testClassShadowChangHandlerInstance);
+      expect(scopeChanged, 4);
+    },
+  );
 
   test(
-      'register SingletonWidthDependies in two scopes with ShadowChangeHandlers',
-      () async {
-    final getIt = GetIt.instance;
+    'register AsyncSingleton in two scopes with ShadowChangeHandlers',
+    () async {
+      final getIt = GetIt.instance;
 
-    bool isShadowed = false;
-    Object? shadowingObject;
+      bool isShadowed = false;
+      Object? shadowingObject;
 
-    getIt.registerSingletonAsync<TestClass>(
-      () async {
+      getIt.registerSingleton<TestBaseClass>(
+        TestClassShadowChangHandler((shadowState, shadow) {
+          isShadowed = shadowState;
+          shadowingObject = shadow;
+        }, 'Basescope'),
+      );
+
+      getIt.pushNewScope();
+
+      TestBaseClass? shadowingInstance;
+      getIt.registerSingletonAsync<TestBaseClass>(() async {
+        await Future.delayed(const Duration(milliseconds: 100));
+        final newInstance = TestClassShadowChangHandler(
+          (shadowState, shadow) {},
+          '2, Scope',
+        );
+        shadowingInstance = newInstance;
+        return newInstance;
+      });
+
+      /// The instance is not created yet because the async init function hasn't completed
+      expect(isShadowed, false);
+      expect(shadowingObject, null);
+
+      /// wait for the singleton so be created
+
+      final asyncInstance = await getIt.getAsync<TestBaseClass>();
+
+      expect(isShadowed, true);
+      expect(shadowingObject, shadowingInstance);
+      shadowingObject = null;
+
+      await getIt.popScope();
+
+      expect(isShadowed, false);
+      expect(shadowingObject, shadowingInstance);
+    },
+  );
+
+  test(
+    'register SingletonWidthDependies in two scopes with ShadowChangeHandlers',
+    () async {
+      final getIt = GetIt.instance;
+
+      bool isShadowed = false;
+      Object? shadowingObject;
+
+      getIt.registerSingletonAsync<TestClass>(() async {
         await Future.delayed(const Duration(milliseconds: 100));
         final newInstance = TestClass('Basescope');
         return newInstance;
-      },
-    );
-    getIt.registerSingleton<TestBaseClass>(
-      TestClassShadowChangHandler(
-        (shadowState, shadow) {
+      });
+      getIt.registerSingleton<TestBaseClass>(
+        TestClassShadowChangHandler((shadowState, shadow) {
           isShadowed = shadowState;
           shadowingObject = shadow;
-        },
-        '2, Scope',
-      ),
-    );
+        }, '2, Scope'),
+      );
 
-    getIt.pushNewScope();
+      getIt.pushNewScope();
 
-    Object? shadowingInstance;
-    getIt.registerSingletonWithDependencies<TestBaseClass>(
-      () {
-        final newInstance =
-            TestClassShadowChangHandler((shadowState, shadow) {}, '2, Scope');
+      Object? shadowingInstance;
+      getIt.registerSingletonWithDependencies<TestBaseClass>(() {
+        final newInstance = TestClassShadowChangHandler(
+          (shadowState, shadow) {},
+          '2, Scope',
+        );
         shadowingInstance = newInstance;
         return newInstance;
-      },
-      dependsOn: [TestClass],
-    );
+      }, dependsOn: [TestClass]);
 
-    /// The instance is not created yet because the async init function hasn't completed
-    expect(isShadowed, false);
-    expect(shadowingObject, null);
+      /// The instance is not created yet because the async init function hasn't completed
+      expect(isShadowed, false);
+      expect(shadowingObject, null);
 
-    await getIt.allReady();
+      await getIt.allReady();
 
-    expect(isShadowed, true);
-    expect(shadowingObject, shadowingInstance);
-    shadowingObject = null;
+      expect(isShadowed, true);
+      expect(shadowingObject, shadowingInstance);
+      shadowingObject = null;
 
-    await getIt.popScope();
+      await getIt.popScope();
 
-    expect(isShadowed, false);
-    expect(shadowingObject, shadowingInstance);
-  });
+      expect(isShadowed, false);
+      expect(shadowingObject, shadowingInstance);
+    },
+  );
 
   test('popscope', () async {
     final getIt = GetIt.instance;
@@ -357,10 +351,7 @@ void main() {
     final instanceTestClassScope1 = getIt.get<TestClass>();
 
     expect(instanceTestClassScope1.id, 'Basescope');
-    expect(
-      () => getIt.get<TestClass2>(),
-      throwsStateError,
-    );
+    expect(() => getIt.get<TestClass2>(), throwsStateError);
   });
 
   test('popScopesTill inclusive=true', () async {
@@ -382,10 +373,7 @@ void main() {
     await getIt.popScopesTill('Level2');
 
     expect(getIt.get<TestClass>().id, '1. scope');
-    expect(
-      () => getIt.get<TestClass2>(),
-      throwsStateError,
-    );
+    expect(() => getIt.get<TestClass2>(), throwsStateError);
   });
 
   test('popScopesTill inclusive=false', () async {
@@ -407,10 +395,7 @@ void main() {
     await getIt.popScopesTill('Level2', inclusive: false);
 
     expect(getIt.get<TestClass>().id, '2. scope');
-    expect(
-      () => getIt.get<TestClass2>(),
-      throwsStateError,
-    );
+    expect(() => getIt.get<TestClass2>(), throwsStateError);
   });
 
   test('popScopesTill invalid scope', () async {
@@ -533,10 +518,7 @@ void main() {
     final instanceTestClassScope1 = getIt.get<TestClass>();
 
     expect(instanceTestClassScope1.id, 'Basescope');
-    expect(
-      () => getIt.get<TestClass2>(),
-      throwsStateError,
-    );
+    expect(() => getIt.get<TestClass2>(), throwsStateError);
 
     final instanceTestClass3Scope3 = getIt.get<TestClass3>();
     expect(instanceTestClass3Scope3 is TestClass3, true);
@@ -559,10 +541,7 @@ void main() {
       scopeName: 'sealedScope',
       isFinal: true,
       init: (getIt) {
-        getIt.registerSingleton(
-          TestClass(),
-          dispose: (x) => x.dispose(),
-        );
+        getIt.registerSingleton(TestClass(), dispose: (x) => x.dispose());
       },
     );
 
@@ -570,10 +549,7 @@ void main() {
 
     await getIt.popScope(); // it shouldn't affect the TestClass2
 
-    expect(
-      () => getIt.get<TestClass>(),
-      throwsStateError,
-    );
+    expect(() => getIt.get<TestClass>(), throwsStateError);
     expect(getIt.get<TestClass2>(), isNotNull);
   });
 
@@ -738,22 +714,19 @@ void main() {
     expect(getIt<TestClass>(instanceName: 'scope3'), isNotNull);
   });
 
-  test(
-    'has registered scope test',
-    () async {
-      final getIt = GetIt.instance;
-      getIt.pushNewScope(scopeName: 'scope1');
-      getIt.pushNewScope(scopeName: 'scope2');
-      getIt.pushNewScope(scopeName: 'scope3');
+  test('has registered scope test', () async {
+    final getIt = GetIt.instance;
+    getIt.pushNewScope(scopeName: 'scope1');
+    getIt.pushNewScope(scopeName: 'scope2');
+    getIt.pushNewScope(scopeName: 'scope3');
 
-      expect(getIt.hasScope('scope2'), isTrue);
-      expect(getIt.hasScope('scope4'), isFalse);
+    expect(getIt.hasScope('scope2'), isTrue);
+    expect(getIt.hasScope('scope4'), isFalse);
 
-      await getIt.dropScope('scope2');
+    await getIt.dropScope('scope2');
 
-      expect(getIt.hasScope('scope2'), isFalse);
-    },
-  );
+    expect(getIt.hasScope('scope2'), isFalse);
+  });
 
   test('full reset no dispose', () async {
     final getIt = GetIt.instance;
@@ -816,60 +789,54 @@ void main() {
   });
 
   group('should remove scope with error during push', () {
-    test(
-      'pushNewScope',
-      () {
-        final getIt = GetIt.instance;
+    test('pushNewScope', () {
+      final getIt = GetIt.instance;
 
-        expect(
-          () => getIt.pushNewScope(
-            scopeName: 'scope1',
-            init: (getIt) {
-              getIt.registerSingleton(TestClass());
-              throw Exception('Error during init');
-            },
-          ),
-          throwsException,
-        );
+      expect(
+        () => getIt.pushNewScope(
+          scopeName: 'scope1',
+          init: (getIt) {
+            getIt.registerSingleton(TestClass());
+            throw Exception('Error during init');
+          },
+        ),
+        throwsException,
+      );
 
-        // The scope should not be on the stack and the registered instance
-        // should be removed.
-        expect(getIt.hasScope('scope1'), isFalse);
-        expect(getIt.isRegistered<TestClass>(), isFalse);
+      // The scope should not be on the stack and the registered instance
+      // should be removed.
+      expect(getIt.hasScope('scope1'), isFalse);
+      expect(getIt.isRegistered<TestClass>(), isFalse);
 
-        // It should be possible to push a new scope.
-        getIt.pushNewScope(scopeName: 'scope2');
+      // It should be possible to push a new scope.
+      getIt.pushNewScope(scopeName: 'scope2');
 
-        expect(getIt.hasScope('scope2'), isTrue);
-      },
-    );
+      expect(getIt.hasScope('scope2'), isTrue);
+    });
 
-    test(
-      'pushNewScopeAsync',
-      () async {
-        final getIt = GetIt.instance;
+    test('pushNewScopeAsync', () async {
+      final getIt = GetIt.instance;
 
-        await expectLater(
-          () => getIt.pushNewScopeAsync(
-            scopeName: 'scope1',
-            init: (getIt) async {
-              getIt.registerSingleton(TestClass());
-              throw Exception('Error during init');
-            },
-          ),
-          throwsException,
-        );
+      await expectLater(
+        () => getIt.pushNewScopeAsync(
+          scopeName: 'scope1',
+          init: (getIt) async {
+            getIt.registerSingleton(TestClass());
+            throw Exception('Error during init');
+          },
+        ),
+        throwsException,
+      );
 
-        // The scope should not be on the stack and the registered instance
-        // should be removed.
-        expect(getIt.hasScope('scope1'), isFalse);
-        expect(getIt.isRegistered<TestClass>(), isFalse);
+      // The scope should not be on the stack and the registered instance
+      // should be removed.
+      expect(getIt.hasScope('scope1'), isFalse);
+      expect(getIt.isRegistered<TestClass>(), isFalse);
 
-        // It should be possible to push a new scope.
-        await getIt.pushNewScopeAsync(scopeName: 'scope2');
+      // It should be possible to push a new scope.
+      await getIt.pushNewScopeAsync(scopeName: 'scope2');
 
-        expect(getIt.hasScope('scope2'), isTrue);
-      },
-    );
+      expect(getIt.hasScope('scope2'), isTrue);
+    });
   });
 }
