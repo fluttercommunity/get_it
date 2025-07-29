@@ -785,13 +785,12 @@ class _GetItImplementation implements GetIt {
 
   @override
   void registerCachedFactoryAsync<T extends Object>(
-    FactoryFunc<T> factoryFunc, {
-    String? instanceName,
-  }) {
+      FactoryFuncAsync<T> factoryFunc,
+      {String? instanceName}) {
     _register<T, void, void>(
       type: _ServiceFactoryType.cachedFactory,
       instanceName: instanceName,
-      factoryFunc: factoryFunc,
+      factoryFuncAsync: factoryFunc,
       isAsync: true,
       shouldSignalReady: false,
       useWeakReference: true,
@@ -800,13 +799,13 @@ class _GetItImplementation implements GetIt {
 
   @override
   void registerCachedFactoryParamAsync<T extends Object, P1, P2>(
-    FactoryFuncParam<T, P1, P2> factoryFunc, {
+    FactoryFuncParamAsync<T, P1?, P2?> factoryFunc, {
     String? instanceName,
   }) {
     _register<T, P1, P2>(
       type: _ServiceFactoryType.cachedFactory,
       instanceName: instanceName,
-      factoryFuncParam: factoryFunc,
+      factoryFuncParamAsync: factoryFunc,
       isAsync: true,
       shouldSignalReady: false,
       useWeakReference: true,

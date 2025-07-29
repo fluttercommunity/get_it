@@ -276,7 +276,7 @@ abstract class GetIt {
   /// Like registerFactoryAsync but holds a weak reference to the last created instance
   /// if the instance wasn't garbage collected yet it will return this instance instead of creating a new one
   void registerCachedFactoryAsync<T extends Object>(
-    FactoryFunc<T> factoryFunc, {
+    FactoryFuncAsync<T> factoryFunc, {
     String? instanceName,
   });
 
@@ -309,7 +309,7 @@ abstract class GetIt {
   /// if the instance wasn't garbage collected yet, and if the passed parameter haven't changed,
   /// it will return this instance instead of creating a new one
   void registerCachedFactoryParamAsync<T extends Object, P1, P2>(
-    FactoryFuncParam<T, P1, P2> factoryFunc, {
+    FactoryFuncParamAsync<T, P1?, P2?> factoryFunc, {
     String? instanceName,
   });
 
