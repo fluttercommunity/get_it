@@ -54,8 +54,8 @@ typedef ScopeDisposeFunc = FutureOr Function();
 
 /// For async Factories that expect up to two parameters if you need only one use `void` for the one
 /// you don't use
-typedef FactoryFuncParamAsync<T, P1, P2> =
-    Future<T> Function(P1 param1, P2 param2);
+typedef FactoryFuncParamAsync<T, P1, P2> = Future<T> Function(
+    P1 param1, P2 param2);
 
 /// Data structure used to identify a dependency by type and instanceName
 class InitDependency implements Type {
@@ -163,6 +163,14 @@ abstract class GetIt {
   /// [type] if you want to get an instance by a Type object instead of a generic parameter.This should
   /// rarely be needed but can be useful if you have a runtime type and want to get an instance
   T get<T extends Object>({
+    dynamic param1,
+    dynamic param2,
+    String? instanceName,
+    Type? type,
+  });
+
+  /// like [get] but returns null if the instance is not found
+  T? maybeGet<T extends Object>({
     dynamic param1,
     dynamic param2,
     String? instanceName,

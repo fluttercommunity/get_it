@@ -14,8 +14,7 @@ void throwIfNot(bool condition, Object error) {
   if (!condition) throw error;
 }
 
-const _isDebugMode =
-    !bool.fromEnvironment('dart.vm.product') &&
+const _isDebugMode = !bool.fromEnvironment('dart.vm.product') &&
     !bool.fromEnvironment('dart.vm.profile');
 
 void _debugOutput(Object message) {
@@ -80,8 +79,8 @@ class _ServiceFactory<T extends Object, P1, P2> {
 
   T? get instance =>
       weakReferenceInstance != null && weakReferenceInstance!.target != null
-      ? weakReferenceInstance!.target
-      : _instance;
+          ? weakReferenceInstance!.target
+          : _instance;
 
   void resetInstance() {
     if (useWeakReference) {
@@ -132,14 +131,14 @@ class _ServiceFactory<T extends Object, P1, P2> {
     required this.registrationScope,
     required this.registeredIn,
     this.disposeFunction,
-  }) : _instance = instance,
-       assert(
-         !(disposeFunction != null &&
-             instance != null &&
-             instance is Disposable),
-         ' You are trying to register type ${instance.runtimeType} '
-         'that implements "Disposable" but you also provide a disposing function',
-       ) {
+  })  : _instance = instance,
+        assert(
+          !(disposeFunction != null &&
+              instance != null &&
+              instance is Disposable),
+          ' You are trying to register type ${instance.runtimeType} '
+          'that implements "Disposable" but you also provide a disposing function',
+        ) {
     registrationType = T;
     param1Type = P1;
     param2Type = P2;
@@ -148,12 +147,12 @@ class _ServiceFactory<T extends Object, P1, P2> {
 
   FutureOr dispose() {
     /// check if we are shadowing an existing Object
-    final factoryThatWouldbeShadowed = _getItInstance
-        ._findFirstFactoryByNameAndTypeOrNull(
-          instanceName,
-          type: T,
-          lookInScopeBelow: true,
-        );
+    final factoryThatWouldbeShadowed =
+        _getItInstance._findFirstFactoryByNameAndTypeOrNull(
+      instanceName,
+      type: T,
+      lookInScopeBelow: true,
+    );
 
     final objectThatWouldbeShadowed = factoryThatWouldbeShadowed?.instance;
     if (objectThatWouldbeShadowed != null &&
@@ -234,12 +233,12 @@ class _ServiceFactory<T extends Object, P1, P2> {
             _readyCompleter.complete();
 
             /// check if we are shadowing an existing Object
-            final factoryThatWouldbeShadowed = _getItInstance
-                ._findFirstFactoryByNameAndTypeOrNull(
-                  instanceName,
-                  type: T,
-                  lookInScopeBelow: true,
-                );
+            final factoryThatWouldbeShadowed =
+                _getItInstance._findFirstFactoryByNameAndTypeOrNull(
+              instanceName,
+              type: T,
+              lookInScopeBelow: true,
+            );
 
             final objectThatWouldbeShadowed =
                 factoryThatWouldbeShadowed?.instance;
@@ -306,19 +305,17 @@ class _ServiceFactory<T extends Object, P1, P2> {
               lastParam1 = param1 as P1?;
               lastParam2 = param2 as P2?;
               return asyncCreationFunctionParam!(
-                    param1 as P1,
-                    param2 as P2,
-                  ).then((value) {
-                    weakReferenceInstance = WeakReference(value);
-                    return value;
-                  })
-                  as Future<R>;
+                param1 as P1,
+                param2 as P2,
+              ).then((value) {
+                weakReferenceInstance = WeakReference(value);
+                return value;
+              }) as Future<R>;
             } else {
               return asyncCreationFunction!().then((value) {
-                    weakReferenceInstance = WeakReference(value);
-                    return value;
-                  })
-                  as Future<R>;
+                weakReferenceInstance = WeakReference(value);
+                return value;
+              }) as Future<R>;
             }
           }
         case _ServiceFactoryType.constant:
@@ -356,12 +353,12 @@ class _ServiceFactory<T extends Object, P1, P2> {
               }
 
               /// check if we are shadowing an existing Object
-              final factoryThatWouldbeShadowed = _getItInstance
-                  ._findFirstFactoryByNameAndTypeOrNull(
-                    instanceName,
-                    type: T,
-                    lookInScopeBelow: true,
-                  );
+              final factoryThatWouldbeShadowed =
+                  _getItInstance._findFirstFactoryByNameAndTypeOrNull(
+                instanceName,
+                type: T,
+                lookInScopeBelow: true,
+              );
 
               final objectThatWouldbeShadowed =
                   factoryThatWouldbeShadowed?.instance;
@@ -538,9 +535,11 @@ class _GetItImplementation implements GetIt {
   bool allowRegisterMultipleImplementationsOfoneType = false;
 
   /// Is used by several other functions to retrieve the correct [_ServiceFactory]
-  _ServiceFactory<T, dynamic, dynamic>? _findFirstFactoryByNameAndTypeOrNull<
-    T extends Object
-  >(String? instanceName, {Type? type, bool lookInScopeBelow = false}) {
+  _ServiceFactory<T, dynamic, dynamic>?
+      _findFirstFactoryByNameAndTypeOrNull<T extends Object>(
+          String? instanceName,
+          {Type? type,
+          bool lookInScopeBelow = false}) {
     /// We use an assert here instead of an `if..throw` because it gets called on every call
     /// of [get]
     /// `(const Object() is! T)` tests if [T] is a real type and not Object or dynamic
@@ -609,7 +608,46 @@ class _GetItImplementation implements GetIt {
     dynamic param2,
     Type? type,
   }) {
-    final instanceFactory = _findFactoryByNameAndType<T>(instanceName, type);
+    return _get<T>(
+      instanceName: instanceName,
+      param1: param1,
+      param2: param2,
+      type: type,
+    )!;
+  }
+
+  @override
+  T? maybeGet<T extends Object>({
+    String? instanceName,
+    dynamic param1,
+    dynamic param2,
+    Type? type,
+  }) {
+    return _get<T>(
+        instanceName: instanceName,
+        param1: param1,
+        param2: param2,
+        type: type,
+        throwIfNotFound: false);
+  }
+
+  T? _get<T extends Object>({
+    String? instanceName,
+    dynamic param1,
+    dynamic param2,
+    Type? type,
+    bool throwIfNotFound = true,
+  }) {
+    final _ServiceFactory<Object, dynamic, dynamic>? instanceFactory;
+    if (throwIfNotFound) {
+      instanceFactory = _findFactoryByNameAndType<T>(instanceName, type);
+    } else {
+      instanceFactory =
+          _findFirstFactoryByNameAndTypeOrNull<T>(instanceName, type: type);
+      if (instanceFactory == null) {
+        return null;
+      }
+    }
 
     final Object instance;
     if (instanceFactory.isAsync || instanceFactory.pendingResult != null) {
@@ -1720,7 +1758,7 @@ class _GetItImplementation implements GetIt {
 
         for (final dependency in dependsOn!) {
           late final _ServiceFactory<Object, dynamic, dynamic>?
-          dependentFactory;
+              dependentFactory;
           if (dependency is InitDependency) {
             dependentFactory = _findFirstFactoryByNameAndTypeOrNull(
               dependency.instanceName,
@@ -1769,10 +1807,10 @@ class _GetItImplementation implements GetIt {
           /// check if we are shadowing an existing Object
           final factoryThatWouldbeShadowed =
               _findFirstFactoryByNameAndTypeOrNull(
-                instanceName,
-                type: T,
-                lookInScopeBelow: true,
-              );
+            instanceName,
+            type: T,
+            lookInScopeBelow: true,
+          );
 
           final objectThatWouldbeShadowed =
               factoryThatWouldbeShadowed?.instance;
@@ -1800,10 +1838,10 @@ class _GetItImplementation implements GetIt {
             /// check if we are shadowing an existing Object
             final factoryThatWouldbeShadowed =
                 _findFirstFactoryByNameAndTypeOrNull(
-                  instanceName,
-                  type: T,
-                  lookInScopeBelow: true,
-                );
+              instanceName,
+              type: T,
+              lookInScopeBelow: true,
+            );
 
             final objectThatWouldbeShadowed =
                 factoryThatWouldbeShadowed?.instance;
@@ -1919,29 +1957,28 @@ class _GetItImplementation implements GetIt {
     final futures = FutureGroup();
     _allFactories
         .where(
-          (x) =>
-              (x.isAsync && !ignorePendingAsyncCreation ||
-                  (!x.isAsync &&
-                      x.pendingResult !=
-                          null) || // Singletons with dependencies
-                  x.shouldSignalReady) &&
-              !x.isReady &&
-              x.factoryType == _ServiceFactoryType.constant,
-        )
+      (x) =>
+          (x.isAsync && !ignorePendingAsyncCreation ||
+              (!x.isAsync &&
+                  x.pendingResult != null) || // Singletons with dependencies
+              x.shouldSignalReady) &&
+          !x.isReady &&
+          x.factoryType == _ServiceFactoryType.constant,
+    )
         .forEach((f) {
-          if (f.pendingResult != null) {
-            futures.add(f.pendingResult!);
-            if (f.shouldSignalReady) {
-              futures.add(
-                f._readyCompleter.future,
-              ); // asyncSingleton with signalReady = true
-            }
-          } else {
-            futures.add(
-              f._readyCompleter.future,
-            ); // non async singletons that have signalReady == true and not dependencies
-          }
-        });
+      if (f.pendingResult != null) {
+        futures.add(f.pendingResult!);
+        if (f.shouldSignalReady) {
+          futures.add(
+            f._readyCompleter.future,
+          ); // asyncSingleton with signalReady = true
+        }
+      } else {
+        futures.add(
+          f._readyCompleter.future,
+        ); // non async singletons that have signalReady == true and not dependencies
+      }
+    });
     futures.close();
     if (timeout != null) {
       return futures.future.timeout(
@@ -1960,24 +1997,23 @@ class _GetItImplementation implements GetIt {
   bool allReadySync([bool ignorePendingAsyncCreation = false]) {
     final notReadyTypes = _allFactories
         .where(
-          (x) =>
-              (x.isAsync && !ignorePendingAsyncCreation ||
-                      (!x.isAsync &&
-                          x.pendingResult !=
-                              null) || // Singletons with dependencies
-                      x.shouldSignalReady) &&
-                  !x.isReady &&
-                  x.factoryType == _ServiceFactoryType.constant ||
-              x.factoryType == _ServiceFactoryType.lazy,
-        )
+      (x) =>
+          (x.isAsync && !ignorePendingAsyncCreation ||
+                  (!x.isAsync &&
+                      x.pendingResult !=
+                          null) || // Singletons with dependencies
+                  x.shouldSignalReady) &&
+              !x.isReady &&
+              x.factoryType == _ServiceFactoryType.constant ||
+          x.factoryType == _ServiceFactoryType.lazy,
+    )
         .map<String>((x) {
-          if (x.isNamedRegistration) {
-            return 'Object ${x.instanceName} has not completed';
-          } else {
-            return 'Registered object of Type ${x.registrationType} has not completed';
-          }
-        })
-        .toList();
+      if (x.isNamedRegistration) {
+        return 'Object ${x.instanceName} has not completed';
+      } else {
+        return 'Registered object of Type ${x.registrationType} has not completed';
+      }
+    }).toList();
 
     /// In debug mode we print the List of not ready types/named instances
     if (notReadyTypes.isNotEmpty) {
@@ -2055,14 +2091,12 @@ class _GetItImplementation implements GetIt {
         factoryToCheck.factoryType == _ServiceFactoryType.lazy &&
         factoryToCheck.instance == null) {
       if (timeout != null) {
-        return factoryToCheck
-            .getObjectAsync(null, null)
-            .timeout(
-              timeout,
-              onTimeout: () {
-                throw _createTimeoutError();
-              },
-            );
+        return factoryToCheck.getObjectAsync(null, null).timeout(
+          timeout,
+          onTimeout: () {
+            throw _createTimeoutError();
+          },
+        );
       } else {
         return factoryToCheck.getObjectAsync(null, null);
       }
