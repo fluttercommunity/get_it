@@ -14,8 +14,7 @@ void throwIfNot(bool condition, Object error) {
   if (!condition) throw error;
 }
 
-const _isDebugMode =
-    !bool.fromEnvironment('dart.vm.product') &&
+const _isDebugMode = !bool.fromEnvironment('dart.vm.product') &&
     !bool.fromEnvironment('dart.vm.profile');
 
 void _debugOutput(Object message) {
@@ -43,7 +42,8 @@ enum _ServiceFactoryType {
 }
 
 /// If I use `Singleton` without specifier in the comments I mean normal and lazy
-class _ServiceFactory<T extends Object, P1, P2> {
+class _ServiceFactory<T extends Object, P1, P2> extends ServiceFactory<T> {
+  @override
   final _ServiceFactoryType factoryType;
 
   final _GetItImplementation _getItInstance;
@@ -67,9 +67,11 @@ class _ServiceFactory<T extends Object, P1, P2> {
   final DisposingFunc<T>? disposeFunction;
 
   /// In case of a named registration the instance name is here stored for easy access
+  @override
   String? instanceName;
 
   /// true if one of the async registration functions have been used
+  @override
   final bool isAsync;
 
   /// If an existing Object gets registered or an async/lazy Singleton has finished
@@ -78,10 +80,11 @@ class _ServiceFactory<T extends Object, P1, P2> {
   WeakReference<T>? weakReferenceInstance;
   final bool useWeakReference;
 
+  @override
   T? get instance =>
       weakReferenceInstance != null && weakReferenceInstance!.target != null
-      ? weakReferenceInstance!.target
-      : _instance;
+          ? weakReferenceInstance!.target
+          : _instance;
 
   void resetInstance() {
     if (useWeakReference) {
@@ -92,6 +95,7 @@ class _ServiceFactory<T extends Object, P1, P2> {
   }
 
   /// the type that was used when registering, used for runtime checks
+  @override
   late final Type registrationType;
 
   /// to enable Singletons to signal that they are ready (their initialization is finished)
@@ -104,12 +108,16 @@ class _ServiceFactory<T extends Object, P1, P2> {
   /// they are stored here
   final List<Type> objectsWaiting = [];
 
+  @override
   bool get isReady => _readyCompleter.isCompleted;
 
+  @override
   bool get isNamedRegistration => instanceName != null;
 
+  @override
   String get debugName => '$instanceName : $registrationType';
 
+  @override
   bool get canBeWaitedFor =>
       shouldSignalReady || pendingResult != null || isAsync;
 
@@ -132,14 +140,14 @@ class _ServiceFactory<T extends Object, P1, P2> {
     required this.registrationScope,
     required this.registeredIn,
     this.disposeFunction,
-  }) : _instance = instance,
-       assert(
-         !(disposeFunction != null &&
-             instance != null &&
-             instance is Disposable),
-         ' You are trying to register type ${instance.runtimeType} '
-         'that implements "Disposable" but you also provide a disposing function',
-       ) {
+  })  : _instance = instance,
+        assert(
+          !(disposeFunction != null &&
+              instance != null &&
+              instance is Disposable),
+          ' You are trying to register type ${instance.runtimeType} '
+          'that implements "Disposable" but you also provide a disposing function',
+        ) {
     registrationType = T;
     param1Type = P1;
     param2Type = P2;
@@ -148,12 +156,12 @@ class _ServiceFactory<T extends Object, P1, P2> {
 
   FutureOr dispose() {
     /// check if we are shadowing an existing Object
-    final factoryThatWouldbeShadowed = _getItInstance
-        ._findFirstFactoryByNameAndTypeOrNull(
-          instanceName,
-          type: T,
-          lookInScopeBelow: true,
-        );
+    final factoryThatWouldbeShadowed =
+        _getItInstance._findFirstFactoryByNameAndTypeOrNull(
+      instanceName,
+      type: T,
+      lookInScopeBelow: true,
+    );
 
     final objectThatWouldbeShadowed = factoryThatWouldbeShadowed?.instance;
     if (objectThatWouldbeShadowed != null &&
@@ -234,12 +242,12 @@ class _ServiceFactory<T extends Object, P1, P2> {
             _readyCompleter.complete();
 
             /// check if we are shadowing an existing Object
-            final factoryThatWouldbeShadowed = _getItInstance
-                ._findFirstFactoryByNameAndTypeOrNull(
-                  instanceName,
-                  type: T,
-                  lookInScopeBelow: true,
-                );
+            final factoryThatWouldbeShadowed =
+                _getItInstance._findFirstFactoryByNameAndTypeOrNull(
+              instanceName,
+              type: T,
+              lookInScopeBelow: true,
+            );
 
             final objectThatWouldbeShadowed =
                 factoryThatWouldbeShadowed?.instance;
@@ -306,19 +314,17 @@ class _ServiceFactory<T extends Object, P1, P2> {
               lastParam1 = param1 as P1?;
               lastParam2 = param2 as P2?;
               return asyncCreationFunctionParam!(
-                    param1 as P1,
-                    param2 as P2,
-                  ).then((value) {
-                    weakReferenceInstance = WeakReference(value);
-                    return value;
-                  })
-                  as Future<R>;
+                param1 as P1,
+                param2 as P2,
+              ).then((value) {
+                weakReferenceInstance = WeakReference(value);
+                return value;
+              }) as Future<R>;
             } else {
               return asyncCreationFunction!().then((value) {
-                    weakReferenceInstance = WeakReference(value);
-                    return value;
-                  })
-                  as Future<R>;
+                weakReferenceInstance = WeakReference(value);
+                return value;
+              }) as Future<R>;
             }
           }
         case _ServiceFactoryType.constant:
@@ -356,12 +362,12 @@ class _ServiceFactory<T extends Object, P1, P2> {
               }
 
               /// check if we are shadowing an existing Object
-              final factoryThatWouldbeShadowed = _getItInstance
-                  ._findFirstFactoryByNameAndTypeOrNull(
-                    instanceName,
-                    type: T,
-                    lookInScopeBelow: true,
-                  );
+              final factoryThatWouldbeShadowed =
+                  _getItInstance._findFirstFactoryByNameAndTypeOrNull(
+                instanceName,
+                type: T,
+                lookInScopeBelow: true,
+              );
 
               final objectThatWouldbeShadowed =
                   factoryThatWouldbeShadowed?.instance;
@@ -538,9 +544,11 @@ class _GetItImplementation implements GetIt {
   bool allowRegisterMultipleImplementationsOfoneType = false;
 
   /// Is used by several other functions to retrieve the correct [_ServiceFactory]
-  _ServiceFactory<T, dynamic, dynamic>? _findFirstFactoryByNameAndTypeOrNull<
-    T extends Object
-  >(String? instanceName, {Type? type, bool lookInScopeBelow = false}) {
+  _ServiceFactory<T, dynamic, dynamic>?
+      _findFirstFactoryByNameAndTypeOrNull<T extends Object>(
+          String? instanceName,
+          {Type? type,
+          bool lookInScopeBelow = false}) {
     /// We use an assert here instead of an `if..throw` because it gets called on every call
     /// of [get]
     /// `(const Object() is! T)` tests if [T] is a real type and not Object or dynamic
@@ -1109,6 +1117,16 @@ class _GetItImplementation implements GetIt {
     );
   }
 
+  @override
+  ServiceFactory? findFirstFactory<T extends Object>(
+      {Object? instance, String? instanceName}) {
+    if (instance != null) {
+      return _findFirstFactoryByInstanceOrNull(instance);
+    } else {
+      return _findFirstFactoryByNameAndTypeOrNull<T>(instanceName);
+    }
+  }
+
   /// Tests if an [instance] of an object or aType [T] or a name [instanceName]
   /// is registered inside GetIt
   @override
@@ -1116,17 +1134,9 @@ class _GetItImplementation implements GetIt {
     Object? instance,
     String? instanceName,
     Type? type,
-  }) {
-    if (instance != null) {
-      return _findFirstFactoryByInstanceOrNull(instance) != null;
-    } else {
-      return _findFirstFactoryByNameAndTypeOrNull<T>(
-            instanceName,
-            type: type,
-          ) !=
-          null;
-    }
-  }
+  }) =>
+      findFirstFactory<T>(instance: instance, instanceName: instanceName) !=
+      null;
 
   /// Unregister an instance of an object or a factory/singleton by Type [T] or by name [instanceName]
   /// if you need to dispose any resources you can pass in a [disposingFunction] function
@@ -1721,7 +1731,7 @@ class _GetItImplementation implements GetIt {
 
         for (final dependency in dependsOn!) {
           late final _ServiceFactory<Object, dynamic, dynamic>?
-          dependentFactory;
+              dependentFactory;
           if (dependency is InitDependency) {
             dependentFactory = _findFirstFactoryByNameAndTypeOrNull(
               dependency.instanceName,
@@ -1770,10 +1780,10 @@ class _GetItImplementation implements GetIt {
           /// check if we are shadowing an existing Object
           final factoryThatWouldbeShadowed =
               _findFirstFactoryByNameAndTypeOrNull(
-                instanceName,
-                type: T,
-                lookInScopeBelow: true,
-              );
+            instanceName,
+            type: T,
+            lookInScopeBelow: true,
+          );
 
           final objectThatWouldbeShadowed =
               factoryThatWouldbeShadowed?.instance;
@@ -1801,10 +1811,10 @@ class _GetItImplementation implements GetIt {
             /// check if we are shadowing an existing Object
             final factoryThatWouldbeShadowed =
                 _findFirstFactoryByNameAndTypeOrNull(
-                  instanceName,
-                  type: T,
-                  lookInScopeBelow: true,
-                );
+              instanceName,
+              type: T,
+              lookInScopeBelow: true,
+            );
 
             final objectThatWouldbeShadowed =
                 factoryThatWouldbeShadowed?.instance;
@@ -1920,29 +1930,28 @@ class _GetItImplementation implements GetIt {
     final futures = FutureGroup();
     _allFactories
         .where(
-          (x) =>
-              (x.isAsync && !ignorePendingAsyncCreation ||
-                  (!x.isAsync &&
-                      x.pendingResult !=
-                          null) || // Singletons with dependencies
-                  x.shouldSignalReady) &&
-              !x.isReady &&
-              x.factoryType == _ServiceFactoryType.constant,
-        )
+      (x) =>
+          (x.isAsync && !ignorePendingAsyncCreation ||
+              (!x.isAsync &&
+                  x.pendingResult != null) || // Singletons with dependencies
+              x.shouldSignalReady) &&
+          !x.isReady &&
+          x.factoryType == _ServiceFactoryType.constant,
+    )
         .forEach((f) {
-          if (f.pendingResult != null) {
-            futures.add(f.pendingResult!);
-            if (f.shouldSignalReady) {
-              futures.add(
-                f._readyCompleter.future,
-              ); // asyncSingleton with signalReady = true
-            }
-          } else {
-            futures.add(
-              f._readyCompleter.future,
-            ); // non async singletons that have signalReady == true and not dependencies
-          }
-        });
+      if (f.pendingResult != null) {
+        futures.add(f.pendingResult!);
+        if (f.shouldSignalReady) {
+          futures.add(
+            f._readyCompleter.future,
+          ); // asyncSingleton with signalReady = true
+        }
+      } else {
+        futures.add(
+          f._readyCompleter.future,
+        ); // non async singletons that have signalReady == true and not dependencies
+      }
+    });
     futures.close();
     if (timeout != null) {
       return futures.future.timeout(
@@ -1961,24 +1970,23 @@ class _GetItImplementation implements GetIt {
   bool allReadySync([bool ignorePendingAsyncCreation = false]) {
     final notReadyTypes = _allFactories
         .where(
-          (x) =>
-              (x.isAsync && !ignorePendingAsyncCreation ||
-                      (!x.isAsync &&
-                          x.pendingResult !=
-                              null) || // Singletons with dependencies
-                      x.shouldSignalReady) &&
-                  !x.isReady &&
-                  x.factoryType == _ServiceFactoryType.constant ||
-              x.factoryType == _ServiceFactoryType.lazy,
-        )
+      (x) =>
+          (x.isAsync && !ignorePendingAsyncCreation ||
+                  (!x.isAsync &&
+                      x.pendingResult !=
+                          null) || // Singletons with dependencies
+                  x.shouldSignalReady) &&
+              !x.isReady &&
+              x.factoryType == _ServiceFactoryType.constant ||
+          x.factoryType == _ServiceFactoryType.lazy,
+    )
         .map<String>((x) {
-          if (x.isNamedRegistration) {
-            return 'Object ${x.instanceName} has not completed';
-          } else {
-            return 'Registered object of Type ${x.registrationType} has not completed';
-          }
-        })
-        .toList();
+      if (x.isNamedRegistration) {
+        return 'Object ${x.instanceName} has not completed';
+      } else {
+        return 'Registered object of Type ${x.registrationType} has not completed';
+      }
+    }).toList();
 
     /// In debug mode we print the List of not ready types/named instances
     if (notReadyTypes.isNotEmpty) {
@@ -2056,14 +2064,12 @@ class _GetItImplementation implements GetIt {
         factoryToCheck.factoryType == _ServiceFactoryType.lazy &&
         factoryToCheck.instance == null) {
       if (timeout != null) {
-        return factoryToCheck
-            .getObjectAsync(null, null)
-            .timeout(
-              timeout,
-              onTimeout: () {
-                throw _createTimeoutError();
-              },
-            );
+        return factoryToCheck.getObjectAsync(null, null).timeout(
+          timeout,
+          onTimeout: () {
+            throw _createTimeoutError();
+          },
+        );
       } else {
         return factoryToCheck.getObjectAsync(null, null);
       }

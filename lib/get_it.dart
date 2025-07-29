@@ -11,6 +11,16 @@ import 'package:meta/meta.dart';
 
 part 'get_it_impl.dart';
 
+/// You will see a rather esoteric looking test `(const Object() is! T)` at several places.
+/// It tests if [T] is a real type and not Object or dynamic.
+
+/// For each registered factory/singleton a [_ServiceFactory<T>] is created
+/// it holds either the instance of a Singleton or/and the creation functions
+/// for creating an instance when [get] is called
+///
+/// There are three different types:
+typedef ServiceFactoryType = _ServiceFactoryType;
+
 /// If your singleton that you register wants to use the manually signalling
 /// of its ready state, it can implement this interface class instead of using
 /// the [signalsReady] parameter of the registration functions
@@ -54,8 +64,8 @@ typedef ScopeDisposeFunc = FutureOr Function();
 
 /// For async Factories that expect up to two parameters if you need only one use `void` for the one
 /// you don't use
-typedef FactoryFuncParamAsync<T, P1, P2> =
-    Future<T> Function(P1 param1, P2 param2);
+typedef FactoryFuncParamAsync<T, P1, P2> = Future<T> Function(
+    P1 param1, P2 param2);
 
 /// Data structure used to identify a dependency by type and instanceName
 class InitDependency implements Type {
@@ -105,6 +115,31 @@ class WaitingTimeOutException implements Exception {
     }
     return super.toString();
   }
+}
+
+abstract class ServiceFactory<T extends Object> {
+  ServiceFactoryType get factoryType;
+
+  /// In case of a named registration the instance name is here stored for easy access
+  String? get instanceName;
+
+  /// true if one of the async registration functions have been used
+  bool get isAsync;
+
+  /// If an existing Object gets registered or an async/lazy Singleton has finished
+  /// its creation, it is stored here
+  Object? get instance;
+
+  /// the type that was used when registering, used for runtime checks
+  Type get registrationType;
+
+  bool get isReady;
+
+  bool get isNamedRegistration => instanceName != null;
+
+  String get debugName => '$instanceName : $registrationType';
+
+  bool get canBeWaitedFor;
 }
 
 /// Very simple and easy to use service locator
@@ -440,6 +475,10 @@ abstract class GetIt {
     DisposingFunc<T>? dispose,
     bool useWeakReference = false,
   });
+
+  /// find the first factory that matches the type [T]/[instanceName] or the [instance]
+  ServiceFactory? findFirstFactory<T extends Object>(
+      {Object? instance, String? instanceName});
 
   /// Tests if an [instance] of an object or a Type ([T] or [type]) or a name [instanceName]
   /// is registered inside GetIt
