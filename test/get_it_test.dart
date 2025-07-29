@@ -313,6 +313,31 @@ void main() {
     GetIt.I.reset();
   });
 
+  test('register constant with maybeGet', () {
+    final getIt = GetIt.instance;
+    constructorCounter = 0;
+
+    getIt.registerSingleton<TestBaseClass>(TestClass());
+
+    final instance1 = getIt.maybeGet<TestBaseClass>();
+
+    expect(instance1 is TestClass, true);
+
+    final instance2 = getIt.maybeGet<TestBaseClass>();
+
+    expect(instance1, instance2);
+
+    expect(constructorCounter, 1);
+
+    GetIt.I.reset();
+  });
+
+  test('register constant with maybeGet not found', () async {
+    final getIt = GetIt.instance;
+    final instance1 = getIt.maybeGet<TestBaseClass>();
+    expect(instance1, isNull);
+  });
+
   test('reset', () async {
     final getIt = GetIt.instance;
     int destructorCounter = 0;
