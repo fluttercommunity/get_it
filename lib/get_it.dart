@@ -381,7 +381,7 @@ abstract class GetIt {
   void registerSingletonWithDependencies<T extends Object>(
     FactoryFunc<T> factoryFunc, {
     String? instanceName,
-    Iterable<Type>? dependsOn,
+    required Iterable<Type>? dependsOn,
     bool? signalsReady,
     DisposingFunc<T>? dispose,
   });
@@ -571,6 +571,29 @@ abstract class GetIt {
     FutureOr Function(T)? disposingFunction,
   });
 
+  /// Checks if a lazy singleton instance has been created and exists.
+  ///
+  /// This method verifies whether a lazy singleton of type [T] (optionally identified by [instanceName])
+  /// has been instantiated. Lazy singletons are only created when first accessed via [get].
+  ///
+  /// Returns `true` if the instance has been created and exists, `false` if it hasn't been created yet.
+  ///
+  /// Throws a [StateError] if the type [T] is not registered as a lazy singleton in GetIt.
+  ///
+  /// Example:
+  /// ```dart
+  /// // Register a lazy singleton
+  /// getIt.registerLazySingleton<MyService>(() => MyService());
+  ///
+  /// // Check if instance exists (will return false initially)
+  /// bool exists = getIt.checkLazySingletonInstanceExists<MyService>();
+  ///
+  /// // Access the instance (creates it)
+  /// MyService service = getIt<MyService>();
+  ///
+  /// // Check again (will return true now)
+  /// exists = getIt.checkLazySingletonInstanceExists<MyService>();
+  /// ```
   bool checkLazySingletonInstanceExists<T extends Object>({
     String? instanceName,
   });
