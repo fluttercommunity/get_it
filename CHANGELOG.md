@@ -1,3 +1,11 @@
+## [8.1.0]
+
+* adding documentation https://github.com/flutter-it/get_it/issues/411
+* registerCachedFactoryAsync usded FactoryFunc instead of FactoryFuncAsync https://github.com/flutter-it/get_it/issues/410
+* adding `getMaybe` which will return `null` instead of throwing an exception in case a type is not registered
+* `dependsOn` of `registerSingletonWithDependencies` is now required. Although this could be seen as a breaking change, if you didn't pass `dependsOn` your code wouldn't have worked before so I won't define this as breaking change
+
+
 ## [8.0.3]
 
 * fixing linter warning thanks to @PatrickChrestin
