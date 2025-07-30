@@ -1190,7 +1190,7 @@ class _GetItImplementation implements GetIt {
       ),
     );
 
-    if (factoryToRemove._referenceCount > 0) {
+    if (factoryToRemove._referenceCount > 0 && !ignoreReferenceCount) {
       factoryToRemove._referenceCount--;
       return;
     }
