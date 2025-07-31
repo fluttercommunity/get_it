@@ -69,8 +69,8 @@ typedef ScopeDisposeFunc = FutureOr Function();
 
 /// For async Factories that expect up to two parameters if you need only one use `void` for the one
 /// you don't use
-typedef FactoryFuncParamAsync<T, P1, P2> =
-    Future<T> Function(P1 param1, P2 param2);
+typedef FactoryFuncParamAsync<T, P1, P2> = Future<T> Function(
+    P1 param1, P2 param2);
 
 /// Data structure used to identify a dependency by type and instanceName
 class InitDependency implements Type {
@@ -209,6 +209,14 @@ abstract class GetIt {
     Type? type,
   });
 
+  /// like [get] but returns null if the instance is not found
+  T? maybeGet<T extends Object>({
+    dynamic param1,
+    dynamic param2,
+    String? instanceName,
+    Type? type,
+  });
+
   /// Returns a Future of an instance that is created by an async factory or a Singleton that is
   /// not ready with its initialization.
   /// for async factories you can pass up to 2 parameters [param1,param2] they have to match the
@@ -316,7 +324,7 @@ abstract class GetIt {
   /// Like registerFactoryAsync but holds a weak reference to the last created instance
   /// if the instance wasn't garbage collected yet it will return this instance instead of creating a new one
   void registerCachedFactoryAsync<T extends Object>(
-    FactoryFunc<T> factoryFunc, {
+    FactoryFuncAsync<T> factoryFunc, {
     String? instanceName,
   });
 
@@ -349,7 +357,7 @@ abstract class GetIt {
   /// if the instance wasn't garbage collected yet, and if the passed parameter haven't changed,
   /// it will return this instance instead of creating a new one
   void registerCachedFactoryParamAsync<T extends Object, P1, P2>(
-    FactoryFuncParam<T, P1, P2> factoryFunc, {
+    FactoryFuncParamAsync<T, P1?, P2?> factoryFunc, {
     String? instanceName,
   });
 
@@ -413,7 +421,7 @@ abstract class GetIt {
   void registerSingletonWithDependencies<T extends Object>(
     FactoryFunc<T> factoryFunc, {
     String? instanceName,
-    Iterable<Type>? dependsOn,
+    required Iterable<Type>? dependsOn,
     bool? signalsReady,
     DisposingFunc<T>? dispose,
   });
@@ -607,6 +615,29 @@ abstract class GetIt {
     FutureOr Function(T)? disposingFunction,
   });
 
+  /// Checks if a lazy singleton instance has been created and exists.
+  ///
+  /// This method verifies whether a lazy singleton of type [T] (optionally identified by [instanceName])
+  /// has been instantiated. Lazy singletons are only created when first accessed via [get].
+  ///
+  /// Returns `true` if the instance has been created and exists, `false` if it hasn't been created yet.
+  ///
+  /// Throws a [StateError] if the type [T] is not registered as a lazy singleton in GetIt.
+  ///
+  /// Example:
+  /// ```dart
+  /// // Register a lazy singleton
+  /// getIt.registerLazySingleton<MyService>(() => MyService());
+  ///
+  /// // Check if instance exists (will return false initially)
+  /// bool exists = getIt.checkLazySingletonInstanceExists<MyService>();
+  ///
+  /// // Access the instance (creates it)
+  /// MyService service = getIt<MyService>();
+  ///
+  /// // Check again (will return true now)
+  /// exists = getIt.checkLazySingletonInstanceExists<MyService>();
+  /// ```
   bool checkLazySingletonInstanceExists<T extends Object>({
     String? instanceName,
   });
