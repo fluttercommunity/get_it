@@ -40,7 +40,7 @@ jobs:
         run: flutter pub get
 
       - name: Run linter
-        run: dart analyze .
+        run: dart analyze --fatal-infos .
 
   test:
     runs-on: ubuntu-latest
