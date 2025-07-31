@@ -1173,12 +1173,15 @@ void main() {
 
     expect(instance1 is TestClass, true);
 
-    expect(() {
-      getIt.changeTypeInstanceName<TestClass>(
-        instanceName: 'instanceName',
-        newInstanceName: 'instanceNameExisting',
-      );
-    }, throwsStateError);
+    expect(
+      () {
+        getIt.changeTypeInstanceName<TestClass>(
+          instanceName: 'instanceName',
+          newInstanceName: 'instanceNameExisting',
+        );
+      },
+      throwsStateError,
+    );
   });
 
   test('change registration name of instance', () async {
@@ -1242,13 +1245,16 @@ void main() {
 
       getIt.registerSingleton(TestClass(), instanceName: 'instanceName');
 
-      expect(() {
-        // ignore: unused_local_variable
-        final TestClass2 instance1 = getIt.get(
-          type: TestClass,
-          instanceName: 'instanceName',
-        );
-      }, throwsA(isA<AssertionError>()));
+      expect(
+        () {
+          // ignore: unused_local_variable
+          final TestClass2 instance1 = getIt.get(
+            type: TestClass,
+            instanceName: 'instanceName',
+          );
+        },
+        throwsA(isA<AssertionError>()),
+      );
     },
   );
 

@@ -46,8 +46,8 @@ class _MyHomePageState extends State<MyHomePage> {
     // Access the instance of the registered AppModel
     // As we don't know for sure if AppModel is already ready we use isReady
     getIt.isReady<AppModel>().then(
-      (_) => getIt<AppModel>().addListener(update),
-    );
+          (_) => getIt<AppModel>().addListener(update),
+        );
     // Alternative
     // getIt.getAsync<AppModel>().addListener(update);
 
