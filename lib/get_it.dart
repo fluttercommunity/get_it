@@ -19,7 +19,12 @@ part 'get_it_impl.dart';
 /// for creating an instance when [get] is called
 ///
 /// There are three different types:
-typedef ServiceFactoryType = _ServiceFactoryType;
+enum ServiceFactoryType {
+  alwaysNew, // factory which means on every call of [get] a new instance is created
+  constant, // normal singleton
+  lazy, // lazy
+  cachedFactory, // cached factory
+}
 
 /// If your singleton that you register wants to use the manually signalling
 /// of its ready state, it can implement this interface class instead of using
@@ -35,6 +40,7 @@ abstract class WillSignalReady {}
 /// This can be helpful to unsubscribe / resubscribe from Streams or Listenables
 abstract mixin class ShadowChangeHandlers {
   void onGetShadowed(Object shadowing);
+
   void onLeaveShadow(Object shadowing);
 }
 
