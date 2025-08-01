@@ -55,7 +55,9 @@ typedef ScopeDisposeFunc = FutureOr Function();
 /// For async Factories that expect up to two parameters if you need only one use `void` for the one
 /// you don't use
 typedef FactoryFuncParamAsync<T, P1, P2> = Future<T> Function(
-    P1 param1, P2 param2);
+  P1 param1,
+  P2 param2,
+);
 
 /// Data structure used to identify a dependency by type and instanceName
 class InitDependency implements Type {

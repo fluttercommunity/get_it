@@ -113,10 +113,13 @@ void main() {
     Object? shadowingObject;
 
     getIt.registerSingleton<TestClassShadowChangHandler>(
-      TestClassShadowChangHandler((shadowState, shadow) {
-        isShadowed = shadowState;
-        shadowingObject = shadow;
-      }, 'Basescope'),
+      TestClassShadowChangHandler(
+        (shadowState, shadow) {
+          isShadowed = shadowState;
+          shadowingObject = shadow;
+        },
+        'Basescope',
+      ),
     );
 
     getIt.pushNewScope();
@@ -146,10 +149,13 @@ void main() {
     Object? shadowingObject;
 
     getIt.registerSingleton<TestClassShadowChangHandler>(
-      TestClassShadowChangHandler((shadowState, shadow) {
-        isShadowed = shadowState;
-        shadowingObject = shadow;
-      }, 'Basescope'),
+      TestClassShadowChangHandler(
+        (shadowState, shadow) {
+          isShadowed = shadowState;
+          shadowingObject = shadow;
+        },
+        'Basescope',
+      ),
     );
 
     getIt.pushNewScope();
@@ -183,10 +189,13 @@ void main() {
       getIt.onScopeChanged = (pushed) => scopeChanged++;
 
       getIt.registerLazySingleton<TestBaseClass>(
-        () => TestClassShadowChangHandler((shadowState, shadow) {
-          isShadowed = shadowState;
-          shadowingObject = shadow;
-        }, 'Basescope'),
+        () => TestClassShadowChangHandler(
+          (shadowState, shadow) {
+            isShadowed = shadowState;
+            shadowingObject = shadow;
+          },
+          'Basescope',
+        ),
       );
 
       getIt.pushNewScope();
@@ -238,10 +247,13 @@ void main() {
       Object? shadowingObject;
 
       getIt.registerSingleton<TestBaseClass>(
-        TestClassShadowChangHandler((shadowState, shadow) {
-          isShadowed = shadowState;
-          shadowingObject = shadow;
-        }, 'Basescope'),
+        TestClassShadowChangHandler(
+          (shadowState, shadow) {
+            isShadowed = shadowState;
+            shadowingObject = shadow;
+          },
+          'Basescope',
+        ),
       );
 
       getIt.pushNewScope();
@@ -290,23 +302,29 @@ void main() {
         return newInstance;
       });
       getIt.registerSingleton<TestBaseClass>(
-        TestClassShadowChangHandler((shadowState, shadow) {
-          isShadowed = shadowState;
-          shadowingObject = shadow;
-        }, '2, Scope'),
+        TestClassShadowChangHandler(
+          (shadowState, shadow) {
+            isShadowed = shadowState;
+            shadowingObject = shadow;
+          },
+          '2, Scope',
+        ),
       );
 
       getIt.pushNewScope();
 
       Object? shadowingInstance;
-      getIt.registerSingletonWithDependencies<TestBaseClass>(() {
-        final newInstance = TestClassShadowChangHandler(
-          (shadowState, shadow) {},
-          '2, Scope',
-        );
-        shadowingInstance = newInstance;
-        return newInstance;
-      }, dependsOn: [TestClass]);
+      getIt.registerSingletonWithDependencies<TestBaseClass>(
+        () {
+          final newInstance = TestClassShadowChangHandler(
+            (shadowState, shadow) {},
+            '2, Scope',
+          );
+          shadowingInstance = newInstance;
+          return newInstance;
+        },
+        dependsOn: [TestClass],
+      );
 
       /// The instance is not created yet because the async init function hasn't completed
       expect(isShadowed, false);

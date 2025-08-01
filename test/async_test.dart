@@ -176,8 +176,8 @@ void main() {
 
     expect(constructorCounter, 0);
 
-    final Iterable<TestBaseClass> instances = await getIt
-        .getAllAsync<TestBaseClass>();
+    final Iterable<TestBaseClass> instances =
+        await getIt.getAllAsync<TestBaseClass>();
 
     expect(instances.length, 2);
     expect(instances.first is TestClass, true);
@@ -188,7 +188,8 @@ void main() {
     getIt.allowRegisterMultipleImplementationsOfoneType = false;
   });
 
-  test('signalReady will throw if any Singletons that has signalsReady==true '
+  test(
+      'signalReady will throw if any Singletons that has signalsReady==true '
       'have not signaled completion', () async {
     final getIt = GetIt.instance;
 
